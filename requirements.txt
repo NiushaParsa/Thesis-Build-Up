@@ -1,0 +1,6 @@
+datasets>=2.14.0
+transformers>=4.30.0
+openai>=1.0.0
+weaviate-client>=4.4.0
+python-dotenv>=1.0.0
+tqdm>=4.65.0
