@@ -48,6 +48,7 @@ stats = {
     "papers_processed": 0,
     "chunks_inserted": 0,
     "questions_inserted": 0,
+    "questions_skipped_no_evidence": 0,
     "evidence_inserted": 0,
     "embedding_api_calls_tokens": 0,
 }
@@ -108,13 +109,34 @@ def process_paper_chunks(paper: dict, collection, json_file=None) -> None:
             json_file.write(json.dumps({**props, "uuid": str(uuid)}) + "\n")
 
 
+def _get_answerable_question_ids(paper: dict) -> set:
+    """Return the set of question_ids that have at least one non-empty evidence."""
+    qas = paper.get("qas", {})
+    answers_list = qas.get("answers", [])
+    question_ids = qas.get("question_id", [])
+    answerable = set()
+
+    for q_id, answers_data in zip(question_ids, answers_list):
+        for ann in answers_data.get("answer", []):
+            for ev in ann.get("highlighted_evidence", []):
+                if ev and ev.strip():
+                    answerable.add(q_id)
+                    break
+            if q_id in answerable:
+                break
+    return answerable
+
+
 def process_questions(
     paper: dict,
     split_name: str,
     collection,
     json_file=None,
 ) -> dict[str, tuple[str, str]]:
-    """Embed and insert questions.  Returns ``{qasper_qid: (uuid, text)}``."""
+    """Embed and insert questions.  Returns ``{qasper_qid: (uuid, text)}``.
+
+    Questions with **no valid evidence** are skipped entirely.
+    """
     document_id = paper["id"]
     qas = paper.get("qas", {})
     questions = qas.get("question", [])
@@ -123,10 +145,15 @@ def process_questions(
     if not questions:
         return {}
 
+    answerable_ids = _get_answerable_question_ids(paper)
+
     q_records: list[tuple[dict, str, str]] = []   # (props, uuid, qid)
     q_texts: list[str] = []
 
     for q_text, q_id in zip(questions, question_ids):
+        if q_id not in answerable_ids:
+            stats["questions_skipped_no_evidence"] += 1
+            continue
         uuid = generate_uuid5(f"{document_id}_{q_id}")
         props = {
             "document_id":   document_id,
@@ -135,6 +162,9 @@ def process_questions(
         }
         q_records.append((props, uuid, q_id))
         q_texts.append(q_text)
+
+    if not q_texts:
+        return {}
 
     embeddings = get_embeddings(q_texts)
 
