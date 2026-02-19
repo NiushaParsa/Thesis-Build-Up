@@ -25,7 +25,7 @@ OPENAI_EMBEDDING_MODEL: str = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embeddin
 EMBEDDING_BATCH_SIZE: int = int(os.getenv("EMBEDDING_BATCH_SIZE", "100"))
 
 # ── Weaviate ─────────────────────────────────────────────
-WEAVIATE_URL: str = os.getenv("WEAVIATE_URL", "localhost")
+WEAVIATE_URL: str = os.getenv("WEAVIATE_URL", "127.0.0.1")
 WEAVIATE_PORT: int = int(os.getenv("WEAVIATE_PORT", "8080"))
 WEAVIATE_GRPC_PORT: int = int(os.getenv("WEAVIATE_GRPC_PORT", "50051"))
 WEAVIATE_API_KEY: str = os.getenv("WEAVIATE_API_KEY", "")

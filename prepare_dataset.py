@@ -25,6 +25,8 @@ import argparse
 import hashlib
 import json
 import logging
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from datasets import load_dataset
@@ -33,7 +35,7 @@ from weaviate.util import generate_uuid5
 
 from config import CHUNK_SIZES, JSON_OUTPUT, JSON_OUTPUT_DIR
 from weaviate_schema import get_weaviate_client, create_schema
-from embedding_utils import get_embeddings
+from embedding_utils import get_embeddings, set_embedding_max_workers
 from chunking_utils import chunk_text, build_full_text
 
 # ── Logging ──────────────────────────────────────────────
@@ -43,7 +45,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# ── Global stats ─────────────────────────────────────────
+# ── Global stats (thread-safe) ───────────────────────────
+_stats_lock = threading.Lock()
 stats = {
     "papers_processed": 0,
     "chunks_inserted": 0,
@@ -52,6 +55,12 @@ stats = {
     "evidence_inserted": 0,
     "embedding_api_calls_tokens": 0,
 }
+
+
+def _inc(key: str, n: int = 1) -> None:
+    """Thread-safe stats increment."""
+    with _stats_lock:
+        stats[key] += n
 
 
 # ═════════════════════════════════════════════════════════
@@ -93,7 +102,7 @@ def process_paper_chunks(paper: dict, collection, json_file=None) -> None:
     if not all_contents:
         return
 
-    # Batch-embed
+    # Batch-embed (batches sent concurrently inside get_embeddings)
     embeddings = get_embeddings(all_contents)
 
     # Batch-insert into Weaviate
@@ -101,7 +110,7 @@ def process_paper_chunks(paper: dict, collection, json_file=None) -> None:
         for (props, uuid), vec in zip(all_records, embeddings):
             batch.add_object(properties=props, vector=vec, uuid=uuid)
 
-    stats["chunks_inserted"] += len(all_records)
+    _inc("chunks_inserted", len(all_records))
 
     # Optional JSONL output (vectors omitted to save space)
     if json_file:
@@ -152,7 +161,7 @@ def process_questions(
 
     for q_text, q_id in zip(questions, question_ids):
         if q_id not in answerable_ids:
-            stats["questions_skipped_no_evidence"] += 1
+            _inc("questions_skipped_no_evidence")
             continue
         uuid = generate_uuid5(f"{document_id}_{q_id}")
         props = {
@@ -172,7 +181,7 @@ def process_questions(
         for (props, uuid, _), vec in zip(q_records, embeddings):
             batch.add_object(properties=props, vector=vec, uuid=uuid)
 
-    stats["questions_inserted"] += len(q_records)
+    _inc("questions_inserted", len(q_records))
 
     # Build map for evidence linking
     question_map: dict[str, tuple[str, str]] = {}
@@ -243,7 +252,7 @@ def process_evidence(
         for (props, uuid), vec in zip(ev_records, embeddings):
             batch.add_object(properties=props, vector=vec, uuid=uuid)
 
-    stats["evidence_inserted"] += len(ev_records)
+    _inc("evidence_inserted", len(ev_records))
 
     if json_file:
         for (props, uuid), _ in zip(ev_records, embeddings):
@@ -270,7 +279,18 @@ def main() -> None:
         "--splits", nargs="+", default=None,
         help="Which splits to ingest (e.g. --splits train validation).",
     )
+    parser.add_argument(
+        "--embedding-max-workers", type=int, default=8,
+        help="Concurrent OpenAI embedding batch requests (default: 8).",
+    )
+    parser.add_argument(
+        "--paper-max-workers", type=int, default=4,
+        help="Papers processed in parallel (default: 4).",
+    )
     args = parser.parse_args()
+
+    paper_workers = args.paper_max_workers
+    set_embedding_max_workers(args.embedding_max_workers)
 
     # 1. Load dataset ──────────────────────────────────────
     logger.info("Downloading / loading QASPER dataset …")
@@ -301,7 +321,16 @@ def main() -> None:
             jf_evidence  = open(out / "evidence.jsonl",   "w", encoding="utf-8")
             logger.info("JSONL output → %s/", out)
 
-        # 4. Iterate over splits & papers ──────────────────
+        # 4. Iterate over splits & papers (concurrent) ────
+        def _process_one_paper(paper, split_name):
+            """Process a single paper (embedding + insert). Called from threads."""
+            process_paper_chunks(paper, chunk_col, jf_chunks)
+            question_map = process_questions(
+                paper, split_name, question_col, jf_questions,
+            )
+            process_evidence(paper, question_map, evidence_col, jf_evidence)
+            _inc("papers_processed")
+
         for split_name in splits:
             if split_name not in dataset:
                 logger.warning("Split '%s' not in dataset – skipping.", split_name)
@@ -311,29 +340,30 @@ def main() -> None:
             n = min(args.limit, len(split_data)) if args.limit else len(split_data)
 
             logger.info("═" * 60)
-            logger.info("Split: %s  (%d papers)", split_name, n)
+            logger.info(
+                "Split: %s  (%d papers, %d workers)",
+                split_name, n, paper_workers,
+            )
             logger.info("═" * 60)
 
-            for i, paper in enumerate(
-                tqdm(split_data, total=n, desc=f"[{split_name}]")
-            ):
-                if i >= n:
-                    break
-                try:
-                    process_paper_chunks(paper, chunk_col, jf_chunks)
+            papers = [split_data[i] for i in range(n)]
 
-                    question_map = process_questions(
-                        paper, split_name, question_col, jf_questions,
-                    )
-
-                    process_evidence(paper, question_map, evidence_col, jf_evidence)
-
-                    stats["papers_processed"] += 1
-
-                except Exception:
-                    logger.exception(
-                        "Error processing paper %s", paper.get("id", "?")
-                    )
+            with ThreadPoolExecutor(max_workers=paper_workers) as pool:
+                futures = {
+                    pool.submit(_process_one_paper, paper, split_name): paper
+                    for paper in papers
+                }
+                with tqdm(total=n, desc=f"[{split_name}]") as pbar:
+                    for future in as_completed(futures):
+                        paper = futures[future]
+                        try:
+                            future.result()
+                        except Exception:
+                            logger.exception(
+                                "Error processing paper %s",
+                                paper.get("id", "?"),
+                            )
+                        pbar.update(1)
 
         # 5. Cleanup & summary ─────────────────────────────
         if JSON_OUTPUT:
