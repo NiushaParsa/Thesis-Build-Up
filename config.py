@@ -24,11 +24,11 @@ OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
 OPENAI_EMBEDDING_MODEL: str = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
 EMBEDDING_BATCH_SIZE: int = int(os.getenv("EMBEDDING_BATCH_SIZE", "100"))
 
-# ── Weaviate ─────────────────────────────────────────────
-WEAVIATE_URL: str = os.getenv("WEAVIATE_URL", "127.0.0.1")
-WEAVIATE_PORT: int = int(os.getenv("WEAVIATE_PORT", "8080"))
-WEAVIATE_GRPC_PORT: int = int(os.getenv("WEAVIATE_GRPC_PORT", "50051"))
-WEAVIATE_API_KEY: str = os.getenv("WEAVIATE_API_KEY", "")
+# ── Qdrant ───────────────────────────────────────────────
+QDRANT_HOST: str = os.getenv("QDRANT_HOST", "localhost")
+QDRANT_HTTP_PORT: int = int(os.getenv("QDRANT_HTTP_PORT", "6333"))
+QDRANT_GRPC_PORT: int = int(os.getenv("QDRANT_GRPC_PORT", "6334"))
+QDRANT_API_KEY: str = os.getenv("QDRANT_API_KEY", "")
 
 # ── Tokenizer ────────────────────────────────────────────
 TOKENIZER_NAME: str = os.getenv("TOKENIZER_NAME", "gpt2")

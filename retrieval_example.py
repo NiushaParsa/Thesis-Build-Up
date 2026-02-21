@@ -2,7 +2,7 @@
 """
 Retrieval Example
 =================
-Demonstrates how to query the three QASPER collections stored in Weaviate:
+Demonstrates how to query the three QASPER collections stored in Qdrant:
 
 * Semantic search on **PaperChunk** (with optional granularity filter)
 * Semantic search on **PaperQuestion** (with optional split filter)
@@ -19,9 +19,9 @@ from __future__ import annotations
 
 import logging
 
-from weaviate.classes.query import MetadataQuery, Filter
+from qdrant_client.models import Filter, FieldCondition, MatchValue
 
-from weaviate_schema import get_weaviate_client
+from qdrant_schema import get_qdrant_client
 from embedding_utils import get_single_embedding
 
 logging.basicConfig(
@@ -42,34 +42,35 @@ def search_chunks(
     granularity_level: int = None,
 ):
     """Semantic search over PaperChunk, optionally filtered by granularity."""
-    collection = client.collections.get("PaperChunk")
     vec = get_single_embedding(query)
 
-    filters = None
+    query_filter = None
     if granularity_level is not None:
-        filters = Filter.by_property("granularity_level").equal(granularity_level)
+        query_filter = Filter(
+            must=[FieldCondition(key="granularity_level", match=MatchValue(value=granularity_level))]
+        )
 
-    response = collection.query.near_vector(
-        near_vector=vec,
+    results = client.search(
+        collection_name="PaperChunk",
+        query_vector=vec,
         limit=limit,
-        filters=filters,
-        return_metadata=MetadataQuery(distance=True),
+        query_filter=query_filter,
     )
 
     print(f"\n{'─'*60}")
     print(f"Chunk search: \"{query}\"  (granularity={granularity_level})")
     print(f"{'─'*60}")
-    for obj in response.objects:
-        p = obj.properties
+    for hit in results:
+        p = hit.payload
         print(
             f"  [{p['document_title'][:50]}]  "
             f"G{p['granularity_level']}  "
             f"chunk {p['chunk_idx']}/{p['total_chunks']}  "
             f"({p['chunk_size']} tok)  "
-            f"dist={obj.metadata.distance:.4f}"
+            f"score={hit.score:.4f}"
         )
         print(f"    {p['content'][:150]}…")
-    return response
+    return results
 
 
 def search_questions(
@@ -79,52 +80,56 @@ def search_questions(
     split: str = None,
 ):
     """Semantic search over PaperQuestion."""
-    collection = client.collections.get("PaperQuestion")
     vec = get_single_embedding(query)
 
-    filters = None
+    query_filter = None
     if split:
-        filters = Filter.by_property("split").equal(split)
+        query_filter = Filter(
+            must=[FieldCondition(key="split", match=MatchValue(value=split))]
+        )
 
-    response = collection.query.near_vector(
-        near_vector=vec,
+    results = client.search(
+        collection_name="PaperQuestion",
+        query_vector=vec,
         limit=limit,
-        filters=filters,
-        return_metadata=MetadataQuery(distance=True),
+        query_filter=query_filter,
     )
 
     print(f"\n{'─'*60}")
     print(f"Question search: \"{query}\"  (split={split})")
     print(f"{'─'*60}")
-    for obj in response.objects:
-        p = obj.properties
+    for hit in results:
+        p = hit.payload
         print(
             f"  [{p['document_id'][:20]}]  "
-            f"dist={obj.metadata.distance:.4f}"
+            f"score={hit.score:.4f}"
         )
         print(f"    Q: {p['question_text'][:150]}")
-    return response
+    return results
 
 
 def get_evidence_for_question(client, question_id: str):
     """Fetch all evidence objects linked to a PaperQuestion UUID."""
-    collection = client.collections.get("PaperEvidence")
+    query_filter = Filter(
+        must=[FieldCondition(key="question_id", match=MatchValue(value=question_id))]
+    )
 
-    response = collection.query.fetch_objects(
-        filters=Filter.by_property("question_id").equal(question_id),
+    results, _ = client.scroll(
+        collection_name="PaperEvidence",
+        scroll_filter=query_filter,
         limit=50,
     )
 
     print(f"\n{'─'*60}")
     print(f"Evidence for question  {question_id}")
     print(f"{'─'*60}")
-    for obj in response.objects:
-        p = obj.properties
+    for point in results:
+        p = point.payload
         print(f"  Q: {p['question_text'][:100]}")
         print(f"  E: {p['evidence_text'][:200]}")
         print(f"  (total evidence pieces for this question: {p['total_counts']})")
         print()
-    return response
+    return results
 
 
 def collection_stats(client):
@@ -133,8 +138,8 @@ def collection_stats(client):
     print("║        Collection Statistics         ║")
     print("╠══════════════════════════════════════╣")
     for name in ("PaperChunk", "PaperQuestion", "PaperEvidence"):
-        col = client.collections.get(name)
-        cnt = col.aggregate.over_all(total_count=True).total_count
+        info = client.get_collection(name)
+        cnt = info.points_count
         print(f"║  {name:<22s}  {cnt:>8,}  ║")
     print("╚══════════════════════════════════════╝")
 
@@ -144,7 +149,7 @@ def collection_stats(client):
 # ═════════════════════════════════════════════════════════
 
 def main():
-    client = get_weaviate_client()
+    client = get_qdrant_client()
     try:
         collection_stats(client)
 
@@ -170,8 +175,8 @@ def main():
             "What evaluation metrics were used?",
             limit=1,
         )
-        if results.objects:
-            q_uuid = str(results.objects[0].uuid)
+        if results:
+            q_uuid = str(results[0].id)
             get_evidence_for_question(client, q_uuid)
 
     finally:
