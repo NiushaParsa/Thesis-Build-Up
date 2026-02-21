@@ -35,7 +35,6 @@ import logging
 import threading
 import uuid as _uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
 from pathlib import Path
 
 from datasets import load_dataset
@@ -84,50 +83,54 @@ def _make_uuid(seed: str) -> str:
 
 # ═════════════════════════════════════════════════════════
 #  Checkpoint helpers
+#  Format:  { "doc_id": {"split": "train", "done": [10, 20, …]}, … }
+#  Each value is an object with the split name and a list of completed
+#  chunk_sizes (ints) plus the special markers "questions" / "evidence".
 # ═════════════════════════════════════════════════════════
 _checkpoint_lock = threading.Lock()
 _checkpoint: dict = {}
 
 
 def load_checkpoint() -> dict:
-    """Load checkpoint from disk, or return a fresh empty structure."""
+    """Load checkpoint from disk, or return empty dict."""
     global _checkpoint
     if CHECKPOINT_PATH.exists():
         try:
             with open(CHECKPOINT_PATH, "r", encoding="utf-8") as f:
-                _checkpoint = json.load(f)
+                raw = json.load(f)
+            # Migrate old format (plain list) → new format (dict with split)
+            migrated = False
+            for doc_id, val in raw.items():
+                if isinstance(val, list):
+                    raw[doc_id] = {"split": "unknown", "done": val}
+                    migrated = True
+            if migrated:
+                logger.info("Migrated checkpoint to new format (added split info).")
+            _checkpoint = raw
+            total_docs = len(_checkpoint)
+            total_items = sum(len(v["done"]) for v in _checkpoint.values())
             logger.info(
-                "Loaded checkpoint – %d papers already done.",
-                sum(len(v) for v in _checkpoint.get("completed_papers", {}).values()),
+                "Loaded checkpoint – %d documents, %d completed items.",
+                total_docs, total_items,
             )
         except (json.JSONDecodeError, KeyError):
             logger.warning("Corrupt checkpoint file – starting fresh.")
-            _checkpoint = _empty_checkpoint()
+            _checkpoint = {}
     else:
-        _checkpoint = _empty_checkpoint()
+        _checkpoint = {}
     return _checkpoint
 
 
-def _empty_checkpoint() -> dict:
-    return {
-        "completed_papers": {},
-        "last_paper_id": None,
-        "last_split": None,
-        "last_saved": None,
-        "chunk_sizes": CHUNK_SIZES,
-    }
-
-
-def save_checkpoint(split: str, paper_id: str) -> None:
-    """Thread-safe: mark *paper_id* as completed and flush to disk."""
+def save_checkpoint(document_id: str, item, split: str = "unknown") -> None:
+    """Thread-safe: mark *item* (chunk_size int or stage str) as done for *document_id*."""
     with _checkpoint_lock:
-        papers = _checkpoint.setdefault("completed_papers", {})
-        split_list = papers.setdefault(split, [])
-        if paper_id not in split_list:
-            split_list.append(paper_id)
-        _checkpoint["last_paper_id"] = paper_id
-        _checkpoint["last_split"] = split
-        _checkpoint["last_saved"] = datetime.now(timezone.utc).isoformat()
+        entry = _checkpoint.setdefault(document_id, {"split": split, "done": []})
+        # Ensure split is set (may still be 'unknown' from migration)
+        if entry["split"] == "unknown" and split != "unknown":
+            entry["split"] = split
+        done_list = entry["done"]
+        if item not in done_list:
+            done_list.append(item)
 
         tmp = CHECKPOINT_PATH.with_suffix(".tmp")
         with open(tmp, "w", encoding="utf-8") as f:
@@ -138,23 +141,24 @@ def save_checkpoint(split: str, paper_id: str) -> None:
 def clear_checkpoint() -> None:
     """Delete the checkpoint file (called on ``--recreate``)."""
     global _checkpoint
-    _checkpoint = _empty_checkpoint()
+    _checkpoint = {}
     if CHECKPOINT_PATH.exists():
         CHECKPOINT_PATH.unlink()
         logger.info("Cleared checkpoint file.")
 
 
-def is_paper_done(split: str, paper_id: str) -> bool:
-    """Check if a paper was already fully processed."""
-    return paper_id in _checkpoint.get("completed_papers", {}).get(split, [])
+def is_done(document_id: str, item) -> bool:
+    """Check if *item* (chunk_size int or stage str) is already done for *document_id*."""
+    entry = _checkpoint.get(document_id, {})
+    return item in entry.get("done", [])
 
 
 # ═════════════════════════════════════════════════════════
 #  Per-paper processing helpers
 # ═════════════════════════════════════════════════════════
 
-def process_paper_chunks(paper: dict, client, json_file=None) -> None:
-    """Chunk a single paper at every granularity level, embed, and upsert."""
+def process_paper_chunks(paper: dict, client, chunk_size: int, level: int, json_file=None) -> None:
+    """Chunk a single paper at ONE granularity level, embed, and upsert."""
     document_id = paper["id"]
     document_title = paper.get("title", "")
     full_text = build_full_text(paper)
@@ -163,29 +167,28 @@ def process_paper_chunks(paper: dict, client, json_file=None) -> None:
         logger.warning("Paper %s has empty text – skipping chunks.", document_id)
         return
 
+    chunks = chunk_text(full_text, chunk_size)
+    total_chunks = len(chunks)
+
     all_payloads: list[dict] = []
     all_ids: list[str] = []
     all_contents: list[str] = []
 
-    for level, chunk_size in enumerate(CHUNK_SIZES, start=1):
-        chunks = chunk_text(full_text, chunk_size)
-        total_chunks = len(chunks)
-
-        for idx, chunk in enumerate(chunks):
-            payload = {
-                "document_id":        document_id,
-                "document_title":     document_title,
-                "chunk_idx":          idx,
-                "total_chunks":       total_chunks,
-                "content":            chunk["content"],
-                "chunk_size":         chunk["token_count"],
-                "granularity_level":  level,
-                "original_text_span": f"{chunk['span_start']}:{chunk['span_end']}",
-            }
-            point_id = _make_uuid(f"{document_id}_g{level}_c{idx}")
-            all_payloads.append(payload)
-            all_ids.append(point_id)
-            all_contents.append(chunk["content"])
+    for idx, chunk in enumerate(chunks):
+        payload = {
+            "document_id":        document_id,
+            "document_title":     document_title,
+            "chunk_idx":          idx,
+            "total_chunks":       total_chunks,
+            "content":            chunk["content"],
+            "chunk_size":         chunk["token_count"],
+            "granularity_level":  level,
+            "original_text_span": f"{chunk['span_start']}:{chunk['span_end']}",
+        }
+        point_id = _make_uuid(f"{document_id}_g{level}_c{idx}")
+        all_payloads.append(payload)
+        all_ids.append(point_id)
+        all_contents.append(chunk["content"])
 
     if not all_contents:
         return
@@ -230,6 +233,26 @@ def _get_answerable_question_ids(paper: dict) -> set:
             if q_id in answerable:
                 break
     return answerable
+
+
+def _rebuild_question_map(paper: dict) -> dict[str, tuple[str, str]]:
+    """Rebuild the question_map for a paper whose questions are already in Qdrant.
+
+    Needed when questions are checkpointed but evidence is not yet done.
+    """
+    document_id = paper["id"]
+    qas = paper.get("qas", {})
+    questions = qas.get("question", [])
+    question_ids = qas.get("question_id", [])
+    answerable_ids = _get_answerable_question_ids(paper)
+
+    question_map: dict[str, tuple[str, str]] = {}
+    for q_text, q_id in zip(questions, question_ids):
+        if q_id not in answerable_ids:
+            continue
+        point_id = _make_uuid(f"{document_id}_{q_id}")
+        question_map[q_id] = (point_id, q_text)
+    return question_map
 
 
 def process_questions(
@@ -410,22 +433,11 @@ def main() -> None:
         clear_checkpoint()
     checkpoint = load_checkpoint()
 
-    prev_sizes = checkpoint.get("chunk_sizes")
-    if prev_sizes and prev_sizes != CHUNK_SIZES:
-        logger.warning(
-            "CHUNK_SIZES changed (%s → %s) since last checkpoint. "
-            "Consider using --recreate to start fresh.",
-            prev_sizes, CHUNK_SIZES,
-        )
-
-    resuming = bool(checkpoint.get("completed_papers"))
+    resuming = bool(checkpoint)
     if resuming:
-        total_done = sum(len(v) for v in checkpoint["completed_papers"].values())
         logger.info(
-            "RESUMING – %d papers already processed (last: %s in %s)",
-            total_done,
-            checkpoint.get("last_paper_id"),
-            checkpoint.get("last_split"),
+            "RESUMING – %d documents with partial/full progress.",
+            len(checkpoint),
         )
 
     # 1. Load dataset ──────────────────────────────────────
@@ -461,17 +473,28 @@ def main() -> None:
         """Process a single paper (embedding + upsert). Called from threads."""
         paper_id = paper["id"]
 
-        if is_paper_done(split_name, paper_id):
-            _inc("papers_skipped_checkpoint")
-            return
+        # ── Chunks: one chunk_size at a time ──────────────
+        for level, chunk_size in enumerate(CHUNK_SIZES, start=1):
+            if is_done(paper_id, chunk_size):
+                continue
+            process_paper_chunks(paper, client, chunk_size, level, jf_chunks)
+            save_checkpoint(paper_id, chunk_size, split=split_name)
+            _inc("chunks_inserted")   # per-granularity count
 
-        process_paper_chunks(paper, client, jf_chunks)
-        question_map = process_questions(paper, split_name, client, jf_questions)
-        process_evidence(paper, question_map, client, jf_evidence)
+        # ── Questions ─────────────────────────────────────
+        if not is_done(paper_id, "questions"):
+            question_map = process_questions(paper, split_name, client, jf_questions)
+            save_checkpoint(paper_id, "questions", split=split_name)
+        else:
+            # Still need the map to process evidence
+            question_map = _rebuild_question_map(paper)
+
+        # ── Evidence ──────────────────────────────────────
+        if not is_done(paper_id, "evidence"):
+            process_evidence(paper, question_map, client, jf_evidence)
+            save_checkpoint(paper_id, "evidence", split=split_name)
+
         _inc("papers_processed")
-
-        # Checkpoint after each paper succeeds
-        save_checkpoint(split_name, paper_id)
 
     try:
         for split_name in splits:
@@ -482,21 +505,12 @@ def main() -> None:
             split_data = dataset[split_name]
             n = min(args.limit, len(split_data)) if args.limit else len(split_data)
 
-            done_in_split = len(
-                checkpoint.get("completed_papers", {}).get(split_name, [])
-            )
-            remaining = max(0, n - done_in_split)
-
             logger.info("═" * 60)
             logger.info(
-                "Split: %s  (%d papers, %d already done, %d remaining, %d workers)",
-                split_name, n, done_in_split, remaining, paper_workers,
+                "Split: %s  (%d papers, %d workers)",
+                split_name, n, paper_workers,
             )
             logger.info("═" * 60)
-
-            if remaining == 0:
-                logger.info("All papers in '%s' already processed – skipping.", split_name)
-                continue
 
             papers = [split_data[i] for i in range(n)]
 
@@ -505,7 +519,7 @@ def main() -> None:
                     pool.submit(_process_one_paper, paper, split_name): paper
                     for paper in papers
                 }
-                with tqdm(total=n, initial=done_in_split, desc=f"[{split_name}]") as pbar:
+                with tqdm(total=n, desc=f"[{split_name}]") as pbar:
                     for future in as_completed(futures):
                         paper = futures[future]
                         try:
@@ -526,16 +540,16 @@ def main() -> None:
         logger.info("  %-30s %s", "chunk_sizes", CHUNK_SIZES)
         logger.info("  %-30s %d", "granularity_levels", len(CHUNK_SIZES))
 
+        # Expected items per fully-done paper: len(CHUNK_SIZES) + "questions" + "evidence"
+        expected_per_paper = len(CHUNK_SIZES) + 2
         cp = load_checkpoint()
-        total_cp = sum(len(v) for v in cp.get("completed_papers", {}).values())
-        logger.info("  %-30s %d", "total_checkpointed_papers", total_cp)
-        if cp.get("last_paper_id"):
-            logger.info(
-                "  %-30s %s (split: %s)",
-                "last_checkpoint",
-                cp["last_paper_id"],
-                cp["last_split"],
-            )
+        fully_done = sum(1 for v in cp.values() if len(v.get("done", [])) >= expected_per_paper)
+        logger.info("  %-30s %d", "fully_checkpointed_papers", fully_done)
+        logger.info("  %-30s %d", "total_docs_in_checkpoint", len(cp))
+        for s in ("train", "validation", "test"):
+            cnt = sum(1 for v in cp.values() if v.get("split") == s)
+            if cnt:
+                logger.info("  %-30s %d", f"  └─ {s}", cnt)
 
     finally:
         if JSON_OUTPUT:

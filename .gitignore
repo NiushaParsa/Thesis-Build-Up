@@ -3,3 +3,4 @@
 *.pyc
 .env
 json_output/
+checkpoint.json
