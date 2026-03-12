@@ -50,12 +50,12 @@ def search_chunks(
             must=[FieldCondition(key="granularity_level", match=MatchValue(value=granularity_level))]
         )
 
-    results = client.search(
+    results = client.query_points(
         collection_name="PaperChunk",
-        query_vector=vec,
+        query=vec,
         limit=limit,
         query_filter=query_filter,
-    )
+    ).points
 
     print(f"\n{'─'*60}")
     print(f"Chunk search: \"{query}\"  (granularity={granularity_level})")
@@ -88,12 +88,12 @@ def search_questions(
             must=[FieldCondition(key="split", match=MatchValue(value=split))]
         )
 
-    results = client.search(
+    results = client.query_points(
         collection_name="PaperQuestion",
-        query_vector=vec,
+        query=vec,
         limit=limit,
         query_filter=query_filter,
-    )
+    ).points
 
     print(f"\n{'─'*60}")
     print(f"Question search: \"{query}\"  (split={split})")
