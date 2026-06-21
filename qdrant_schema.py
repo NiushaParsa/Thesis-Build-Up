@@ -14,6 +14,7 @@ the OpenAI API (``text-embedding-3-small``, 1 536 dimensions).
 
 from __future__ import annotations
 
+import argparse
 import logging
 from typing import Optional
 
@@ -135,10 +136,20 @@ def delete_schema(client: QdrantClient):
 
 # ── Standalone entry-point ───────────────────────────────
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Create the QASPER Qdrant schema")
+    parser.add_argument(
+        "--recreate",
+        action="store_true",
+        help="Explicitly delete and recreate all QASPER collections.",
+    )
+    args = parser.parse_args()
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s  %(name)-22s  %(levelname)-8s  %(message)s",
     )
     client = get_qdrant_client()
-    create_schema(client, recreate=True)
-    logger.info("Schema (re)created successfully.")
+    try:
+        create_schema(client, recreate=args.recreate)
+        logger.info("Schema checked successfully (recreate=%s).", args.recreate)
+    finally:
+        client.close()

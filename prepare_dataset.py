@@ -58,6 +58,7 @@ CHECKPOINT_PATH = Path("checkpoint.json")
 
 # ── Global stats (thread-safe) ───────────────────────────
 _stats_lock = threading.Lock()
+_json_write_lock = threading.Lock()
 stats = {
     "papers_processed": 0,
     "papers_skipped_checkpoint": 0,
@@ -73,6 +74,15 @@ def _inc(key: str, n: int = 1) -> None:
     """Thread-safe stats increment."""
     with _stats_lock:
         stats[key] += n
+
+
+def _write_jsonl_records(json_file, records) -> None:
+    """Write a group of JSONL records without interleaving worker output."""
+    if json_file is None:
+        return
+    with _json_write_lock:
+        for record in records:
+            json_file.write(json.dumps(record) + "\n")
 
 
 # ── Deterministic UUID helper ────────────────────────────
@@ -213,9 +223,10 @@ def process_paper_chunks(paper: dict, client, chunk_size: int, level: int, json_
     _inc("chunks_inserted", len(all_ids))
 
     # Optional JSONL output (vectors omitted to save space)
-    if json_file:
-        for pay, pid in zip(all_payloads, all_ids):
-            json_file.write(json.dumps({**pay, "uuid": pid}) + "\n")
+    _write_jsonl_records(
+        json_file,
+        ({**pay, "uuid": pid} for pay, pid in zip(all_payloads, all_ids)),
+    )
 
 
 def _get_answerable_question_ids(paper: dict) -> set:
@@ -314,12 +325,13 @@ def process_questions(
     for pid, pay, q_id in zip(q_ids, q_payloads, q_original_ids):
         question_map[q_id] = (pid, pay["question_text"])
 
-    if json_file:
-        for pay, pid, q_id in zip(q_payloads, q_ids, q_original_ids):
-            json_file.write(
-                json.dumps({**pay, "uuid": pid, "original_question_id": q_id})
-                + "\n"
-            )
+    _write_jsonl_records(
+        json_file,
+        (
+            {**pay, "uuid": pid, "original_question_id": q_id}
+            for pay, pid, q_id in zip(q_payloads, q_ids, q_original_ids)
+        ),
+    )
 
     return question_map
 
@@ -403,9 +415,10 @@ def process_evidence(
 
     _inc("evidence_inserted", len(ev_ids))
 
-    if json_file:
-        for pay, pid in zip(ev_payloads, ev_ids):
-            json_file.write(json.dumps({**pay, "uuid": pid}) + "\n")
+    _write_jsonl_records(
+        json_file,
+        ({**pay, "uuid": pid} for pay, pid in zip(ev_payloads, ev_ids)),
+    )
 
 
 # ═════════════════════════════════════════════════════════
@@ -492,7 +505,6 @@ def main() -> None:
                 continue
             process_paper_chunks(paper, client, chunk_size, level, jf_chunks)
             save_checkpoint(paper_id, chunk_size, split=split_name)
-            _inc("chunks_inserted")   # per-granularity count
 
         # ── Questions ─────────────────────────────────────
         if not is_done(paper_id, "questions"):
