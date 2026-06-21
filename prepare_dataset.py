@@ -183,7 +183,8 @@ def process_paper_chunks(paper: dict, client, chunk_size: int, level: int, json_
             "content":            chunk["content"],
             "chunk_size":         chunk["token_count"],
             "granularity_level":  level,
-            "original_text_span": f"{chunk['span_start']}:{chunk['span_end']}",
+            "span_start":         chunk["span_start"],
+            "span_end":           chunk["span_end"],
         }
         point_id = _make_uuid(f"{document_id}_g{level}_c{idx}")
         all_payloads.append(payload)
@@ -331,6 +332,7 @@ def process_evidence(
 ) -> None:
     """Embed highlighted evidence (un-chunked) and upsert into PaperEvidence."""
     document_id = paper["id"]
+    full_text = build_full_text(paper)
     qas = paper.get("qas", {})
     answers_list = qas.get("answers", [])
     question_ids = qas.get("question_id", [])
@@ -359,12 +361,23 @@ def process_evidence(
         for ev_text in evidence_list:
             ev_hash = hashlib.md5(ev_text.encode()).hexdigest()[:12]
             point_id = _make_uuid(f"{q_uuid_str}_{ev_hash}")
+
+            # Locate evidence snippet in the full document text
+            span_start = full_text.find(ev_text)
+            if span_start == -1:
+                span_start = -1
+                span_end = -1
+            else:
+                span_end = span_start + len(ev_text)
+
             payload = {
                 "question_id":   q_uuid_str,
                 "document_id":   document_id,
                 "question_text": q_text,
                 "evidence_text": ev_text,
                 "total_counts":  total_counts,
+                "span_start":    span_start,
+                "span_end":      span_end,
             }
             ev_payloads.append(payload)
             ev_ids.append(point_id)
