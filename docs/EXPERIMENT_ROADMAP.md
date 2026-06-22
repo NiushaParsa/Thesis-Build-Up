@@ -108,7 +108,7 @@ Full retrieved and evidence text is omitted by default and can be included with 
 
 ## Current repository snapshot and known limitations
 
-As inspected on 2026-06-21, the local checkpoint represents 1,585 papers, but not every stage is complete:
+As inspected through 2026-06-22, the local checkpoint represents 1,585 papers, but not every stage is complete:
 
 | Checkpoint stage | Papers marked complete |
 |---|---:|
@@ -124,10 +124,10 @@ Additional limitations are:
 
 - Only a smoke-test evaluation exists. The sole populated evaluation file has 15 records: three questions evaluated at five granularities. The other existing evaluation file is empty.
 - No full-split or full-dataset baseline result has been produced and checked into a reproducible analysis workflow.
-- Evaluation records exist only as JSONL; there is no persistent Qdrant evaluation collection or other evaluation database schema.
+- Full-dataset evaluation has not yet been run, although optional batched persistence now exists through `RetrievalEvaluation`.
 - No mixed-granularity retrieval evaluator exists.
-- No oracle-label dataset builder exists.
-- No router dataset, router model, training procedure, or routed evaluator exists.
+- The oracle-label dataset builder exists, but no full-split router dataset artifact has yet been generated.
+- No router model, training procedure, or routed evaluator exists.
 - Focused unit tests exist, but no live-Qdrant integration or complete end-to-end experiment test exists.
 - There is no complete reproducibility guide covering environment setup, service lifecycle, ingestion verification, experiments, analysis, and artifact provenance.
 
@@ -168,11 +168,11 @@ The following constraints apply to all planned work:
 - every evaluated question has linked evidence;
 - rerunning without `--recreate` performs no unintended duplicate insertion.
 
-**Risks:** OpenAI cost/rate limits, partial Qdrant writes preceding checkpoint updates, shared JSONL writers under parallel paper processing, stale artifacts created with different source revisions, and exact evidence text not mapping uniquely back to flattened paper text.
+**Risks:** OpenAI cost/rate limits, partial Qdrant writes preceding checkpoint updates, stale artifacts created with different source revisions, and exact evidence text not mapping uniquely back to flattened paper text. Shared ingestion JSONL writes are now lock-protected.
 
 ### Milestone 1 — Separate-granularity oracle evaluation
 
-**Status:** Partially implemented. Per-chunk metrics and evidence similarity exist; oracle label selection and full-dataset execution remain planned.
+**Status:** Implemented and smoke-tested; full-split execution remains planned.
 
 **Goal:** Evaluate every question independently at all five fixed granularities and derive a ground-truth-informed best granularity per question.
 
@@ -181,12 +181,12 @@ The evaluator now retains query-to-chunk scores and top-K set-level metrics and 
 - token F1 for every retrieved chunk against every unique evidence passage;
 - evidence-to-chunk cosine similarity for every pair, with maximum and arithmetic-mean aggregates;
 
-The remaining milestone work is to add:
+The implementation additionally provides:
 
 - deterministic oracle labels based on a predeclared evidence-derived objective;
 - tie indicators and the complete score vector over all granularities.
 
-The remaining primary oracle objective must be fixed before label generation. A defensible default is maximum top-K set-level F1, with deterministic tie-breaking documented. Evidence-to-chunk cosine and per-chunk F1 remain separate diagnostic/oracle features rather than being silently blended into the same number.
+The primary target maximizes joined top-K F1, breaks epsilon ties with mean per-chunk maximum evidence similarity, then prefers the smaller chunk size. Evidence-to-chunk cosine and per-chunk F1 remain separate diagnostic/oracle features rather than being silently blended into the same number. See `docs/EVALUATION_PIPELINE.md` for the complete schema and commands.
 
 **Dependencies:** Milestone 0; existing fixed-separate evaluator; stored question, chunk, and evidence vectors; agreed K values and oracle-label rule.
 
@@ -404,4 +404,4 @@ A later reproducibility guide should add, at minimum:
 
 ## Completion definition
 
-The roadmap is complete when ingestion is validated, all planned evaluators and router components exist with automated tests, full split-safe experiments have immutable record-level artifacts, and the final statistical comparison can be reproduced from a clean environment without undocumented manual steps. The implemented fixed-separate method now includes query similarity, evidence similarity, per-chunk F1, and aggregate top-K token metrics; mixed retrieval, oracle label generation, routing, and final analysis remain unfinished.
+The roadmap is complete when ingestion is validated, all planned evaluators and router components exist with automated tests, full split-safe experiments have immutable record-level artifacts, and the final statistical comparison can be reproduced from a clean environment without undocumented manual steps. The fixed-separate evaluator and oracle-label generator now include query similarity, independent evidence similarity, per-chunk F1, aggregate top-K token metrics, configuration-aware IDs, JSONL artifacts, and optional Qdrant persistence. Full-dataset generation, mixed retrieval, router training/routed evaluation, and final analysis remain unfinished.

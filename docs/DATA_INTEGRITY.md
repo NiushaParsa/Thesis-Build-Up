@@ -159,7 +159,7 @@ Version 2 adds these top-level fields:
 | `schema_version` | Integer `2`. Records without this field are treated as legacy version 1. |
 | `returned_k` | Number of chunks actually returned; alias of `retrieved_k`. May be smaller than `k_requested`. |
 | `retrieval_latency_ms` | Qdrant query latency; alias of `retrieval_time_ms`. |
-| `unique_evidence_count` / `unique_evidence_ids` | Non-empty evidence passages after exact deduplication and deterministic point-ID ordering. |
+| `unique_evidence_count` / `unique_evidence_ids` | Non-empty evidence passages after normalization-based deduplication and deterministic point-ID ordering. |
 | `joined_unique_evidence_token_count` | Token count of unique evidence texts joined with newlines; alias-compatible with `evidence_token_count`. |
 | `joined_retrieved_text_token_count` | Token count of returned chunk texts joined in rank order; alias-compatible with `retrieved_joined_token_count`. |
 | `set_level_precision`, `set_level_recall`, `set_level_f1` | Multiset token metrics for joined retrieved text against joined unique evidence. `set_level_f1` equals legacy `f1_joined_topk`. |
@@ -181,7 +181,7 @@ mean_evidence_similarity, evidence_token_f1_scores[], max_chunk_f1
 Evidence behavior is deterministic:
 
 - empty/whitespace-only evidence is ignored;
-- exact duplicate evidence after trimming is evaluated once;
+- duplicate evidence after lowercase/punctuation/whitespace normalization is evaluated once;
 - if duplicate text exists under multiple point IDs, the lexicographically smallest point ID supplies the retained stored vector;
 - a question with no remaining evidence yields no evaluation records, preserving prior behavior;
 - zero returned chunks still yield a record with `returned_k = 0` and zero aggregate similarities and token metrics;
@@ -253,7 +253,7 @@ The suite covers:
 - empty evidence, fewer-than-K results, and zero returned chunks;
 - grouped, lock-protected JSONL writes under concurrent workers.
 
-Current result: twelve tests pass.
+Current result: twenty focused tests pass. The complete schema, oracle rules, configuration, and validation commands are documented in `docs/EVALUATION_PIPELINE.md`.
 
 ## Remaining data problems
 

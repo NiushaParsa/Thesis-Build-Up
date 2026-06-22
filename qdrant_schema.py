@@ -27,12 +27,23 @@ from qdrant_client.models import (
     VectorParams,
 )
 
-from config import QDRANT_HOST, QDRANT_HTTP_PORT, QDRANT_GRPC_PORT, QDRANT_API_KEY
+from config import (
+    EMBEDDING_DIM,
+    PAPER_CHUNK_COLLECTION,
+    PAPER_EVIDENCE_COLLECTION,
+    PAPER_QUESTION_COLLECTION,
+    QDRANT_API_KEY,
+    QDRANT_GRPC_PORT,
+    QDRANT_HOST,
+    QDRANT_HTTP_PORT,
+    QDRANT_URL,
+    RETRIEVAL_EVALUATION_COLLECTION,
+    ROUTER_DATASET_COLLECTION,
+)
 
 logger = logging.getLogger(__name__)
 
-EMBEDDING_DIM = 1536   # text-embedding-3-small default dimension
-COLLECTIONS = ["PaperChunk", "PaperQuestion", "PaperEvidence"]
+COLLECTIONS = [PAPER_CHUNK_COLLECTION, PAPER_QUESTION_COLLECTION, PAPER_EVIDENCE_COLLECTION]
 
 
 # ── Connection ───────────────────────────────────────────
@@ -40,14 +51,18 @@ def get_qdrant_client() -> QdrantClient:
     """Create and return a Qdrant client."""
     api_key: Optional[str] = QDRANT_API_KEY if QDRANT_API_KEY else None
 
-    client = QdrantClient(
-        host=QDRANT_HOST,
-        port=QDRANT_HTTP_PORT,
-        grpc_port=QDRANT_GRPC_PORT,
-        prefer_grpc=True,
-        api_key=api_key,
-    )
-    logger.info("Connected to Qdrant at %s:%s", QDRANT_HOST, QDRANT_HTTP_PORT)
+    if QDRANT_URL:
+        client = QdrantClient(url=QDRANT_URL, api_key=api_key, prefer_grpc=False)
+        logger.info("Connected to Qdrant at %s", QDRANT_URL)
+    else:
+        client = QdrantClient(
+            host=QDRANT_HOST,
+            port=QDRANT_HTTP_PORT,
+            grpc_port=QDRANT_GRPC_PORT,
+            prefer_grpc=True,
+            api_key=api_key,
+        )
+        logger.info("Connected to Qdrant at %s:%s", QDRANT_HOST, QDRANT_HTTP_PORT)
     return client
 
 
@@ -78,50 +93,50 @@ def create_schema(client: QdrantClient, recreate: bool = False):
     existing = {c.name for c in client.get_collections().collections}
 
     # ── PaperChunk ────────────────────────────────────────
-    if "PaperChunk" not in existing:
+    if PAPER_CHUNK_COLLECTION not in existing:
         client.create_collection(
-            collection_name="PaperChunk",
+            collection_name=PAPER_CHUNK_COLLECTION,
             vectors_config=_vector_params(),
             optimizers_config=OptimizersConfigDiff(
                 memmap_threshold=10_000,   # use mmap after 10 k vectors
             ),
         )
         # Payload indices for common filters
-        client.create_payload_index("PaperChunk", "document_id",       PayloadSchemaType.KEYWORD)
-        client.create_payload_index("PaperChunk", "granularity_level", PayloadSchemaType.INTEGER)
-        logger.info("Created collection: PaperChunk")
+        client.create_payload_index(PAPER_CHUNK_COLLECTION, "document_id", PayloadSchemaType.KEYWORD)
+        client.create_payload_index(PAPER_CHUNK_COLLECTION, "granularity_level", PayloadSchemaType.INTEGER)
+        logger.info("Created collection: %s", PAPER_CHUNK_COLLECTION)
     else:
-        logger.info("Collection PaperChunk already exists – skipping.")
+        logger.info("Collection %s already exists – skipping.", PAPER_CHUNK_COLLECTION)
 
     # ── PaperQuestion ─────────────────────────────────────
-    if "PaperQuestion" not in existing:
+    if PAPER_QUESTION_COLLECTION not in existing:
         client.create_collection(
-            collection_name="PaperQuestion",
+            collection_name=PAPER_QUESTION_COLLECTION,
             vectors_config=_vector_params(),
             optimizers_config=OptimizersConfigDiff(
                 memmap_threshold=10_000,
             ),
         )
-        client.create_payload_index("PaperQuestion", "document_id", PayloadSchemaType.KEYWORD)
-        client.create_payload_index("PaperQuestion", "split",       PayloadSchemaType.KEYWORD)
-        logger.info("Created collection: PaperQuestion")
+        client.create_payload_index(PAPER_QUESTION_COLLECTION, "document_id", PayloadSchemaType.KEYWORD)
+        client.create_payload_index(PAPER_QUESTION_COLLECTION, "split", PayloadSchemaType.KEYWORD)
+        logger.info("Created collection: %s", PAPER_QUESTION_COLLECTION)
     else:
-        logger.info("Collection PaperQuestion already exists – skipping.")
+        logger.info("Collection %s already exists – skipping.", PAPER_QUESTION_COLLECTION)
 
     # ── PaperEvidence ─────────────────────────────────────
-    if "PaperEvidence" not in existing:
+    if PAPER_EVIDENCE_COLLECTION not in existing:
         client.create_collection(
-            collection_name="PaperEvidence",
+            collection_name=PAPER_EVIDENCE_COLLECTION,
             vectors_config=_vector_params(),
             optimizers_config=OptimizersConfigDiff(
                 memmap_threshold=10_000,
             ),
         )
-        client.create_payload_index("PaperEvidence", "question_id", PayloadSchemaType.KEYWORD)
-        client.create_payload_index("PaperEvidence", "document_id", PayloadSchemaType.KEYWORD)
-        logger.info("Created collection: PaperEvidence")
+        client.create_payload_index(PAPER_EVIDENCE_COLLECTION, "question_id", PayloadSchemaType.KEYWORD)
+        client.create_payload_index(PAPER_EVIDENCE_COLLECTION, "document_id", PayloadSchemaType.KEYWORD)
+        logger.info("Created collection: %s", PAPER_EVIDENCE_COLLECTION)
     else:
-        logger.info("Collection PaperEvidence already exists – skipping.")
+        logger.info("Collection %s already exists – skipping.", PAPER_EVIDENCE_COLLECTION)
 
 
 # ── Schema Deletion ──────────────────────────────────────
@@ -132,6 +147,31 @@ def delete_schema(client: QdrantClient):
         if name in existing:
             client.delete_collection(name)
             logger.info("Deleted collection: %s", name)
+
+
+def ensure_evaluation_collections(
+    client: QdrantClient,
+    evaluation_collection: str = RETRIEVAL_EVALUATION_COLLECTION,
+    router_collection: str = ROUTER_DATASET_COLLECTION,
+    create_evaluation: bool = True,
+    create_router: bool = True,
+) -> None:
+    """Create optional evaluation/router collections without deleting data."""
+    existing = {c.name for c in client.get_collections().collections}
+    if create_evaluation and evaluation_collection not in existing:
+        client.create_collection(collection_name=evaluation_collection, vectors_config={})
+        client.create_payload_index(evaluation_collection, "question_id", PayloadSchemaType.KEYWORD)
+        client.create_payload_index(evaluation_collection, "split", PayloadSchemaType.KEYWORD)
+        client.create_payload_index(evaluation_collection, "evaluation_config_hash", PayloadSchemaType.KEYWORD)
+        client.create_payload_index(evaluation_collection, "granularity_level", PayloadSchemaType.INTEGER)
+        logger.info("Created payload-only collection: %s", evaluation_collection)
+    if create_router and router_collection not in existing:
+        client.create_collection(collection_name=router_collection, vectors_config=_vector_params())
+        client.create_payload_index(router_collection, "question_id", PayloadSchemaType.KEYWORD)
+        client.create_payload_index(router_collection, "split", PayloadSchemaType.KEYWORD)
+        client.create_payload_index(router_collection, "evaluation_config_hash", PayloadSchemaType.KEYWORD)
+        client.create_payload_index(router_collection, "router_target_granularity", PayloadSchemaType.INTEGER)
+        logger.info("Created router collection: %s", router_collection)
 
 
 # ── Standalone entry-point ───────────────────────────────

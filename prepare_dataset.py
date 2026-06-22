@@ -41,7 +41,14 @@ from datasets import load_dataset
 from qdrant_client.models import PointStruct
 from tqdm import tqdm
 
-from config import CHUNK_SIZES, JSON_OUTPUT, JSON_OUTPUT_DIR
+from config import (
+    CHUNK_SIZES,
+    JSON_OUTPUT,
+    JSON_OUTPUT_DIR,
+    PAPER_CHUNK_COLLECTION,
+    PAPER_EVIDENCE_COLLECTION,
+    PAPER_QUESTION_COLLECTION,
+)
 from qdrant_schema import get_qdrant_client, create_schema
 from embedding_utils import get_embeddings, set_embedding_max_workers
 from chunking_utils import chunk_text, build_full_text
@@ -218,7 +225,7 @@ def process_paper_chunks(paper: dict, client, chunk_size: int, level: int, json_
                 all_payloads[i : i + batch_size],
             )
         ]
-        client.upsert(collection_name="PaperChunk", points=points)
+        client.upsert(collection_name=PAPER_CHUNK_COLLECTION, points=points)
 
     _inc("chunks_inserted", len(all_ids))
 
@@ -316,7 +323,7 @@ def process_questions(
         PointStruct(id=pid, vector=vec, payload=pay)
         for pid, vec, pay in zip(q_ids, embeddings, q_payloads)
     ]
-    client.upsert(collection_name="PaperQuestion", points=points)
+    client.upsert(collection_name=PAPER_QUESTION_COLLECTION, points=points)
 
     _inc("questions_inserted", len(q_ids))
 
@@ -411,7 +418,7 @@ def process_evidence(
                 ev_payloads[i : i + batch_size],
             )
         ]
-        client.upsert(collection_name="PaperEvidence", points=points)
+        client.upsert(collection_name=PAPER_EVIDENCE_COLLECTION, points=points)
 
     _inc("evidence_inserted", len(ev_ids))
 

@@ -12,7 +12,12 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, Iterable, Iterator, Optional, Tuple
 
-from config import CHUNK_SIZES
+from config import (
+    CHUNK_SIZES,
+    PAPER_CHUNK_COLLECTION,
+    PAPER_EVIDENCE_COLLECTION,
+    PAPER_QUESTION_COLLECTION,
+)
 from qdrant_schema import COLLECTIONS, EMBEDDING_DIM, get_qdrant_client
 
 
@@ -40,20 +45,39 @@ EVALUATION_REQUIRED_FIELDS = {
 }
 EVALUATION_V2_REQUIRED_FIELDS = {
     "schema_version",
+    "evaluation_run_id",
+    "evaluation_config_hash",
     "returned_k",
     "retrieval_latency_ms",
+    "raw_evidence_count",
+    "valid_evidence_count",
     "unique_evidence_count",
     "unique_evidence_ids",
+    "evidence_vector_sources",
     "joined_unique_evidence_token_count",
     "joined_retrieved_text_token_count",
     "retrieved_chunks",
     "set_level_precision",
     "set_level_recall",
     "set_level_f1",
+    "precision_joined_topk",
+    "recall_joined_topk",
+    "topk_chunk_ranks",
+    "topk_chunk_spans",
+    "topk_chunk_token_counts",
     "mean_query_similarity_topk",
     "best_query_similarity_topk",
     "mean_evidence_similarity_topk",
     "best_evidence_similarity_topk",
+    "mean_max_evidence_similarity_topk",
+    "best_chunk_f1_topk",
+    "mean_chunk_f1_topk",
+    "embedding_model",
+    "embedding_dimension",
+    "tokenizer_identity",
+    "metric_version",
+    "normalization_version",
+    "timestamp",
 }
 
 
@@ -234,7 +258,7 @@ def validate_chunks(
     ]
     for point in scroll_points(
         client,
-        "PaperChunk",
+        PAPER_CHUNK_COLLECTION,
         batch_size,
         with_payload=fields,
         with_vectors=False,
@@ -350,7 +374,7 @@ def validate_questions(
 
     for point in scroll_points(
         client,
-        "PaperQuestion",
+        PAPER_QUESTION_COLLECTION,
         batch_size,
         with_payload=["document_id", "question_text", "split"],
         with_vectors=False,
@@ -420,7 +444,7 @@ def validate_evidence(
     ]
     for point in scroll_points(
         client,
-        "PaperEvidence",
+        PAPER_EVIDENCE_COLLECTION,
         batch_size,
         with_payload=fields,
         with_vectors=False,

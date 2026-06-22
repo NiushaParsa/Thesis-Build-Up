@@ -3,7 +3,6 @@ from __future__ import annotations
 import io
 import json
 import tempfile
-import threading
 import unittest
 import uuid
 from concurrent.futures import ThreadPoolExecutor
@@ -19,6 +18,14 @@ from fixed_sized_granularity_separate import (
     _make_eval_id,
     cosine_similarity,
     evaluate_question,
+)
+from evaluation_utils import (
+    BufferedQdrantUpserter,
+    build_evaluation_config,
+    build_router_record,
+    evaluation_config_hash,
+    make_evaluation_id,
+    select_oracle_labels,
 )
 
 
@@ -64,9 +71,22 @@ class DeterministicIdTests(unittest.TestCase):
 
     def test_evaluation_uuid_is_stable_per_question_and_granularity(self):
         question_id = "question-1"
-        expected = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{METHOD_NAME}|{question_id}|3"))
-        self.assertEqual(_make_eval_id(question_id, 3), expected)
-        self.assertNotEqual(_make_eval_id(question_id, 3), _make_eval_id(question_id, 4))
+        config_hash = "abc123"
+        expected = str(
+            uuid.uuid5(
+                uuid.NAMESPACE_DNS,
+                f"{METHOD_NAME}|{question_id}|3|{config_hash}",
+            )
+        )
+        self.assertEqual(_make_eval_id(question_id, 3, config_hash), expected)
+        self.assertEqual(
+            _make_eval_id(question_id, 3, config_hash),
+            _make_eval_id(question_id, 3, config_hash),
+        )
+        self.assertNotEqual(
+            _make_eval_id(question_id, 3, config_hash),
+            _make_eval_id(question_id, 3, "different"),
+        )
 
 
 class CheckpointResumeTests(unittest.TestCase):
@@ -186,6 +206,8 @@ class FixedSeparateEvaluationTests(unittest.TestCase):
                 self.evidence("e3", "alpha beta", [0.6, 0.8]),
                 self.evidence("e2", "gamma", [0.0, 1.0]),
                 self.evidence("e1", " alpha beta ", [1.0, 0.0]),
+                self.evidence("e4", "   ", [1.0, 0.0]),
+                self.evidence("e5", "ALPHA, BETA!", [0.0, 1.0]),
             ],
             chunk_points=[
                 self.chunk("c1", 4, "alpha", [1.0, 0.0], 0.9, 1),
@@ -204,12 +226,15 @@ class FixedSeparateEvaluationTests(unittest.TestCase):
                     split="test",
                     top_k=5,
                     granularity_levels=[1],
+                    embedding_dimension=2,
                 )
             )
 
         self.assertEqual(len(records), 1)
         record = records[0]
         self.assertEqual(record["unique_evidence_ids"], ["e1", "e2"])
+        self.assertEqual(record["raw_evidence_count"], 5)
+        self.assertEqual(record["valid_evidence_count"], 4)
         self.assertEqual(record["unique_evidence_count"], 2)
         self.assertEqual(record["k_requested"], 5)
         self.assertEqual(record["retrieved_k"], 2)
@@ -244,6 +269,9 @@ class FixedSeparateEvaluationTests(unittest.TestCase):
             [0.666667, 0.0],
         )
         self.assertEqual(first["max_chunk_f1"], 0.666667)
+        self.assertEqual(first["mean_chunk_f1"], 0.333333)
+        self.assertEqual(first["precision_at_max_chunk_f1"], 1.0)
+        self.assertEqual(first["recall_at_max_chunk_f1"], 0.5)
         self.assertEqual(second["mean_evidence_similarity"], 0.707107)
         self.assertEqual(second["max_chunk_f1"], 0.666667)
         self.assertTrue(client.scroll_calls[0]["with_vectors"])
@@ -263,6 +291,7 @@ class FixedSeparateEvaluationTests(unittest.TestCase):
                 "question",
                 "test",
                 granularity_levels=[1],
+                embedding_dimension=2,
             )
         )
         self.assertEqual(records, [])
@@ -285,6 +314,7 @@ class FixedSeparateEvaluationTests(unittest.TestCase):
                     "test",
                     top_k=5,
                     granularity_levels=[1],
+                    embedding_dimension=2,
                 )
             )[0]
         self.assertEqual(record["returned_k"], 0)
@@ -302,6 +332,199 @@ class FixedSeparateEvaluationTests(unittest.TestCase):
         self.assertEqual(cosine_similarity([0.0, 0.0], [1.0, 0.0]), 0.0)
         with self.assertRaises(ValueError):
             cosine_similarity([1.0], [1.0, 0.0])
+
+    def test_missing_evidence_vector_uses_embedding_fallback(self):
+        client = FakeEvaluationClient(
+            evidence_points=[self.evidence("e1", "alpha", None)],
+            chunk_points=[self.chunk("c1", 0, "alpha", [1.0, 0.0], 0.8, 1)],
+        )
+        tokenizer = WordTokenizer()
+        with patch.object(metrics, "get_tokenizer", return_value=tokenizer):
+            record = list(
+                evaluate_question(
+                    client,
+                    "q1",
+                    [1.0, 0.0],
+                    "doc1",
+                    "question",
+                    "test",
+                    granularity_levels=[1],
+                    embedding_dimension=2,
+                    evidence_embedding_fn=lambda texts: [[1.0, 0.0]],
+                )
+            )[0]
+        self.assertEqual(record["best_evidence_similarity_topk"], 1.0)
+
+    def test_missing_evidence_vector_reports_fallback_failure(self):
+        client = FakeEvaluationClient(
+            evidence_points=[self.evidence("e1", "alpha", None)],
+            chunk_points=[],
+        )
+        with self.assertRaisesRegex(RuntimeError, "Could not obtain compatible vectors"):
+            list(
+                evaluate_question(
+                    client,
+                    "q1",
+                    [1.0, 0.0],
+                    "doc1",
+                    "question",
+                    "test",
+                    granularity_levels=[1],
+                    embedding_dimension=2,
+                    evidence_embedding_fn=lambda texts: (_ for _ in ()).throw(
+                        RuntimeError("offline")
+                    ),
+                )
+            )
+
+
+class ConfigurationAndOracleTests(unittest.TestCase):
+    @staticmethod
+    def config(top_k=5):
+        return build_evaluation_config(
+            method=METHOD_NAME,
+            top_k=top_k,
+            chunk_sizes=[10, 20, 40, 80, 160],
+            embedding_model="embedding-test",
+            embedding_dimension=2,
+            tokenizer="tokenizer-test",
+            chunk_collection="chunks",
+            question_collection="questions",
+            evidence_collection="evidence",
+            evaluation_collection="evaluations",
+            router_collection="router",
+            router_label_tie_epsilon=1e-6,
+            store_text=False,
+        )
+
+    @staticmethod
+    def records():
+        rows = []
+        for level, tokens, f1, similarity in (
+            (1, 10, 0.4, 0.7),
+            (2, 20, 0.8, 0.6),
+            (3, 40, 0.8, 0.9),
+            (4, 80, 0.2, 0.5),
+            (5, 160, 0.1, 0.4),
+        ):
+            rows.append(
+                {
+                    "granularity_level": level,
+                    "granularity_tokens": tokens,
+                    "f1_joined_topk": f1,
+                    "precision_joined_topk": f1,
+                    "recall_joined_topk": f1,
+                    "mean_max_evidence_similarity_topk": similarity,
+                    "best_evidence_similarity_topk": similarity,
+                    "best_query_similarity_topk": 0.9,
+                    "mean_query_similarity_topk": 0.7,
+                    "best_chunk_f1_topk": f1,
+                    "mean_chunk_f1_topk": f1,
+                    "returned_k": 5,
+                }
+            )
+        return rows
+
+    def test_configuration_hash_is_stable_and_result_affecting(self):
+        first = evaluation_config_hash(self.config(5))
+        self.assertEqual(first, evaluation_config_hash(self.config(5)))
+        self.assertNotEqual(first, evaluation_config_hash(self.config(10)))
+        self.assertEqual(
+            make_evaluation_id(METHOD_NAME, "q1", 1, first),
+            make_evaluation_id(METHOD_NAME, "q1", 1, first),
+        )
+        self.assertNotEqual(
+            make_evaluation_id(METHOD_NAME, "q1", 1, first),
+            make_evaluation_id(
+                METHOD_NAME, "q1", 1, evaluation_config_hash(self.config(10))
+            ),
+        )
+
+    def test_router_tie_breaks_by_evidence_similarity(self):
+        labels = select_oracle_labels(self.records(), tie_epsilon=1e-6)
+        self.assertEqual(labels["best_granularity_by_f1"], 2)
+        self.assertEqual(labels["best_granularity_by_evidence_similarity"], 3)
+        self.assertEqual(labels["router_target_granularity"], 3)
+        self.assertEqual(
+            labels["label_tie_break_reason"],
+            "f1_tie_broken_by_evidence_similarity",
+        )
+
+    def test_router_tie_breaks_by_smaller_chunk_when_metrics_tie(self):
+        records = self.records()
+        records[1]["mean_max_evidence_similarity_topk"] = 0.9
+        labels = select_oracle_labels(records, tie_epsilon=1e-6)
+        self.assertEqual(labels["router_target_granularity"], 2)
+        self.assertEqual(
+            labels["label_tie_break_reason"],
+            "f1_and_similarity_tie_broken_by_smaller_chunk",
+        )
+
+    def test_router_record_requires_every_configured_level(self):
+        question = {
+            "point_id": "q1",
+            "document_id": "d1",
+            "split": "train",
+            "question_text": "question",
+        }
+        missing, reason = build_router_record(
+            question=question,
+            records=self.records()[:-1],
+            expected_levels=[1, 2, 3, 4, 5],
+            tie_epsilon=1e-6,
+            evaluation_run_id="run",
+            config_hash="hash",
+            embedding_model="model",
+            embedding_dimension=2,
+        )
+        self.assertIsNone(missing)
+        self.assertIn("incomplete_granularities", reason)
+
+        complete, reason = build_router_record(
+            question=question,
+            records=self.records(),
+            expected_levels=[1, 2, 3, 4, 5],
+            tie_epsilon=1e-6,
+            evaluation_run_id="run",
+            config_hash="hash",
+            embedding_model="model",
+            embedding_dimension=2,
+        )
+        self.assertIsNone(reason)
+        self.assertEqual(len(complete["per_granularity_metrics"]), 5)
+
+
+class BatchUpsertTests(unittest.TestCase):
+    def test_points_are_upserted_in_configured_batches(self):
+        client = SimpleNamespace(calls=[])
+
+        def upsert(**kwargs):
+            client.calls.append(kwargs)
+
+        client.upsert = upsert
+        writer = BufferedQdrantUpserter(client, "evaluation", batch_size=2)
+        for index in range(5):
+            writer.add(point_id=str(index), payload={"index": index}, vector={})
+        writer.flush()
+        self.assertEqual([len(call["points"]) for call in client.calls], [2, 2, 1])
+        self.assertEqual(writer.upserted, 5)
+        self.assertEqual(writer.errors, [])
+
+    def test_persistence_failure_is_reported_and_disables_further_writes(self):
+        client = SimpleNamespace(calls=0)
+
+        def upsert(**kwargs):
+            client.calls += 1
+            raise RuntimeError("Qdrant unavailable")
+
+        client.upsert = upsert
+        writer = BufferedQdrantUpserter(client, "evaluation", batch_size=1)
+        writer.add(point_id="one", payload={}, vector={})
+        writer.add(point_id="two", payload={}, vector={})
+        self.assertTrue(writer.disabled)
+        self.assertEqual(client.calls, 1)
+        self.assertEqual(writer.upserted, 0)
+        self.assertIn("Qdrant unavailable", writer.errors[0])
 
 
 class JsonlWriterTests(unittest.TestCase):

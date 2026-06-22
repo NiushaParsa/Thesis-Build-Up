@@ -22,6 +22,11 @@ import logging
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 from qdrant_schema import get_qdrant_client
+from config import (
+    PAPER_CHUNK_COLLECTION,
+    PAPER_EVIDENCE_COLLECTION,
+    PAPER_QUESTION_COLLECTION,
+)
 from embedding_utils import get_single_embedding
 
 logging.basicConfig(
@@ -51,7 +56,7 @@ def search_chunks(
         )
 
     results = client.query_points(
-        collection_name="PaperChunk",
+        collection_name=PAPER_CHUNK_COLLECTION,
         query=vec,
         limit=limit,
         query_filter=query_filter,
@@ -89,7 +94,7 @@ def search_questions(
         )
 
     results = client.query_points(
-        collection_name="PaperQuestion",
+        collection_name=PAPER_QUESTION_COLLECTION,
         query=vec,
         limit=limit,
         query_filter=query_filter,
@@ -115,7 +120,7 @@ def get_evidence_for_question(client, question_id: str):
     )
 
     results, _ = client.scroll(
-        collection_name="PaperEvidence",
+        collection_name=PAPER_EVIDENCE_COLLECTION,
         scroll_filter=query_filter,
         limit=50,
     )
@@ -137,7 +142,11 @@ def collection_stats(client):
     print("\n╔══════════════════════════════════════╗")
     print("║        Collection Statistics         ║")
     print("╠══════════════════════════════════════╣")
-    for name in ("PaperChunk", "PaperQuestion", "PaperEvidence"):
+    for name in (
+        PAPER_CHUNK_COLLECTION,
+        PAPER_QUESTION_COLLECTION,
+        PAPER_EVIDENCE_COLLECTION,
+    ):
         info = client.get_collection(name)
         cnt = info.points_count
         print(f"║  {name:<22s}  {cnt:>8,}  ║")
