@@ -13,6 +13,7 @@ from unittest.mock import patch
 import chunking_utils
 import metrics
 import prepare_dataset
+import qdrant_schema
 from fixed_sized_granularity_separate import (
     METHOD_NAME,
     _make_eval_id,
@@ -25,6 +26,7 @@ from evaluation_utils import (
     build_router_record,
     evaluation_config_hash,
     make_evaluation_id,
+    make_router_id,
     select_oracle_labels,
 )
 
@@ -439,6 +441,11 @@ class ConfigurationAndOracleTests(unittest.TestCase):
                 METHOD_NAME, "q1", 1, evaluation_config_hash(self.config(10))
             ),
         )
+        self.assertEqual(make_router_id("q1", first), make_router_id("q1", first))
+        self.assertNotEqual(
+            make_router_id("q1", first),
+            make_router_id("q1", evaluation_config_hash(self.config(10))),
+        )
 
     def test_router_tie_breaks_by_evidence_similarity(self):
         labels = select_oracle_labels(self.records(), tie_epsilon=1e-6)
@@ -525,6 +532,42 @@ class BatchUpsertTests(unittest.TestCase):
         self.assertEqual(client.calls, 1)
         self.assertEqual(writer.upserted, 0)
         self.assertIn("Qdrant unavailable", writer.errors[0])
+
+
+class PersistenceSchemaTests(unittest.TestCase):
+    def test_evaluation_collections_are_created_once_with_expected_vector_schemas(self):
+        client = SimpleNamespace(existing=set(), create_calls=[], index_calls=[])
+
+        def get_collections():
+            return SimpleNamespace(
+                collections=[SimpleNamespace(name=name) for name in client.existing]
+            )
+
+        def create_collection(**kwargs):
+            client.create_calls.append(kwargs)
+            client.existing.add(kwargs["collection_name"])
+
+        def create_payload_index(collection_name, field_name, field_schema):
+            client.index_calls.append((collection_name, field_name, field_schema))
+
+        client.get_collections = get_collections
+        client.create_collection = create_collection
+        client.create_payload_index = create_payload_index
+
+        for _ in range(2):
+            qdrant_schema.ensure_evaluation_collections(
+                client,
+                evaluation_collection="evaluations",
+                router_collection="router",
+            )
+
+        self.assertEqual(len(client.create_calls), 2)
+        by_name = {call["collection_name"]: call for call in client.create_calls}
+        self.assertEqual(by_name["evaluations"]["vectors_config"], {})
+        router_vectors = by_name["router"]["vectors_config"]
+        self.assertEqual(router_vectors.size, qdrant_schema.EMBEDDING_DIM)
+        self.assertEqual(router_vectors.distance.value, "Cosine")
+        self.assertEqual(len(client.index_calls), 8)
 
 
 class JsonlWriterTests(unittest.TestCase):

@@ -253,7 +253,7 @@ The suite covers:
 - empty evidence, fewer-than-K results, and zero returned chunks;
 - grouped, lock-protected JSONL writes under concurrent workers.
 
-Current result: twenty focused tests pass. The complete schema, oracle rules, configuration, and validation commands are documented in `docs/EVALUATION_PIPELINE.md`.
+Current result: twenty-one focused tests pass, including collection-schema and persistence idempotency coverage. The complete schema, oracle rules, configuration, and validation commands are documented in `docs/EVALUATION_PIPELINE.md`.
 
 ## Remaining data problems
 
