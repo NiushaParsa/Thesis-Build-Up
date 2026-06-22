@@ -2,7 +2,7 @@
 
 ## Scope and audited behavior
 
-This document describes the schema-v2 QASPER/Qdrant implementation. It covers fixed-separate evaluation, the offline oracle dataset, and the explicitly separated `mixed-raw` and `mixed-deduplicated` retrieval strategies. It does not implement router training or routed inference.
+This document describes the schema-v2 QASPER/Qdrant implementation. It covers fixed-separate evaluation, the offline oracle dataset, and the explicitly separated `mixed-raw` and `mixed-deduplicated` retrieval strategies. Router training is documented separately in `docs/GRANULARITY_ROUTER.md`; routed retrieval is not yet implemented.
 
 `PaperChunk`, `PaperQuestion`, and `PaperEvidence` use cosine distance. A Qdrant chunk-search score is therefore question-to-chunk similarity. The evaluator never treats that score as evidence similarity. Evidence similarity is recomputed from the returned chunk vector and each ground-truth evidence vector. The audited local `PaperEvidence` collection contains 1,536-dimensional vectors; when a stored evidence vector is missing, the evaluator calls the configured embedding service and rejects incompatible dimensions with a clear error.
 

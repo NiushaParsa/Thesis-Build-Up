@@ -43,6 +43,7 @@ RETRIEVAL_EVALUATION_COLLECTION: str = os.getenv(
     "RETRIEVAL_EVALUATION_COLLECTION", "RetrievalEvaluation"
 )
 ROUTER_DATASET_COLLECTION: str = os.getenv("ROUTER_DATASET_COLLECTION", "RouterDataset")
+ROUTER_MODEL_DIR: str = os.getenv("ROUTER_MODEL_DIR", "models/granularity_router")
 
 # ── Tokenizer ────────────────────────────────────────────
 TOKENIZER_NAME: str = os.getenv("TOKENIZER_NAME", "gpt2")
@@ -64,3 +65,4 @@ ROUTER_LABEL_TIE_EPSILON: float = float(os.getenv("ROUTER_LABEL_TIE_EPSILON", "1
 EVALUATION_UPSERT_BATCH_SIZE: int = int(os.getenv("EVALUATION_UPSERT_BATCH_SIZE", "100"))
 PERSIST_EVALUATIONS: bool = os.getenv("PERSIST_EVALUATIONS", "false").lower() == "true"
 PERSIST_ROUTER_DATASET: bool = os.getenv("PERSIST_ROUTER_DATASET", "false").lower() == "true"
+ROUTER_RANDOM_SEED: int = int(os.getenv("ROUTER_RANDOM_SEED", "42"))

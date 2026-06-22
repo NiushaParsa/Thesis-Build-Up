@@ -126,8 +126,8 @@ Additional limitations are:
 - No full-split or full-dataset baseline result has been produced and checked into a reproducible analysis workflow.
 - Full-dataset evaluation has not yet been run, although optional batched persistence now exists through `RetrievalEvaluation`.
 - Mixed-granularity raw and overlap-deduplicated evaluators now exist; full-split comparison remains pending.
-- The oracle-label dataset builder exists, but no full-split router dataset artifact has yet been generated.
-- No router model, training procedure, or routed evaluator exists.
+- The oracle-label dataset builder and leakage-safe router trainer exist, but no full-split router dataset or trained live model has yet been generated.
+- No routed retrieval evaluator exists.
 - Focused unit tests exist, but no live-Qdrant integration or complete end-to-end experiment test exists.
 - There is no complete reproducibility guide covering environment setup, service lifecycle, ingestion verification, experiments, analysis, and artifact provenance.
 
@@ -236,13 +236,13 @@ The implementation exposes two separately named policies: `mixed-raw` preserves 
 
 ### Milestone 3 — Router dataset and training from question embeddings
 
-**Status:** Planned; no router data or model code exists.
+**Status:** Training and prediction code implemented and tested; blocked from live training by the absence of train-split oracle records.
 
 **Goal:** Train a model that predicts the oracle granularity label from a question embedding without access to evidence at inference time.
 
 The input is the stored question embedding. Labels come from the train-split oracle analysis in Milestone 1. Validation data selects model configuration and stopping criteria. Test labels are reserved for final evaluation and must not influence training or tuning.
 
-Because oracle labels may be noisy, imbalanced, or tied, the experiment should compare a simple reproducible baseline with any more complex router. Candidate framing—single-label classification, soft labels from normalized oracle scores, or cost-sensitive prediction—must be decided and documented before implementation.
+The implemented framing is fixed five-class classification from question embeddings only. It compares a majority baseline with multinomial logistic regression. A small MLP is optional and becomes primary only when its validation macro F1 improves on logistic regression by the configured minimum. Details and commands are in `docs/GRANULARITY_ROUTER.md`.
 
 **Dependencies:** Stable oracle definition; leakage-safe split assignments; complete question embeddings; recorded seeds; agreed model-selection metric.
 
@@ -404,4 +404,4 @@ A later reproducibility guide should add, at minimum:
 
 ## Completion definition
 
-The roadmap is complete when ingestion is validated, all planned evaluators and router components exist with automated tests, full split-safe experiments have immutable record-level artifacts, and the final statistical comparison can be reproduced from a clean environment without undocumented manual steps. Fixed-separate, oracle-label generation, and both mixed-retrieval variants now exist with configuration-aware JSONL/Qdrant persistence. Full-dataset generation, router training/routed evaluation, and final analysis remain unfinished.
+The roadmap is complete when ingestion is validated, all planned evaluators and router components exist with automated tests, full split-safe experiments have immutable record-level artifacts, and the final statistical comparison can be reproduced from a clean environment without undocumented manual steps. Fixed-separate, oracle-label generation, mixed retrieval, and leakage-safe router training/prediction code now exist. Full oracle generation, live router training, routed evaluation, and final analysis remain unfinished.

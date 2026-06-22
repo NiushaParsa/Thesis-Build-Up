@@ -253,7 +253,7 @@ The suite covers:
 - empty evidence, fewer-than-K results, and zero returned chunks;
 - grouped, lock-protected JSONL writes under concurrent workers.
 
-Current result: twenty-five focused tests pass, including mixed-variant registration, mixed-level eligibility, overlap suppression/backfill, collection-schema, and persistence idempotency coverage. The complete schemas, overlap policy, oracle rules, configuration, and validation commands are documented in `docs/EVALUATION_PIPELINE.md`.
+Current result: thirty-two focused tests pass, including test-split isolation, router feature isolation, split-leakage rejection, classification metrics, MLP justification, model round-trip prediction, mixed retrieval, collection schemas, and persistence idempotency. Evaluation details are in `docs/EVALUATION_PIPELINE.md`; router training is documented in `docs/GRANULARITY_ROUTER.md`.
 
 ## Remaining data problems
 
