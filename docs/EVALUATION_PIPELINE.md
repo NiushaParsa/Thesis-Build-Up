@@ -2,11 +2,28 @@
 
 ## Scope and audited behavior
 
-This document describes the schema-v2 QASPER/Qdrant implementation. It completes fixed-separate evaluation and creates an offline oracle dataset for later router training. It does not implement mixed-granularity retrieval, router training, or routed inference.
+This document describes the schema-v2 QASPER/Qdrant implementation. It covers fixed-separate evaluation, the offline oracle dataset, and the explicitly separated `mixed-raw` and `mixed-deduplicated` retrieval strategies. It does not implement router training or routed inference.
 
 `PaperChunk`, `PaperQuestion`, and `PaperEvidence` use cosine distance. A Qdrant chunk-search score is therefore question-to-chunk similarity. The evaluator never treats that score as evidence similarity. Evidence similarity is recomputed from the returned chunk vector and each ground-truth evidence vector. The audited local `PaperEvidence` collection contains 1,536-dimensional vectors; when a stored evidence vector is missing, the evaluator calls the configured embedding service and rejects incompatible dimensions with a clear error.
 
 Every configured granularity is evaluated independently inside the question's document. A router record is created only when all configured levels complete successfully.
+
+## Mixed-granularity retrieval
+
+Both mixed variants perform one Qdrant search filtered only by the question's `document_id`; they intentionally omit the granularity filter so all configured chunk sizes compete in the same score ranking.
+
+- `mixed-raw` stores the normal global top K without overlap suppression.
+- `mixed-deduplicated` greedily walks globally ranked candidates and retains a candidate only when it does not strongly overlap an already retained higher-scoring chunk. It fetches `K * MIXED_DEDUP_CANDIDATE_MULTIPLIER` candidates so suppressed results can be backfilled.
+
+The overlap ratio is:
+
+```text
+intersection character length / shorter span character length
+```
+
+The default threshold is `0.8`. Consequently, duplicate spans and a small chunk nested inside a larger chunk have ratio `1.0` and the lower-ranked candidate is suppressed. Partial overlaps below the threshold remain eligible. Chunks with missing or invalid offsets cannot be compared safely and are retained. This policy reduces redundant multi-level results but may remove a smaller chunk whose boundaries are more precise; raw and deduplicated results must therefore be reported as different methods.
+
+Mixed records store `topk_granularity_levels`, `topk_granularity_tokens`, and a five-entry `granularity_composition`. Every composition entry contains the chunk count, final ranks, and original candidate ranks for that size. Deduplicated records additionally store the threshold, candidate-pool details, suppressed count, and suppression relationships.
 
 ## Metric definitions
 
@@ -83,7 +100,7 @@ Both analytical labels are stored even when they disagree. The reason for the se
 
 ## Configuration
 
-See `.env.example`. Evaluation-specific variables are `RETRIEVAL_TOP_K`, `ROUTER_LABEL_TIE_EPSILON`, `EVALUATION_OUTPUT_DIR`, `EVALUATION_UPSERT_BATCH_SIZE`, `PERSIST_EVALUATIONS`, and `PERSIST_ROUTER_DATASET`. Collection, Qdrant, embedding, tokenizer, dimension, and `CHUNK_SIZES` settings are shared with ingestion.
+See `.env.example`. Evaluation-specific variables are `RETRIEVAL_TOP_K`, `MIXED_DEDUP_OVERLAP_THRESHOLD`, `MIXED_DEDUP_CANDIDATE_MULTIPLIER`, `ROUTER_LABEL_TIE_EPSILON`, `EVALUATION_OUTPUT_DIR`, `EVALUATION_UPSERT_BATCH_SIZE`, `PERSIST_EVALUATIONS`, and `PERSIST_ROUTER_DATASET`. Collection, Qdrant, embedding, tokenizer, dimension, and `CHUNK_SIZES` settings are shared with ingestion.
 
 ## PowerShell commands
 
@@ -103,6 +120,13 @@ Complete one split:
 
 ```powershell
 .\.venv\Scripts\python.exe evaluate.py --split train --top-k 5 --persist-evaluations --persist-router-dataset
+```
+
+Run the two mixed variants independently:
+
+```powershell
+.\.venv\Scripts\python.exe evaluate.py --method mixed-raw --split test --top-k 5 --persist-evaluations
+.\.venv\Scripts\python.exe evaluate.py --method mixed-deduplicated --split test --top-k 5 --overlap-threshold 0.8 --persist-evaluations
 ```
 
 Validate explicit artifacts, then also check persistent collections:

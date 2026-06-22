@@ -64,10 +64,15 @@ def validate_evaluation_records(records: list, expected_levels: list, errors: li
             errors.append(f"{prefix}: duplicate eval_id {eval_id}")
         ids.add(eval_id)
         try:
+            granularity_value = (
+                record.get("granularity_level")
+                if record.get("method_name") == METHOD_NAME
+                else record.get("granularity_scope", "all")
+            )
             expected_id = make_evaluation_id(
                 record.get("method_name", METHOD_NAME),
                 record.get("question_id", ""),
-                int(record["granularity_level"]),
+                granularity_value,
                 record.get("evaluation_config_hash", ""),
             )
             if eval_id != expected_id:
@@ -101,12 +106,22 @@ def validate_evaluation_records(records: list, expected_levels: list, errors: li
                     errors.append(
                         f"{prefix}.retrieved_chunks[{chunk_index}].{field}: evidence alignment mismatch"
                     )
+        if record.get("method_name") != METHOD_NAME:
+            composition = record.get("granularity_composition", [])
+            composition_levels = [item.get("granularity_level") for item in composition]
+            if composition_levels != expected_levels:
+                errors.append(f"{prefix}: invalid mixed granularity composition levels")
+            if sum(item.get("count", 0) for item in composition) != returned:
+                errors.append(f"{prefix}: mixed composition count does not equal returned_k")
+            for field in ("topk_granularity_levels", "topk_granularity_tokens"):
+                if len(record.get(field, [])) != returned:
+                    errors.append(f"{prefix}.{field}: not aligned with returned_k")
         split = record.get("split")
         if split not in ALLOWED_SPLITS:
             errors.append(f"{prefix}: invalid split {split!r}")
         _check_finite(record, prefix, errors)
         key = (record.get("question_id"), record.get("evaluation_config_hash"))
-        level = record.get("granularity_level")
+        level = record.get("granularity_level", record.get("granularity_scope"))
         if level in groups[key]:
             errors.append(f"{prefix}: duplicate question/config/granularity")
         groups[key][level] = record
@@ -162,15 +177,19 @@ def validate_qdrant_router_vectors(
     router_collection: str,
     evaluation_collection: str,
     errors: list,
+    check_router: bool = True,
 ) -> dict:
     client = get_qdrant_client()
     scanned = 0
     try:
         existing = {item.name for item in client.get_collections().collections}
-        for collection in (router_collection, evaluation_collection):
+        collections = [evaluation_collection]
+        if check_router:
+            collections.append(router_collection)
+        for collection in collections:
             if collection not in existing:
                 errors.append(f"Qdrant collection missing: {collection}")
-        if router_collection not in existing:
+        if not check_router or router_collection not in existing:
             return {"router_vectors_scanned": 0}
         offset = None
         while True:
@@ -218,15 +237,23 @@ def main() -> int:
     errors = []
     try:
         evaluation_path = args.evaluation_jsonl or _latest(
-            args.output_dir, "RetrievalEvalFixedSeparate_*.jsonl"
+            args.output_dir, "RetrievalEval*.jsonl"
         )
-        router_path = args.router_jsonl or _latest(args.output_dir, "RouterDataset_*.jsonl")
     except FileNotFoundError as exc:
         print(json.dumps({"valid": False, "errors": [str(exc)]}, indent=2))
         return 1
 
     evaluations = _read_jsonl(evaluation_path, errors)
-    routers = _read_jsonl(router_path, errors)
+    fixed_evaluations = any(
+        record.get("method_name") == METHOD_NAME for record in evaluations
+    )
+    router_path = args.router_jsonl
+    if router_path is None and fixed_evaluations:
+        try:
+            router_path = _latest(args.output_dir, "RouterDataset_*.jsonl")
+        except FileNotFoundError as exc:
+            errors.append(str(exc))
+    routers = _read_jsonl(router_path, errors) if router_path else []
     expected_levels = list(range(1, len(CHUNK_SIZES) + 1))
     evaluation_report = validate_evaluation_records(evaluations, expected_levels, errors)
     validate_router_records(
@@ -235,12 +262,15 @@ def main() -> int:
     qdrant_report = {}
     if args.check_qdrant:
         qdrant_report = validate_qdrant_router_vectors(
-            args.router_collection, args.evaluation_collection, errors
+            args.router_collection,
+            args.evaluation_collection,
+            errors,
+            check_router=fixed_evaluations or bool(routers),
         )
     report = {
         "valid": not errors,
         "evaluation_jsonl": str(evaluation_path),
-        "router_jsonl": str(router_path),
+        "router_jsonl": str(router_path) if router_path else None,
         "evaluation_records": len(evaluations),
         "router_records": len(routers),
         "configured_granularity_levels": expected_levels,

@@ -29,6 +29,13 @@ from evaluation_utils import (
     make_router_id,
     select_oracle_labels,
 )
+from evaluate import METHODS as EVALUATION_METHODS
+from mixed_granularity import (
+    MIXED_DEDUPLICATED_METHOD,
+    MIXED_RAW_METHOD,
+    evaluate_mixed_question,
+    span_overlap_ratio,
+)
 
 
 class CharacterTokenizer:
@@ -378,6 +385,111 @@ class FixedSeparateEvaluationTests(unittest.TestCase):
                     ),
                 )
             )
+
+
+class MixedGranularityEvaluationTests(unittest.TestCase):
+    @staticmethod
+    def evidence(point_id="e1", text="alpha beta", vector=None):
+        return SimpleNamespace(
+            id=point_id,
+            payload={"evidence_text": text},
+            vector=vector or [1.0, 0.0],
+        )
+
+    @staticmethod
+    def chunk(point_id, level, span_start, span_end, score, text="alpha"):
+        return SimpleNamespace(
+            id=point_id,
+            payload={
+                "chunk_idx": level,
+                "content": text,
+                "chunk_size": 1,
+                "granularity_level": level,
+                "span_start": span_start,
+                "span_end": span_end,
+            },
+            vector=[1.0, 0.0],
+            score=score,
+        )
+
+    def test_mixed_raw_uses_document_only_filter_and_all_levels_are_eligible(self):
+        chunks = [
+            self.chunk(f"c{level}", level, level * 100, level * 100 + 20, 1 - level / 10)
+            for level in range(1, 6)
+        ]
+        client = FakeEvaluationClient([self.evidence()], chunks)
+        tokenizer = WordTokenizer()
+        with patch.object(metrics, "get_tokenizer", return_value=tokenizer):
+            record = evaluate_mixed_question(
+                client,
+                "q1",
+                [1.0, 0.0],
+                "doc1",
+                "question",
+                "test",
+                variant=MIXED_RAW_METHOD,
+                top_k=5,
+                embedding_dimension=2,
+            )
+
+        query_call = client.query_calls[0]
+        self.assertEqual(query_call["limit"], 5)
+        self.assertEqual(len(query_call["query_filter"].must), 1)
+        self.assertEqual(query_call["query_filter"].must[0].key, "document_id")
+        self.assertEqual(record["method_name"], MIXED_RAW_METHOD)
+        self.assertEqual(record["granularity_scope"], "all")
+        self.assertEqual(record["topk_granularity_levels"], [1, 2, 3, 4, 5])
+        self.assertEqual(record["granularity_counts"], {"10": 1, "20": 1, "40": 1, "80": 1, "160": 1})
+        self.assertEqual(record["granularity_ranks"]["40"], [3])
+        self.assertEqual(len(record["retrieved_chunks"]), 5)
+        self.assertIn("evidence_token_f1_scores", record["retrieved_chunks"][0])
+        self.assertIn("f1_joined_topk", record)
+
+    def test_mixed_deduplicated_suppresses_nested_spans_and_backfills(self):
+        chunks = [
+            self.chunk("wide", 5, 0, 100, 0.99),
+            self.chunk("nested", 1, 10, 20, 0.98),
+            self.chunk("next", 2, 100, 120, 0.97),
+            self.chunk("partial", 3, 110, 130, 0.96),
+        ]
+        client = FakeEvaluationClient([self.evidence()], chunks)
+        tokenizer = WordTokenizer()
+        with patch.object(metrics, "get_tokenizer", return_value=tokenizer):
+            record = evaluate_mixed_question(
+                client,
+                "q1",
+                [1.0, 0.0],
+                "doc1",
+                "question",
+                "test",
+                variant=MIXED_DEDUPLICATED_METHOD,
+                top_k=3,
+                overlap_threshold=0.8,
+                candidate_multiplier=10,
+                embedding_dimension=2,
+            )
+
+        self.assertEqual(client.query_calls[0]["limit"], 30)
+        self.assertEqual(record["topk_chunk_ids"], ["wide", "next", "partial"])
+        self.assertEqual(
+            [chunk["candidate_rank"] for chunk in record["retrieved_chunks"]],
+            [1, 3, 4],
+        )
+        self.assertEqual(record["suppressed_chunk_count"], 1)
+        self.assertEqual(record["suppressed_chunks"][0]["chunk_id"], "nested")
+        self.assertEqual(record["suppressed_chunks"][0]["overlap_ratio"], 1.0)
+        self.assertEqual(record["granularity_ranks"]["160"], [1])
+        self.assertEqual(record["granularity_ranks"]["20"], [2])
+        self.assertEqual(record["deduplication_overlap_threshold"], 0.8)
+
+    def test_overlap_ratio_uses_shorter_span_and_rejects_invalid_offsets(self):
+        self.assertEqual(span_overlap_ratio((0, 100), (10, 20)), 1.0)
+        self.assertEqual(span_overlap_ratio((0, 20), (10, 30)), 0.5)
+        self.assertEqual(span_overlap_ratio((-1, -1), (10, 20)), 0.0)
+
+    def test_both_mixed_variants_are_registered(self):
+        self.assertIn(MIXED_RAW_METHOD, EVALUATION_METHODS)
+        self.assertIn(MIXED_DEDUPLICATED_METHOD, EVALUATION_METHODS)
 
 
 class ConfigurationAndOracleTests(unittest.TestCase):

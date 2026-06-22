@@ -7,7 +7,7 @@ import json
 import logging
 import math
 import uuid
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from qdrant_client.models import PointStruct
 
@@ -37,12 +37,14 @@ def build_evaluation_config(
     router_collection: str,
     router_label_tie_epsilon: float,
     store_text: bool,
+    filter_behavior: str = FILTER_BEHAVIOR,
+    strategy_settings: Optional[dict] = None,
     schema_version: int = EVALUATION_SCHEMA_VERSION,
     metric_version: str = METRIC_VERSION,
     normalization_version: str = NORMALIZATION_VERSION,
 ) -> dict:
     """Return the canonical set of result-affecting evaluation settings."""
-    return {
+    config = {
         "method": method,
         "top_k": top_k,
         "chunk_sizes": list(chunk_sizes),
@@ -59,12 +61,15 @@ def build_evaluation_config(
         "evidence_collection": evidence_collection,
         "evaluation_collection": evaluation_collection,
         "router_collection": router_collection,
-        "filter_behavior": FILTER_BEHAVIOR,
+        "filter_behavior": filter_behavior,
         "router_label_tie_epsilon": router_label_tie_epsilon,
         "router_label_version": ROUTER_LABEL_VERSION,
         "schema_version": schema_version,
         "store_text": bool(store_text),
     }
+    if strategy_settings:
+        config["strategy_settings"] = strategy_settings
+    return config
 
 
 def evaluation_config_hash(config: dict) -> str:
@@ -76,7 +81,7 @@ def evaluation_config_hash(config: dict) -> str:
 def make_evaluation_id(
     method: str,
     question_id: str,
-    granularity_value: int,
+    granularity_value: Any,
     config_hash: str,
 ) -> str:
     seed = f"{method}|{question_id}|{granularity_value}|{config_hash}"

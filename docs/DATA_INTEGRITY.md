@@ -136,7 +136,7 @@ The local Python Qdrant client is 1.16.1 while the Docker service is 1.13.2. The
 
 ## Evaluation audit
 
-The registry currently exposes only `fixed-separate`. It retrieves top K chunks independently at each granularity, filtered to the source document and one granularity level.
+The registry exposes `fixed-separate`, `mixed-raw`, and `mixed-deduplicated`. Fixed-separate retrieves top K independently per level. Both mixed methods use a source-document-only filter so all levels compete globally; the deduplicated method applies the documented character-span overlap policy.
 
 The metric implementation normalizes case, punctuation, and whitespace, tokenizes with the configured Hugging Face tokenizer, and computes multiset token precision/recall/F1. Schema version 2 adds per-chunk comparison against every unique evidence passage while retaining the original aggregate fields.
 
@@ -253,7 +253,7 @@ The suite covers:
 - empty evidence, fewer-than-K results, and zero returned chunks;
 - grouped, lock-protected JSONL writes under concurrent workers.
 
-Current result: twenty-one focused tests pass, including collection-schema and persistence idempotency coverage. The complete schema, oracle rules, configuration, and validation commands are documented in `docs/EVALUATION_PIPELINE.md`.
+Current result: twenty-five focused tests pass, including mixed-variant registration, mixed-level eligibility, overlap suppression/backfill, collection-schema, and persistence idempotency coverage. The complete schemas, overlap policy, oracle rules, configuration, and validation commands are documented in `docs/EVALUATION_PIPELINE.md`.
 
 ## Remaining data problems
 

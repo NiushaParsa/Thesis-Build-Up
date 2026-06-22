@@ -125,7 +125,7 @@ Additional limitations are:
 - Only a smoke-test evaluation exists. The sole populated evaluation file has 15 records: three questions evaluated at five granularities. The other existing evaluation file is empty.
 - No full-split or full-dataset baseline result has been produced and checked into a reproducible analysis workflow.
 - Full-dataset evaluation has not yet been run, although optional batched persistence now exists through `RetrievalEvaluation`.
-- No mixed-granularity retrieval evaluator exists.
+- Mixed-granularity raw and overlap-deduplicated evaluators now exist; full-split comparison remains pending.
 - The oracle-label dataset builder exists, but no full-split router dataset artifact has yet been generated.
 - No router model, training procedure, or routed evaluator exists.
 - Focused unit tests exist, but no live-Qdrant integration or complete end-to-end experiment test exists.
@@ -210,11 +210,11 @@ The primary target maximizes joined top-K F1, breaks epsilon ties with mean per-
 
 ### Milestone 2 — Mixed-granularity retrieval
 
-**Status:** Planned; no mixed evaluator exists.
+**Status:** Implemented, unit-tested, and live-smoke validated with JSONL plus Qdrant persistence; full-split comparison remains pending.
 
 **Goal:** Let chunks from all five granularities compete in one retrieval operation and compare the resulting top-K set with fixed-separate baselines.
 
-The experiment must define how duplicate or nested content is handled. Because the same source span appears at multiple resolutions, naive top-K retrieval may return redundant overlapping chunks. At least one clearly specified policy should be evaluated, such as raw global ranking or overlap-aware deduplication; different policies must be named as different methods.
+The implementation exposes two separately named policies: `mixed-raw` preserves global score ranking, while `mixed-deduplicated` suppresses candidates whose character-span intersection divided by the shorter span length meets the configured threshold (default `0.8`). Because the same source span appears at multiple resolutions, the raw result may contain redundant nested chunks. Deduplication reduces this redundancy but can suppress a lower-ranked, more precisely bounded chunk; both policies must be reported separately.
 
 **Dependencies:** Milestone 0; metric extensions from Milestone 1; explicit candidate, score, overlap, and tie policies.
 
@@ -404,4 +404,4 @@ A later reproducibility guide should add, at minimum:
 
 ## Completion definition
 
-The roadmap is complete when ingestion is validated, all planned evaluators and router components exist with automated tests, full split-safe experiments have immutable record-level artifacts, and the final statistical comparison can be reproduced from a clean environment without undocumented manual steps. The fixed-separate evaluator and oracle-label generator now include query similarity, independent evidence similarity, per-chunk F1, aggregate top-K token metrics, configuration-aware IDs, JSONL artifacts, and optional Qdrant persistence. Full-dataset generation, mixed retrieval, router training/routed evaluation, and final analysis remain unfinished.
+The roadmap is complete when ingestion is validated, all planned evaluators and router components exist with automated tests, full split-safe experiments have immutable record-level artifacts, and the final statistical comparison can be reproduced from a clean environment without undocumented manual steps. Fixed-separate, oracle-label generation, and both mixed-retrieval variants now exist with configuration-aware JSONL/Qdrant persistence. Full-dataset generation, router training/routed evaluation, and final analysis remain unfinished.

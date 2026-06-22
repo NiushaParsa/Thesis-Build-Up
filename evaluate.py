@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Run fixed-separate retrieval, persist optional records, and build oracle labels."""
+"""Run registered QASPER retrieval evaluators and persist schema-v2 results."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ import argparse
 import json
 import logging
 from collections import Counter, defaultdict
+from contextlib import ExitStack
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional
@@ -19,6 +20,8 @@ from config import (
     EMBEDDING_DIM,
     EVALUATION_OUTPUT_DIR,
     EVALUATION_UPSERT_BATCH_SIZE,
+    MIXED_DEDUP_CANDIDATE_MULTIPLIER,
+    MIXED_DEDUP_OVERLAP_THRESHOLD,
     OPENAI_EMBEDDING_MODEL,
     PAPER_CHUNK_COLLECTION,
     PAPER_EVIDENCE_COLLECTION,
@@ -40,6 +43,13 @@ from evaluation_utils import (
     new_evaluation_run_id,
 )
 from fixed_sized_granularity_separate import evaluate_question
+from mixed_granularity import (
+    MIXED_DEDUPLICATED_METHOD,
+    MIXED_FILTER_BEHAVIOR,
+    MIXED_RAW_METHOD,
+    OVERLAP_DEFINITION,
+    evaluate_mixed_question,
+)
 from qdrant_schema import ensure_evaluation_collections, get_qdrant_client
 
 
@@ -49,7 +59,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-METHODS = {"fixed-separate": METHOD_NAME}
+METHODS = {
+    "fixed-separate": METHOD_NAME,
+    MIXED_RAW_METHOD: MIXED_RAW_METHOD,
+    MIXED_DEDUPLICATED_METHOD: MIXED_DEDUPLICATED_METHOD,
+}
+OUTPUT_STEMS = {
+    "fixed-separate": "RetrievalEvalFixedSeparate",
+    MIXED_RAW_METHOD: "RetrievalEvalMixedRaw",
+    MIXED_DEDUPLICATED_METHOD: "RetrievalEvalMixedDeduplicated",
+}
 
 
 def load_questions(client, collection_name: str, split=None, limit=None):
@@ -104,7 +123,7 @@ def _add_boolean_switch(parser, name: str, destination: str, help_text: str) -> 
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Evaluate fixed-separate QASPER retrieval")
+    parser = argparse.ArgumentParser(description="Evaluate registered QASPER retrieval methods")
     parser.add_argument("--method", choices=list(METHODS), default="fixed-separate")
     parser.add_argument("--split", default=None)
     parser.add_argument("--top-k", type=int, default=None)
@@ -116,6 +135,8 @@ def parse_args():
     parser.add_argument("--router-dataset-collection", default=None)
     parser.add_argument("--upsert-batch-size", type=int, default=None)
     parser.add_argument("--tie-epsilon", type=float, default=None)
+    parser.add_argument("--overlap-threshold", type=float, default=None)
+    parser.add_argument("--dedup-candidate-multiplier", type=int, default=None)
     parser.add_argument("--evaluation-run-id", default=None)
     _add_boolean_switch(
         parser,
@@ -150,6 +171,16 @@ def parse_args():
     args.tie_epsilon = (
         ROUTER_LABEL_TIE_EPSILON if args.tie_epsilon is None else args.tie_epsilon
     )
+    args.overlap_threshold = (
+        MIXED_DEDUP_OVERLAP_THRESHOLD
+        if args.overlap_threshold is None
+        else args.overlap_threshold
+    )
+    args.dedup_candidate_multiplier = (
+        MIXED_DEDUP_CANDIDATE_MULTIPLIER
+        if args.dedup_candidate_multiplier is None
+        else args.dedup_candidate_multiplier
+    )
     args.persist_evaluations = (
         PERSIST_EVALUATIONS
         if args.persist_evaluations is None
@@ -160,10 +191,22 @@ def parse_args():
         if args.persist_router_dataset is None
         else args.persist_router_dataset
     )
-    if args.top_k < 1 or args.upsert_batch_size < 1 or args.log_every < 1:
-        parser.error("top-k, upsert-batch-size, and log-every must be positive")
+    if (
+        args.top_k < 1
+        or args.upsert_batch_size < 1
+        or args.log_every < 1
+        or args.dedup_candidate_multiplier < 1
+    ):
+        parser.error(
+            "top-k, upsert-batch-size, log-every, and dedup-candidate-multiplier "
+            "must be positive"
+        )
     if args.tie_epsilon < 0:
         parser.error("tie-epsilon cannot be negative")
+    if not 0.0 < args.overlap_threshold <= 1.0:
+        parser.error("overlap-threshold must be in (0, 1]")
+    if args.method != "fixed-separate" and args.persist_router_dataset:
+        parser.error("router-dataset persistence is available only for fixed-separate")
     return args
 
 
@@ -173,16 +216,36 @@ def _make_upserter(client, collection: str, batch_size: int):
 
 def main() -> None:
     args = parse_args()
+    is_fixed_separate = args.method == "fixed-separate"
+    method_name = METHODS[args.method]
     timestamp_tag = datetime.now().strftime("%Y%m%d_%H%M%S")
     evaluation_timestamp = datetime.now(timezone.utc).isoformat()
     evaluation_run_id = args.evaluation_run_id or new_evaluation_run_id()
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    evaluation_path = args.output_dir / f"RetrievalEvalFixedSeparate_{timestamp_tag}.jsonl"
-    router_path = args.output_dir / f"RouterDataset_{timestamp_tag}.jsonl"
+    evaluation_path = args.output_dir / f"{OUTPUT_STEMS[args.method]}_{timestamp_tag}.jsonl"
+    router_path = (
+        args.output_dir / f"RouterDataset_{timestamp_tag}.jsonl"
+        if is_fixed_separate
+        else None
+    )
     incomplete_path = args.output_dir / f"IncompleteEvaluation_{timestamp_tag}.jsonl"
 
+    strategy_settings = None
+    filter_behavior = None
+    if not is_fixed_separate:
+        filter_behavior = MIXED_FILTER_BEHAVIOR
+        strategy_settings = {"variant": args.method}
+        if args.method == MIXED_DEDUPLICATED_METHOD:
+            strategy_settings.update(
+                {
+                    "overlap_threshold": args.overlap_threshold,
+                    "overlap_definition": OVERLAP_DEFINITION,
+                    "candidate_multiplier": args.dedup_candidate_multiplier,
+                }
+            )
+
     evaluation_config = build_evaluation_config(
-        method=METHOD_NAME,
+        method=method_name,
         top_k=args.top_k,
         chunk_sizes=CHUNK_SIZES,
         embedding_model=OPENAI_EMBEDDING_MODEL,
@@ -195,6 +258,8 @@ def main() -> None:
         router_collection=args.router_dataset_collection,
         router_label_tie_epsilon=args.tie_epsilon,
         store_text=args.store_text,
+        **({"filter_behavior": filter_behavior} if filter_behavior else {}),
+        strategy_settings=strategy_settings,
     )
     config_hash = evaluation_config_hash(evaluation_config)
     levels = list(range(1, len(CHUNK_SIZES) + 1))
@@ -211,13 +276,13 @@ def main() -> None:
                     evaluation_collection=args.evaluation_collection,
                     router_collection=args.router_dataset_collection,
                     create_evaluation=args.persist_evaluations,
-                    create_router=args.persist_router_dataset,
+                    create_router=is_fixed_separate and args.persist_router_dataset,
                 )
                 if args.persist_evaluations:
                     evaluation_upserter = _make_upserter(
                         client, args.evaluation_collection, args.upsert_batch_size
                     )
-                if args.persist_router_dataset:
+                if is_fixed_separate and args.persist_router_dataset:
                     router_upserter = _make_upserter(
                         client, args.router_dataset_collection, args.upsert_batch_size
                     )
@@ -250,18 +315,52 @@ def main() -> None:
         skipped_no_evidence = 0
         incomplete_questions = 0
         evaluated_questions = 0
+        mixed_f1_values = []
+        mixed_similarity_values = []
+        mixed_granularity_counts = Counter()
 
-        with (
-            evaluation_path.open("w", encoding="utf-8") as evaluation_file,
-            router_path.open("w", encoding="utf-8") as router_file,
-            incomplete_path.open("w", encoding="utf-8") as incomplete_file,
-        ):
+        with ExitStack() as stack:
+            evaluation_file = stack.enter_context(
+                evaluation_path.open("w", encoding="utf-8")
+            )
+            incomplete_file = stack.enter_context(
+                incomplete_path.open("w", encoding="utf-8")
+            )
+            router_file = (
+                stack.enter_context(router_path.open("w", encoding="utf-8"))
+                if router_path
+                else None
+            )
             for question_index, question in enumerate(
                 tqdm(questions, desc="Evaluating"), start=1
             ):
                 try:
-                    records = list(
-                        evaluate_question(
+                    if is_fixed_separate:
+                        records = list(
+                            evaluate_question(
+                                client=client,
+                                question_point_id=question["point_id"],
+                                question_vector=question["vector"],
+                                document_id=question["document_id"],
+                                question_text=question["question_text"],
+                                split=question["split"],
+                                top_k=args.top_k,
+                                granularity_levels=levels,
+                                store_retrieved_text=args.store_text,
+                                chunk_sizes=CHUNK_SIZES,
+                                chunk_collection=PAPER_CHUNK_COLLECTION,
+                                question_collection=PAPER_QUESTION_COLLECTION,
+                                evidence_collection=PAPER_EVIDENCE_COLLECTION,
+                                embedding_model=OPENAI_EMBEDDING_MODEL,
+                                embedding_dimension=EMBEDDING_DIM,
+                                tokenizer_name=TOKENIZER_NAME,
+                                evaluation_run_id=evaluation_run_id,
+                                evaluation_config_hash=config_hash,
+                                evaluation_timestamp=evaluation_timestamp,
+                            )
+                        )
+                    else:
+                        mixed_record = evaluate_mixed_question(
                             client=client,
                             question_point_id=question["point_id"],
                             question_vector=question["vector"],
@@ -269,20 +368,24 @@ def main() -> None:
                             question_text=question["question_text"],
                             split=question["split"],
                             top_k=args.top_k,
-                            granularity_levels=levels,
+                            variant=args.method,
                             store_retrieved_text=args.store_text,
                             chunk_sizes=CHUNK_SIZES,
                             chunk_collection=PAPER_CHUNK_COLLECTION,
                             question_collection=PAPER_QUESTION_COLLECTION,
                             evidence_collection=PAPER_EVIDENCE_COLLECTION,
+                            evaluation_collection=args.evaluation_collection,
+                            router_collection=args.router_dataset_collection,
                             embedding_model=OPENAI_EMBEDDING_MODEL,
                             embedding_dimension=EMBEDDING_DIM,
                             tokenizer_name=TOKENIZER_NAME,
+                            overlap_threshold=args.overlap_threshold,
+                            candidate_multiplier=args.dedup_candidate_multiplier,
                             evaluation_run_id=evaluation_run_id,
                             evaluation_config_hash=config_hash,
                             evaluation_timestamp=evaluation_timestamp,
                         )
-                    )
+                        records = [mixed_record] if mixed_record else []
                 except Exception as exc:
                     incomplete_questions += 1
                     logger.exception(
@@ -322,16 +425,37 @@ def main() -> None:
 
                 for record in records:
                     evaluation_file.write(json.dumps(record) + "\n")
-                    level = record["granularity_level"]
-                    per_gran_count[level] += 1
-                    per_gran_f1[level].append(record["f1_joined_topk"])
-                    per_gran_similarity[level].append(
-                        record["mean_max_evidence_similarity_topk"]
-                    )
+                    if is_fixed_separate:
+                        level = record["granularity_level"]
+                        per_gran_count[level] += 1
+                        per_gran_f1[level].append(record["f1_joined_topk"])
+                        per_gran_similarity[level].append(
+                            record["mean_max_evidence_similarity_topk"]
+                        )
+                    else:
+                        mixed_f1_values.append(record["f1_joined_topk"])
+                        mixed_similarity_values.append(
+                            record["mean_max_evidence_similarity_topk"]
+                        )
+                        for item in record["granularity_composition"]:
+                            mixed_granularity_counts[item["granularity_level"]] += item[
+                                "count"
+                            ]
                     if evaluation_upserter:
                         evaluation_upserter.add(
                             point_id=record["eval_id"], payload=record, vector={}
                         )
+
+                if not is_fixed_separate:
+                    evaluated_questions += 1
+                    if question_index % args.log_every == 0:
+                        logger.info(
+                            "Processed %d/%d questions (%d evaluation records)",
+                            question_index,
+                            len(questions),
+                            evaluated_questions,
+                        )
+                    continue
 
                 router_record, incomplete_reason = build_router_record(
                     question=question,
@@ -396,28 +520,53 @@ def main() -> None:
         logger.info("evaluated_questions=%d", evaluated_questions)
         logger.info("skipped_questions_without_evidence=%d", skipped_no_evidence)
         logger.info("incomplete_questions=%d", incomplete_questions)
-        for level in levels:
-            f1_values = per_gran_f1[level]
-            similarity_values = per_gran_similarity[level]
+        if is_fixed_separate:
+            for level in levels:
+                f1_values = per_gran_f1[level]
+                similarity_values = per_gran_similarity[level]
+                logger.info(
+                    "level=%d tokens=%d records=%d mean_joined_f1=%.6f "
+                    "mean_evidence_similarity=%.6f",
+                    level,
+                    CHUNK_SIZES[level - 1],
+                    per_gran_count[level],
+                    sum(f1_values) / len(f1_values) if f1_values else 0.0,
+                    sum(similarity_values) / len(similarity_values)
+                    if similarity_values
+                    else 0.0,
+                )
             logger.info(
-                "level=%d tokens=%d records=%d mean_joined_f1=%.6f mean_evidence_similarity=%.6f",
-                level,
-                CHUNK_SIZES[level - 1],
-                per_gran_count[level],
-                sum(f1_values) / len(f1_values) if f1_values else 0.0,
-                sum(similarity_values) / len(similarity_values)
-                if similarity_values
+                "best_f1_granularity_distribution=%s", dict(best_f1_distribution)
+            )
+            logger.info(
+                "best_similarity_granularity_distribution=%s",
+                dict(best_similarity_distribution),
+            )
+            logger.info("router_target_distribution=%s", dict(router_distribution))
+            logger.info("f1_similarity_label_disagreements=%d", disagreements)
+        else:
+            logger.info(
+                "method=%s records=%d mean_joined_f1=%.6f "
+                "mean_evidence_similarity=%.6f",
+                method_name,
+                len(mixed_f1_values),
+                sum(mixed_f1_values) / len(mixed_f1_values)
+                if mixed_f1_values
+                else 0.0,
+                sum(mixed_similarity_values) / len(mixed_similarity_values)
+                if mixed_similarity_values
                 else 0.0,
             )
-        logger.info("best_f1_granularity_distribution=%s", dict(best_f1_distribution))
-        logger.info(
-            "best_similarity_granularity_distribution=%s",
-            dict(best_similarity_distribution),
-        )
-        logger.info("router_target_distribution=%s", dict(router_distribution))
-        logger.info("f1_similarity_label_disagreements=%d", disagreements)
+            logger.info(
+                "retrieved_granularity_composition=%s",
+                {
+                    CHUNK_SIZES[level - 1]: mixed_granularity_counts[level]
+                    for level in levels
+                },
+            )
         logger.info("evaluation_jsonl=%s", evaluation_path)
-        logger.info("router_jsonl=%s", router_path)
+        if router_path:
+            logger.info("router_jsonl=%s", router_path)
         logger.info("incomplete_jsonl=%s", incomplete_path)
         logger.info(
             "qdrant_evaluation_records_upserted=%d",

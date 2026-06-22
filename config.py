@@ -54,6 +54,12 @@ EVALUATION_OUTPUT_DIR: str = os.getenv("EVALUATION_OUTPUT_DIR", "outputs")
 
 # ── Evaluation ──────────────────────────────────────────
 RETRIEVAL_TOP_K: int = int(os.getenv("RETRIEVAL_TOP_K", "5"))
+MIXED_DEDUP_OVERLAP_THRESHOLD: float = float(
+    os.getenv("MIXED_DEDUP_OVERLAP_THRESHOLD", "0.8")
+)
+MIXED_DEDUP_CANDIDATE_MULTIPLIER: int = int(
+    os.getenv("MIXED_DEDUP_CANDIDATE_MULTIPLIER", "10")
+)
 ROUTER_LABEL_TIE_EPSILON: float = float(os.getenv("ROUTER_LABEL_TIE_EPSILON", "1e-6"))
 EVALUATION_UPSERT_BATCH_SIZE: int = int(os.getenv("EVALUATION_UPSERT_BATCH_SIZE", "100"))
 PERSIST_EVALUATIONS: bool = os.getenv("PERSIST_EVALUATIONS", "false").lower() == "true"
