@@ -138,9 +138,11 @@ The local Python Qdrant client is 1.16.1 while the Docker service is 1.13.2. The
 
 The registry currently exposes only `fixed-separate`. It retrieves top K chunks independently at each granularity, filtered to the source document and one granularity level.
 
-The metric implementation normalizes case, punctuation, and whitespace, tokenizes with the configured Hugging Face tokenizer, and computes multiset token precision/recall/F1. The evaluator calculates one aggregate F1 over joined top-K chunk text versus joined evidence text; it does not yet calculate per-chunk F1.
+The metric implementation normalizes case, punctuation, and whitespace, tokenizes with the configured Hugging Face tokenizer, and computes multiset token precision/recall/F1. Schema version 2 adds per-chunk comparison against every unique evidence passage while retaining the original aggregate fields.
 
-The required JSONL record fields checked by the validator are:
+### Fixed-separate JSONL schema version 2
+
+Each line remains one question/granularity result. Existing schema-version-1 fields are preserved so current CLI consumers continue to work:
 
 ```text
 eval_id, method_name, question_id, document_id, split,
@@ -150,10 +152,49 @@ retrieved_joined_token_count, topk_chunk_ids, topk_chunk_indices,
 topk_scores, f1_joined_topk, avg_score_topk, best_score_topk
 ```
 
+Version 2 adds these top-level fields:
+
+| Field | Definition |
+|---|---|
+| `schema_version` | Integer `2`. Records without this field are treated as legacy version 1. |
+| `returned_k` | Number of chunks actually returned; alias of `retrieved_k`. May be smaller than `k_requested`. |
+| `retrieval_latency_ms` | Qdrant query latency; alias of `retrieval_time_ms`. |
+| `unique_evidence_count` / `unique_evidence_ids` | Non-empty evidence passages after exact deduplication and deterministic point-ID ordering. |
+| `joined_unique_evidence_token_count` | Token count of unique evidence texts joined with newlines; alias-compatible with `evidence_token_count`. |
+| `joined_retrieved_text_token_count` | Token count of returned chunk texts joined in rank order; alias-compatible with `retrieved_joined_token_count`. |
+| `set_level_precision`, `set_level_recall`, `set_level_f1` | Multiset token metrics for joined retrieved text against joined unique evidence. `set_level_f1` equals legacy `f1_joined_topk`. |
+| `best_query_similarity_topk`, `mean_query_similarity_topk` | Maximum and arithmetic mean of Qdrant question-to-chunk scores. They equal the legacy best/average score fields. |
+| `best_evidence_similarity_topk`, `mean_evidence_similarity_topk` | Maximum and arithmetic mean over every returned-chunk × unique-evidence cosine pair. |
+| `retrieved_chunks` | Rank-ordered per-chunk metric objects described below. |
+
+Each `retrieved_chunks` object contains:
+
+```text
+chunk_id, chunk_idx, granularity_level, granularity_tokens,
+chunk_token_count, rank, query_similarity,
+evidence_cosine_similarities[], max_evidence_similarity,
+mean_evidence_similarity, evidence_token_f1_scores[], max_chunk_f1
+```
+
+`evidence_cosine_similarities` and `evidence_token_f1_scores` contain one object per unique evidence passage and include its `evidence_id`. Query similarity and evidence similarity are separate fields: the former is Qdrant's question-to-chunk retrieval score; the latter is recomputed from the stored chunk and evidence vectors.
+
+Evidence behavior is deterministic:
+
+- empty/whitespace-only evidence is ignored;
+- exact duplicate evidence after trimming is evaluated once;
+- if duplicate text exists under multiple point IDs, the lexicographically smallest point ID supplies the retained stored vector;
+- a question with no remaining evidence yields no evaluation records, preserving prior behavior;
+- zero returned chunks still yield a record with `returned_k = 0` and zero aggregate similarities and token metrics;
+- zero-length normalized prediction or evidence text produces zero precision, recall, and F1;
+- missing dense vectors or mismatched vector dimensions raise an explicit error instead of mixing incomparable values.
+
+With `--store-text`, each chunk object additionally contains `text`, and the top-level record retains `retrieved_text` and `evidence_text`.
+
 Existing output findings:
 
 - `RetrievalEvalFixedSeparate_20260227_172957.jsonl` is empty.
 - `RetrievalEvalFixedSeparate_20260227_173250.jsonl` contains 15 valid records for three questions across five granularities.
+- These historical files use the legacy schema; newly generated output uses schema version 2.
 - No invalid JSON, missing required fields, or duplicate `eval_id` values were found.
 
 ## Validation commands
@@ -206,10 +247,13 @@ The suite covers:
 - checkpoint save, reload, duplicate-stage suppression, and resume decisions;
 - fixed non-overlapping token chunks, spans, final short chunk, and reconstruction;
 - filtering of empty or missing highlighted evidence;
-- normalized multiset token-level F1;
+- normalized multiset token precision, recall, and F1, including normalized-empty text;
+- manually verifiable cosine similarity and zero-vector behavior;
+- multiple and duplicate evidence passages, stored evidence vectors, and per-chunk metrics;
+- empty evidence, fewer-than-K results, and zero returned chunks;
 - grouped, lock-protected JSONL writes under concurrent workers.
 
-Current result: seven tests pass.
+Current result: twelve tests pass.
 
 ## Remaining data problems
 

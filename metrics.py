@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 import string
 from collections import Counter
-from typing import List
+from typing import List, Tuple
 
 from chunking_utils import get_tokenizer
 
@@ -53,28 +53,34 @@ def count_tokens(text: str) -> int:
 
 
 # ── Token-level F1 (SQuAD-style) ─────────────────────────
-def token_f1(prediction: str, reference: str) -> float:
-    """Compute token-level F1 between *prediction* and *reference*.
+def token_precision_recall_f1(prediction: str, reference: str) -> Tuple[float, float, float]:
+    """Compute token precision, recall, and F1 for two text strings.
 
     Both strings are normalised and tokenised.  Multiset intersection
     is used (same as the original SQuAD evaluation script).
 
-    Returns 0.0 when either side is empty.
+    All three values are 0.0 when either normalized side is empty or
+    when there is no token overlap.
     """
     pred_tokens = tokenize_normalized(prediction)
     ref_tokens = tokenize_normalized(reference)
 
     if not pred_tokens or not ref_tokens:
-        return 0.0
+        return 0.0, 0.0, 0.0
 
     common = Counter(pred_tokens) & Counter(ref_tokens)
     num_common = sum(common.values())
 
     if num_common == 0:
-        return 0.0
+        return 0.0, 0.0, 0.0
 
     precision = num_common / len(pred_tokens)
     recall = num_common / len(ref_tokens)
 
     f1 = 2 * precision * recall / (precision + recall)
-    return f1
+    return precision, recall, f1
+
+
+def token_f1(prediction: str, reference: str) -> float:
+    """Backward-compatible token-level F1 convenience wrapper."""
+    return token_precision_recall_f1(prediction, reference)[2]

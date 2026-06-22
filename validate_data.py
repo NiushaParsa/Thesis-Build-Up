@@ -38,6 +38,23 @@ EVALUATION_REQUIRED_FIELDS = {
     "avg_score_topk",
     "best_score_topk",
 }
+EVALUATION_V2_REQUIRED_FIELDS = {
+    "schema_version",
+    "returned_k",
+    "retrieval_latency_ms",
+    "unique_evidence_count",
+    "unique_evidence_ids",
+    "joined_unique_evidence_token_count",
+    "joined_retrieved_text_token_count",
+    "retrieved_chunks",
+    "set_level_precision",
+    "set_level_recall",
+    "set_level_f1",
+    "mean_query_similarity_topk",
+    "best_query_similarity_topk",
+    "mean_evidence_similarity_topk",
+    "best_evidence_similarity_topk",
+}
 
 
 def deterministic_uuid(seed: str) -> str:
@@ -565,7 +582,10 @@ def validate_evaluation_outputs(path: Path, example_limit: int) -> dict:
                     _example(examples, {"line": line_number, "error": str(exc)}, example_limit)
                     continue
                 records += 1
-                missing = sorted(EVALUATION_REQUIRED_FIELDS - set(record))
+                required_fields = set(EVALUATION_REQUIRED_FIELDS)
+                if record.get("schema_version", 1) >= 2:
+                    required_fields.update(EVALUATION_V2_REQUIRED_FIELDS)
+                missing = sorted(required_fields - set(record))
                 if missing:
                     missing_fields += 1
                     _example(examples, {"line": line_number, "missing_fields": missing}, example_limit)

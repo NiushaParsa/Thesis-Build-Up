@@ -13,11 +13,11 @@ Four quantities must remain distinct throughout implementation and reporting:
 | Quantity | Inputs | Meaning | Current status |
 |---|---|---|---|
 | **Query-to-chunk retrieval similarity** | Question embedding and chunk embedding | Qdrant cosine score used to rank chunks for a question. This is an inference-time retrieval signal and does not use ground-truth evidence. | **Implemented.** Stored as `topk_scores`, with `avg_score_topk` and `best_score_topk`. |
-| **Evidence-to-chunk oracle similarity** | Ground-truth evidence embedding and chunk embedding | Measures how directly a chunk aligns with annotated evidence. Because it uses evidence unavailable at deployment, it is an oracle/analysis signal rather than a deployable retrieval rule. | **Not implemented.** |
-| **Per-chunk F1** | One retrieved chunk's text and the ground-truth evidence text | Token-overlap F1 for each individual retrieved chunk. It can expose whether one strong chunk is hidden inside a weak top-K set. | **Not implemented.** |
+| **Evidence-to-chunk oracle similarity** | Ground-truth evidence embedding and chunk embedding | Measures how directly a chunk aligns with annotated evidence. Because it uses evidence unavailable at deployment, it is an oracle/analysis signal rather than a deployable retrieval rule. | **Implemented in fixed-separate evaluation.** Stored separately for every chunk/evidence pair with per-chunk and top-K aggregates. |
+| **Per-chunk F1** | One retrieved chunk's text and each ground-truth evidence passage | Token-overlap F1 for each individual chunk/evidence pair. It can expose whether one strong chunk is hidden inside a weak top-K set. | **Implemented in fixed-separate evaluation.** |
 | **Top-K set-level F1** | All top-K retrieved chunk texts joined together and all evidence texts joined together | Aggregate token-overlap quality of the retrieved set. In the current code this is `f1_joined_topk`; it is not an average of per-chunk F1 values. | **Implemented.** |
 
-The current token-level F1 normalizes case, punctuation, and whitespace, tokenizes with the configured Hugging Face tokenizer, and uses multiset token overlap. The current evaluator calls this once on the joined top-K retrieval and joined evidence.
+The current token metrics normalize case, punctuation, and whitespace, tokenize with the configured Hugging Face tokenizer, and use multiset token overlap. The evaluator records per-chunk/per-evidence F1 plus precision, recall, and F1 for joined top-K retrieval against joined unique evidence.
 
 **Oracle granularity selection must never be presented as a deployable inference strategy.** The oracle uses ground-truth highlighted evidence to score or select a granularity. That evidence is available for supervised experiment construction and evaluation, but it will not be available for a new question at deployment. Oracle performance is therefore an upper bound and a source of training labels/diagnostics. A deployable router must make its decision from inference-time features such as the question embedding alone.
 
@@ -84,11 +84,11 @@ The implemented baseline evaluates each granularity separately. For each questio
 
 The evaluator retrieves the top K chunks, currently defaulting to K=5. Qdrant's cosine scores are the **query-to-chunk retrieval similarities**. Retrieval at one granularity does not compete with chunks from another granularity.
 
-### 8. Aggregate token-level F1 evaluation
+### 8. Per-chunk and aggregate evaluation
 
-All retrieved texts at a given granularity are joined, all stored evidence passages for the question are joined, and one token-level F1 is computed between the two combined strings. This is the **top-K set-level F1** recorded as `f1_joined_topk`.
+Every retrieved chunk is compared with every unique evidence passage using stored vectors and token F1. Query-to-chunk retrieval similarity and evidence-to-chunk cosine similarity remain separate. Per-chunk maximum/mean evidence similarity and maximum F1 are retained.
 
-The evaluator also records latency, chunk IDs and indices, token counts, individual Qdrant scores, mean query-to-chunk score, and best query-to-chunk score. It does not currently calculate a separate F1 for every retrieved chunk.
+All retrieved texts at a given granularity are also joined, as are the unique evidence passages. Set-level token precision, recall, and F1 are computed between those combined strings. The legacy **top-K set-level F1** field `f1_joined_topk` remains as an alias of `set_level_f1`.
 
 ### 9. JSONL outputs
 
@@ -124,13 +124,11 @@ Additional limitations are:
 
 - Only a smoke-test evaluation exists. The sole populated evaluation file has 15 records: three questions evaluated at five granularities. The other existing evaluation file is empty.
 - No full-split or full-dataset baseline result has been produced and checked into a reproducible analysis workflow.
-- No per-retrieved-chunk F1 is calculated or stored.
-- No evidence-to-chunk cosine similarity is calculated or stored.
 - Evaluation records exist only as JSONL; there is no persistent Qdrant evaluation collection or other evaluation database schema.
 - No mixed-granularity retrieval evaluator exists.
 - No oracle-label dataset builder exists.
 - No router dataset, router model, training procedure, or routed evaluator exists.
-- No automated unit, integration, or end-to-end tests exist.
+- Focused unit tests exist, but no live-Qdrant integration or complete end-to-end experiment test exists.
 - There is no complete reproducibility guide covering environment setup, service lifecycle, ingestion verification, experiments, analysis, and artifact provenance.
 
 ## Experimental principles
@@ -174,18 +172,21 @@ The following constraints apply to all planned work:
 
 ### Milestone 1 — Separate-granularity oracle evaluation
 
-**Status:** Planned. The existing fixed-separate evaluator supplies only part of this experiment.
+**Status:** Partially implemented. Per-chunk metrics and evidence similarity exist; oracle label selection and full-dataset execution remain planned.
 
 **Goal:** Evaluate every question independently at all five fixed granularities and derive a ground-truth-informed best granularity per question.
 
-The extended evaluation should retain current query-to-chunk scores and top-K set-level F1, then add:
+The evaluator now retains query-to-chunk scores and top-K set-level metrics and implements:
 
-- token F1 for every retrieved chunk against joined ground-truth evidence;
-- evidence-to-chunk cosine similarity, with an explicitly documented aggregation when a question has multiple evidence vectors;
+- token F1 for every retrieved chunk against every unique evidence passage;
+- evidence-to-chunk cosine similarity for every pair, with maximum and arithmetic-mean aggregates;
+
+The remaining milestone work is to add:
+
 - deterministic oracle labels based on a predeclared evidence-derived objective;
 - tie indicators and the complete score vector over all granularities.
 
-The primary oracle objective must be fixed before evaluation. A defensible default is maximum top-K set-level F1, with deterministic tie-breaking documented. Evidence-to-chunk cosine and per-chunk F1 should remain separate diagnostic/oracle features rather than being silently blended into the same number.
+The remaining primary oracle objective must be fixed before label generation. A defensible default is maximum top-K set-level F1, with deterministic tie-breaking documented. Evidence-to-chunk cosine and per-chunk F1 remain separate diagnostic/oracle features rather than being silently blended into the same number.
 
 **Dependencies:** Milestone 0; existing fixed-separate evaluator; stored question, chunk, and evidence vectors; agreed K values and oracle-label rule.
 
@@ -403,4 +404,4 @@ A later reproducibility guide should add, at minimum:
 
 ## Completion definition
 
-The roadmap is complete when ingestion is validated, all planned evaluators and router components exist with automated tests, full split-safe experiments have immutable record-level artifacts, and the final statistical comparison can be reproduced from a clean environment without undocumented manual steps. Until then, the only implemented evaluation method is fixed-separate retrieval with query-to-chunk cosine scores and aggregate top-K set-level token F1.
+The roadmap is complete when ingestion is validated, all planned evaluators and router components exist with automated tests, full split-safe experiments have immutable record-level artifacts, and the final statistical comparison can be reproduced from a clean environment without undocumented manual steps. The implemented fixed-separate method now includes query similarity, evidence similarity, per-chunk F1, and aggregate top-K token metrics; mixed retrieval, oracle label generation, routing, and final analysis remain unfinished.
