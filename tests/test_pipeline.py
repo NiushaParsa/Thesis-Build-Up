@@ -36,6 +36,11 @@ from mixed_granularity import (
     evaluate_mixed_question,
     span_overlap_ratio,
 )
+from router_selected import (
+    ROUTER_SELECTED_CLI_METHOD,
+    ROUTER_SELECTED_METHOD,
+    evaluate_router_selected_question,
+)
 
 
 class CharacterTokenizer:
@@ -492,6 +497,233 @@ class MixedGranularityEvaluationTests(unittest.TestCase):
         self.assertIn(MIXED_DEDUPLICATED_METHOD, EVALUATION_METHODS)
 
 
+class RouterSelectedEvaluationTests(unittest.TestCase):
+    @staticmethod
+    def evidence(point_id="e1", text="alpha beta", vector=None):
+        return SimpleNamespace(
+            id=point_id,
+            payload={"evidence_text": text},
+            vector=vector or [1.0, 0.0],
+        )
+
+    @staticmethod
+    def chunk(point_id, level, score, text="alpha"):
+        return SimpleNamespace(
+            id=point_id,
+            payload={
+                "chunk_idx": level,
+                "content": text,
+                "chunk_size": 1,
+                "granularity_level": level,
+                "span_start": level * 10,
+                "span_end": level * 10 + 5,
+            },
+            vector=[1.0, 0.0],
+            score=score,
+        )
+
+    @staticmethod
+    def oracle_payload():
+        return {
+            "router_target_granularity": 3,
+            "best_granularity_by_f1": 3,
+            "best_granularity_by_evidence_similarity": 4,
+            "per_granularity_metrics": [
+                {
+                    "granularity_level": level,
+                    "f1_joined_topk": 0.9 if level == 3 else 0.1,
+                    "mean_max_evidence_similarity_topk": 0.8 if level == 4 else 0.2,
+                }
+                for level in range(1, 6)
+            ],
+        }
+
+    class DeterministicPredictor:
+        model_path = "mock-router.pt"
+        model_hash = "mock-hash"
+        model_version = "mock-version"
+        model_choice = "primary"
+        selected_model_type = "mock"
+        oracle_evaluation_config_hash = "oracle-hash"
+        embedding_dimension = 2
+        class_tokens = [10, 20, 40, 80, 160]
+
+        def __init__(self, tokens=40):
+            self.tokens = tokens
+            self.inputs = []
+
+        def predict(self, question_vector):
+            self.inputs.append(list(question_vector))
+            return {
+                "predicted_granularity_tokens": self.tokens,
+                "prediction_confidence": 0.7,
+                "class_probabilities": {
+                    "10": 0.05,
+                    "20": 0.05,
+                    "40": 0.7,
+                    "80": 0.1,
+                    "160": 0.1,
+                },
+            }
+
+    class FakeRouterEvalClient:
+        def __init__(self, *, evidence_points, chunk_points, oracle_payload=None):
+            self.evidence_points = evidence_points
+            self.chunk_points = chunk_points
+            self.oracle_payload = oracle_payload
+            self.query_calls = []
+            self.scroll_calls = []
+            self.retrieve_calls = []
+
+        def scroll(self, **kwargs):
+            self.scroll_calls.append(kwargs)
+            if kwargs["collection_name"] == "evidence":
+                return self.evidence_points, None
+            if kwargs["collection_name"] == "router":
+                if self.oracle_payload is None:
+                    return [], None
+                return [SimpleNamespace(id="router-id", payload=self.oracle_payload)], None
+            return [], None
+
+        def retrieve(self, **kwargs):
+            self.retrieve_calls.append(kwargs)
+            if kwargs["collection_name"] == "router" and self.oracle_payload is not None:
+                return [SimpleNamespace(id="router-id", payload=self.oracle_payload)]
+            return []
+
+        def query_points(self, **kwargs):
+            self.query_calls.append(kwargs)
+            return SimpleNamespace(points=self.chunk_points)
+
+    def test_predicted_granularity_filter_is_respected(self):
+        predictor = self.DeterministicPredictor(tokens=40)
+        client = self.FakeRouterEvalClient(
+            evidence_points=[self.evidence()],
+            chunk_points=[self.chunk("c3", 3, 0.9)],
+            oracle_payload=self.oracle_payload(),
+        )
+        tokenizer = WordTokenizer()
+        with patch.object(metrics, "get_tokenizer", return_value=tokenizer):
+            record, reason = evaluate_router_selected_question(
+                client,
+                "q1",
+                [1.0, 0.0],
+                "doc1",
+                "question",
+                "validation",
+                router_predictor=predictor,
+                oracle_evaluation_config_hash="oracle-hash",
+                top_k=1,
+                chunk_sizes=[10, 20, 40, 80, 160],
+                chunk_collection="chunks",
+                evidence_collection="evidence",
+                router_collection="router",
+                embedding_dimension=2,
+                evaluation_config_hash="router-config",
+            )
+
+        self.assertIsNone(reason)
+        self.assertEqual(record["method_name"], ROUTER_SELECTED_METHOD)
+        self.assertEqual(record["predicted_granularity_level"], 3)
+        self.assertEqual(record["predicted_granularity_tokens"], 40)
+        self.assertEqual(record["topk_chunk_ids"], ["c3"])
+        query_filter = client.query_calls[0]["query_filter"]
+        filters = {condition.key: condition.match.value for condition in query_filter.must}
+        self.assertEqual(filters["document_id"], "doc1")
+        self.assertEqual(filters["granularity_level"], 3)
+
+    def test_evidence_is_not_used_for_prediction(self):
+        predictor = self.DeterministicPredictor(tokens=40)
+        client = self.FakeRouterEvalClient(
+            evidence_points=[self.evidence(text="secret evidence")],
+            chunk_points=[self.chunk("c3", 3, 0.9)],
+            oracle_payload=self.oracle_payload(),
+        )
+        tokenizer = WordTokenizer()
+        with patch.object(metrics, "get_tokenizer", return_value=tokenizer):
+            evaluate_router_selected_question(
+                client,
+                "q1",
+                [0.25, 0.75],
+                "doc1",
+                "question",
+                "validation",
+                router_predictor=predictor,
+                oracle_evaluation_config_hash="oracle-hash",
+                top_k=1,
+                chunk_collection="chunks",
+                evidence_collection="evidence",
+                router_collection="router",
+                embedding_dimension=2,
+                evaluation_config_hash="router-config",
+            )
+        self.assertEqual(predictor.inputs, [[0.25, 0.75]])
+
+    def test_oracle_regret_fields_are_computed(self):
+        predictor = self.DeterministicPredictor(tokens=40)
+        client = self.FakeRouterEvalClient(
+            evidence_points=[self.evidence(text="alpha beta")],
+            chunk_points=[self.chunk("c3", 3, 0.9, text="alpha")],
+            oracle_payload=self.oracle_payload(),
+        )
+        tokenizer = WordTokenizer()
+        with patch.object(metrics, "get_tokenizer", return_value=tokenizer):
+            record, _ = evaluate_router_selected_question(
+                client,
+                "q1",
+                [1.0, 0.0],
+                "doc1",
+                "question",
+                "validation",
+                router_predictor=predictor,
+                oracle_evaluation_config_hash="oracle-hash",
+                top_k=1,
+                chunk_collection="chunks",
+                evidence_collection="evidence",
+                router_collection="router",
+                embedding_dimension=2,
+                evaluation_config_hash="router-config",
+            )
+        self.assertTrue(record["router_oracle_match"])
+        self.assertEqual(record["oracle_best_f1"], 0.9)
+        self.assertAlmostEqual(record["f1_joined_topk"], 2 / 3, places=5)
+        self.assertAlmostEqual(record["regret_f1"], 0.233333, places=5)
+        self.assertAlmostEqual(record["regret_evidence_similarity"], -0.2, places=5)
+
+    def test_missing_oracle_record_is_explicit(self):
+        predictor = self.DeterministicPredictor(tokens=40)
+        client = self.FakeRouterEvalClient(
+            evidence_points=[self.evidence()],
+            chunk_points=[self.chunk("c3", 3, 0.9)],
+            oracle_payload=None,
+        )
+        tokenizer = WordTokenizer()
+        with patch.object(metrics, "get_tokenizer", return_value=tokenizer):
+            record, reason = evaluate_router_selected_question(
+                client,
+                "q1",
+                [1.0, 0.0],
+                "doc1",
+                "question",
+                "validation",
+                router_predictor=predictor,
+                oracle_evaluation_config_hash="oracle-hash",
+                top_k=1,
+                chunk_collection="chunks",
+                evidence_collection="evidence",
+                router_collection="router",
+                embedding_dimension=2,
+                evaluation_config_hash="router-config",
+            )
+        self.assertIsNone(reason)
+        self.assertEqual(record["oracle_lookup_status"], "missing")
+        self.assertIsNone(record["router_oracle_match"])
+        self.assertIsNone(record["regret_f1"])
+
+    def test_router_selected_method_is_registered(self):
+        self.assertIn(ROUTER_SELECTED_CLI_METHOD, EVALUATION_METHODS)
+
+
 class ConfigurationAndOracleTests(unittest.TestCase):
     @staticmethod
     def config(top_k=5):
@@ -611,6 +843,21 @@ class ConfigurationAndOracleTests(unittest.TestCase):
         )
         self.assertIsNone(reason)
         self.assertEqual(len(complete["per_granularity_metrics"]), 5)
+
+        no_chunks = self.records()
+        no_chunks[2]["returned_k"] = 0
+        incomplete, reason = build_router_record(
+            question=question,
+            records=no_chunks,
+            expected_levels=[1, 2, 3, 4, 5],
+            tie_epsilon=1e-6,
+            evaluation_run_id="run",
+            config_hash="hash",
+            embedding_model="model",
+            embedding_dimension=2,
+        )
+        self.assertIsNone(incomplete)
+        self.assertEqual(reason, "no_retrieved_chunks:3")
 
 
 class BatchUpsertTests(unittest.TestCase):

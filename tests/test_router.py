@@ -11,6 +11,7 @@ import torch
 from granularity_router import (
     CLASS_TOKENS,
     classification_metrics,
+    class_balance_warnings,
     examples_to_arrays,
     fit_preprocessor,
     mlp_is_justified,
@@ -44,6 +45,9 @@ class RouterDatasetTests(unittest.TestCase):
                         "evaluation_config_hash": "hash",
                         "embedding_model": "embedding",
                         "label_version": "label-v1",
+                        "per_granularity_metrics": [
+                            {"granularity_level": level} for level in range(1, 6)
+                        ],
                     },
                 )
                 return [point], None
@@ -97,6 +101,18 @@ class RouterDatasetTests(unittest.TestCase):
         features, targets = examples_to_arrays(examples)
         np.testing.assert_array_equal(features, [[1.0, 2.0], [3.0, 4.0]])
         np.testing.assert_array_equal(targets, [0, 1])
+
+    def test_class_balance_warnings_cover_absent_and_small_classes(self):
+        examples = [
+            {"target_tokens": 10},
+            {"target_tokens": 10},
+            {"target_tokens": 20},
+        ]
+        warnings = class_balance_warnings(
+            examples, min_count=2, min_fraction=0.1
+        )
+        self.assertTrue(any("class 20 is underrepresented" in item for item in warnings))
+        self.assertTrue(any("class 160 is absent" in item for item in warnings))
 
 
 class RouterMetricTests(unittest.TestCase):

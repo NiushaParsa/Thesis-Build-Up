@@ -2,7 +2,7 @@
 
 ## Scope and audited behavior
 
-This document describes the schema-v2 QASPER/Qdrant implementation. It covers fixed-separate evaluation, the offline oracle dataset, and the explicitly separated `mixed-raw` and `mixed-deduplicated` retrieval strategies. Router training is documented separately in `docs/GRANULARITY_ROUTER.md`; routed retrieval is not yet implemented.
+This document describes the schema-v2 QASPER/Qdrant implementation. It covers fixed-separate evaluation, the offline oracle dataset, the explicitly separated `mixed-raw` and `mixed-deduplicated` retrieval strategies, and validation-first routed retrieval. Router training is documented separately in `docs/GRANULARITY_ROUTER.md`.
 
 `PaperChunk`, `PaperQuestion`, and `PaperEvidence` use cosine distance. A Qdrant chunk-search score is therefore question-to-chunk similarity. The evaluator never treats that score as evidence similarity. Evidence similarity is recomputed from the returned chunk vector and each ground-truth evidence vector. The audited local `PaperEvidence` collection contains 1,536-dimensional vectors; when a stored evidence vector is missing, the evaluator calls the configured embedding service and rejects incompatible dimensions with a clear error.
 
@@ -24,6 +24,14 @@ intersection character length / shorter span character length
 The default threshold is `0.8`. Consequently, duplicate spans and a small chunk nested inside a larger chunk have ratio `1.0` and the lower-ranked candidate is suppressed. Partial overlaps below the threshold remain eligible. Chunks with missing or invalid offsets cannot be compared safely and are retained. This policy reduces redundant multi-level results but may remove a smaller chunk whose boundaries are more precise; raw and deduplicated results must therefore be reported as different methods.
 
 Mixed records store `topk_granularity_levels`, `topk_granularity_tokens`, and a five-entry `granularity_composition`. Every composition entry contains the chunk count, final ranks, and original candidate ranks for that size. Deduplicated records additionally store the threshold, candidate-pool details, suppressed count, and suppression relationships.
+
+## Router-selected retrieval
+
+`router-selected` loads a persisted granularity-router artifact and predicts exactly one chunk size from the stored question embedding. It then searches only the source document and only the predicted granularity level. Evidence and oracle labels are not used to choose the granularity; they are loaded after prediction for evaluation metrics and validation analysis only.
+
+Router-selected records use method name `router-selected granularity`, write timestamped `RetrievalEvalRouterSelected_<timestamp>.jsonl` files, and can be persisted to `RetrievalEvaluation` as payload-only records. The routed evaluation configuration hash includes the router artifact hash, selected model type, top K, collection names, metric/tokenizer versions, and the frozen oracle configuration hash used for validation joins.
+
+Additional routed fields include `router_model_path`, `router_model_hash`, `router_model_version`, `predicted_granularity_level`, `predicted_granularity_tokens`, `prediction_confidence`, `class_probabilities`, `router_latency_ms`, `retrieval_latency_ms`, and `total_latency_ms`. When a matching `RouterDataset` oracle record is available, the evaluator also stores `oracle_target_granularity`, `oracle_best_granularity_by_f1`, `oracle_best_granularity_by_evidence_similarity`, `router_oracle_match`, `oracle_best_f1`, `oracle_best_evidence_similarity`, `regret_f1`, and `regret_evidence_similarity`. Missing oracle records are explicit via `oracle_lookup_status`.
 
 ## Metric definitions
 
@@ -84,6 +92,9 @@ Every run writes timestamped files:
 
 ```text
 RetrievalEvalFixedSeparate_<timestamp>.jsonl
+RetrievalEvalMixedRaw_<timestamp>.jsonl
+RetrievalEvalMixedDeduplicated_<timestamp>.jsonl
+RetrievalEvalRouterSelected_<timestamp>.jsonl
 RouterDataset_<timestamp>.jsonl
 IncompleteEvaluation_<timestamp>.jsonl
 ```
@@ -129,6 +140,31 @@ Run the two mixed variants independently:
 .\.venv\Scripts\python.exe evaluate.py --method mixed-deduplicated --split test --top-k 5 --overlap-threshold 0.8 --persist-evaluations
 ```
 
+Run validation-only router-selected retrieval against the frozen oracle dataset:
+
+```powershell
+.\.venv\Scripts\python.exe evaluate.py `
+  --method router-selected `
+  --split validation `
+  --top-k 5 `
+  --router-model models\granularity_router\frozen_topk5\router_model.pt `
+  --evaluation-config-hash 9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8 `
+  --output-dir outputs\router_selected\validation `
+  --persist-evaluations `
+  --log-every 100
+```
+
+Run the final validation comparison report without recomputing retrieval:
+
+```powershell
+.\.venv\Scripts\python.exe compare_retrieval_strategies.py `
+  --output-dir reports\final_validation_comparison `
+  --bootstrap-iterations 2000 `
+  --bootstrap-seed 13
+```
+
+The comparison script reads validation JSONL/Qdrant records for the frozen fixed-separate oracle hash and routed validation hash. It writes `comparison_summary.md`, `comparison_table.csv`, `per_question_comparison.csv`, `strategy_metrics.json`, and `bootstrap_results.json` when all required validation strategies are available. If required mixed-granularity validation records are missing or incomplete, it stops and writes `missing_inputs.json` plus a `comparison_summary.md` that lists exactly what is absent; it does not fabricate mixed numbers or evaluate the test split.
+
 Validate explicit artifacts, then also check persistent collections:
 
 ```powershell
@@ -140,7 +176,7 @@ Run focused tests and syntax checks:
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
-.\.venv\Scripts\python.exe -m py_compile config.py evaluate.py evaluation_utils.py fixed_sized_granularity_separate.py metrics.py qdrant_schema.py validate_evaluation.py
+.\.venv\Scripts\python.exe -m py_compile config.py evaluate.py evaluation_utils.py fixed_sized_granularity_separate.py mixed_granularity.py router_selected.py metrics.py qdrant_schema.py validate_evaluation.py
 ```
 
 The validator checks deterministic IDs, rank-aligned arrays, finite metrics, complete configured levels per router example, vector dimensions, split preservation, and label availability.

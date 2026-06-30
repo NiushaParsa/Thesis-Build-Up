@@ -1,0 +1,87 @@
+{
+  "artifact_version": 1,
+  "created_at": "2026-06-23T16:24:40.151073+00:00",
+  "selected_model_type": "logistic_regression",
+  "class_tokens": [
+    10,
+    20,
+    40,
+    80,
+    160
+  ],
+  "class_to_index": {
+    "10": 0,
+    "20": 1,
+    "40": 2,
+    "80": 3,
+    "160": 4
+  },
+  "index_to_class": {
+    "0": 10,
+    "1": 20,
+    "2": 40,
+    "3": 80,
+    "4": 160
+  },
+  "embedding_model": "text-embedding-3-small",
+  "embedding_dimension": 1536,
+  "oracle_evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+  "oracle_label_version": "oracle-f1-evidence-smaller-v1",
+  "random_seed": 42,
+  "training_config": {
+    "epochs": 200,
+    "batch_size": 64,
+    "standardize": true,
+    "logistic_learning_rates": [
+      0.01,
+      0.001
+    ],
+    "weight_decays": [
+      0.0,
+      0.0001
+    ],
+    "enable_mlp": true,
+    "mlp_hidden_sizes": [
+      64
+    ],
+    "mlp_dropouts": [
+      0.1
+    ],
+    "mlp_learning_rates": [
+      0.001
+    ],
+    "mlp_min_improvement": 0.01,
+    "model_selection_metric": "macro_f1",
+    "test_evaluated": false
+  },
+  "majority_class_index": 2,
+  "majority_class_probabilities": [
+    0.20489977728285078,
+    0.30066815144766146,
+    0.30556792873051225,
+    0.15278396436525613,
+    0.03608017817371938
+  ],
+  "logistic_config": {
+    "model_type": "logistic_regression",
+    "learning_rate": 0.01,
+    "weight_decay": 0.0001,
+    "seed": 43,
+    "final_train_loss": 0.22615015347278727
+  },
+  "mlp_config": {
+    "model_type": "mlp",
+    "hidden_size": 64,
+    "dropout": 0.1,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0,
+    "seed": 10042,
+    "final_train_loss": 0.0915145273789668
+  },
+  "git_revision": "f764e4ba82be02bcc65aca2cc4f96752e306d654",
+  "preprocessing": {
+    "standardize": true,
+    "feature_count": 1536,
+    "fitted_on": "QASPER train only"
+  }
+}

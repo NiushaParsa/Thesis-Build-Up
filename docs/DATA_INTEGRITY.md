@@ -253,7 +253,7 @@ The suite covers:
 - empty evidence, fewer-than-K results, and zero returned chunks;
 - grouped, lock-protected JSONL writes under concurrent workers.
 
-Current result: thirty-two focused tests pass, including test-split isolation, router feature isolation, split-leakage rejection, classification metrics, MLP justification, model round-trip prediction, mixed retrieval, collection schemas, and persistence idempotency. Evaluation details are in `docs/EVALUATION_PIPELINE.md`; router training is documented in `docs/GRANULARITY_ROUTER.md`.
+Current result: forty-five focused tests pass, including oracle completeness, final-comparison alignment and missing-strategy detection, class-balance warnings, test-split isolation, router feature isolation, split-leakage rejection, classification metrics, MLP justification, model round-trip prediction, mixed retrieval, router-selected retrieval, collection schemas, and persistence idempotency. Evaluation details are in `docs/EVALUATION_PIPELINE.md`; router training is documented in `docs/GRANULARITY_ROUTER.md`.
 
 ## Remaining data problems
 

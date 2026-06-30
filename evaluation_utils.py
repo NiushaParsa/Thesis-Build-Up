@@ -182,6 +182,8 @@ def build_router_record(
         "mean_query_similarity_topk",
     )
     for record in records:
+        if not isinstance(record.get("returned_k"), int) or record["returned_k"] < 1:
+            return None, f"no_retrieved_chunks:{record.get('granularity_level')}"
         for field in required_metrics:
             value = record.get(field)
             if not isinstance(value, (int, float)) or not math.isfinite(value):

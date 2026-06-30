@@ -42,6 +42,26 @@ from metrics import count_tokens, normalize_text, token_precision_recall_f1
 logger = logging.getLogger(__name__)
 
 
+def _query_points_with_retries(client: QdrantClient, *, retries: int = 3, **kwargs):
+    """Retry transient Qdrant query failures before marking a question incomplete."""
+    delay_seconds = 1.0
+    for attempt in range(1, retries + 1):
+        try:
+            return client.query_points(**kwargs)
+        except Exception:
+            if attempt == retries:
+                raise
+            logger.warning(
+                "Qdrant query failed on attempt %d/%d; retrying in %.1fs",
+                attempt,
+                retries,
+                delay_seconds,
+                exc_info=True,
+            )
+            time.sleep(delay_seconds)
+            delay_seconds *= 2
+
+
 def _make_eval_id(question_id: str, granularity_value: int, config_hash: str) -> str:
     """Compatibility wrapper for the configuration-aware evaluation ID."""
     return make_evaluation_id(METHOD_NAME, question_id, granularity_value, config_hash)
@@ -253,7 +273,8 @@ def evaluate_question(
             raise ValueError(f"Unknown granularity level: {level}")
         granularity_tokens = chunk_sizes[level - 1]
         started = time.perf_counter()
-        response = client.query_points(
+        response = _query_points_with_retries(
+            client,
             collection_name=chunk_collection,
             query=question_vector,
             query_filter=Filter(

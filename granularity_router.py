@@ -9,6 +9,7 @@ import logging
 import math
 import random
 import subprocess
+import time
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,6 +17,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 import numpy as np
 import torch
+from qdrant_client import QdrantClient
 from qdrant_client.models import FieldCondition, Filter, MatchValue
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
@@ -23,11 +25,15 @@ from torch.utils.data import DataLoader, TensorDataset
 from config import (
     EMBEDDING_DIM,
     PAPER_QUESTION_COLLECTION,
+    QDRANT_API_KEY,
+    QDRANT_GRPC_PORT,
+    QDRANT_HOST,
+    QDRANT_HTTP_PORT,
+    QDRANT_URL,
     ROUTER_DATASET_COLLECTION,
     ROUTER_MODEL_DIR,
     ROUTER_RANDOM_SEED,
 )
-from qdrant_schema import get_qdrant_client
 
 
 logger = logging.getLogger(__name__)
@@ -35,6 +41,33 @@ ROUTER_ARTIFACT_VERSION = 1
 CLASS_TOKENS = (10, 20, 40, 80, 160)
 ALLOWED_SPLITS = {"train", "validation", "test"}
 MODEL_SELECTION_METRIC = "macro_f1"
+
+
+def get_router_qdrant_client() -> QdrantClient:
+    """Create a Qdrant client suitable for bulk router dataset scrolls.
+
+    The shared schema helper prefers gRPC for local Qdrant, which is useful for
+    high-throughput ingestion/retrieval but has proven prone to deadline
+    timeouts while scrolling thousands of on-disk router vectors.  Router
+    training and prediction are offline/batch workloads, so prefer REST with a
+    longer timeout for reliability without changing model semantics.
+    """
+    api_key = QDRANT_API_KEY if QDRANT_API_KEY else None
+    if QDRANT_URL:
+        return QdrantClient(
+            url=QDRANT_URL,
+            api_key=api_key,
+            prefer_grpc=False,
+            timeout=300,
+        )
+    return QdrantClient(
+        host=QDRANT_HOST,
+        port=QDRANT_HTTP_PORT,
+        grpc_port=QDRANT_GRPC_PORT,
+        prefer_grpc=False,
+        api_key=api_key,
+        timeout=300,
+    )
 
 
 def _dense_vector(vector: Any, point_id: str) -> List[float]:
@@ -71,14 +104,28 @@ def _scroll_split(client, collection: str, split: str, config_hash: Optional[str
     points = []
     offset = None
     while True:
-        batch, next_offset = client.scroll(
-            collection_name=collection,
-            scroll_filter=Filter(must=must),
-            limit=256,
-            offset=offset,
-            with_payload=True,
-            with_vectors=True,
-        )
+        for attempt in range(1, 4):
+            try:
+                batch, next_offset = client.scroll(
+                    collection_name=collection,
+                    scroll_filter=Filter(must=must),
+                    limit=64,
+                    offset=offset,
+                    with_payload=True,
+                    with_vectors=True,
+                )
+                break
+            except Exception as exc:
+                if attempt == 3:
+                    raise
+                logger.warning(
+                    "Retrying router dataset scroll for split=%s offset=%s after %s: %s",
+                    split,
+                    offset,
+                    exc.__class__.__name__,
+                    exc,
+                )
+                time.sleep(2 * attempt)
         points.extend(batch)
         if next_offset is None:
             break
@@ -146,6 +193,12 @@ def load_router_examples(
         dimensions.add(len(vector))
         embedding_models.add(payload.get("embedding_model"))
         label_versions.add(payload.get("label_version"))
+        granularity_metrics = payload.get("per_granularity_metrics", [])
+        levels = [item.get("granularity_level") for item in granularity_metrics]
+        if sorted(levels) != list(range(1, len(CLASS_TOKENS) + 1)):
+            raise ValueError(
+                f"Question {question_id} is missing required granularity metrics: {levels}"
+            )
         examples.append(
             {
                 "question_id": question_id,
@@ -191,6 +244,24 @@ def validate_split_isolation(examples: Sequence[dict]) -> None:
             "Split leakage detected: "
             f"questions={question_leaks}, documents={document_leaks}"
         )
+
+
+def class_balance_warnings(
+    examples: Sequence[dict], *, min_count: int, min_fraction: float
+) -> List[str]:
+    counts = Counter(example["target_tokens"] for example in examples)
+    total = len(examples)
+    warnings = []
+    for tokens in CLASS_TOKENS:
+        count = counts[tokens]
+        if count == 0:
+            warnings.append(f"class {tokens} is absent from QASPER train")
+        elif count < min_count or count / total < min_fraction:
+            warnings.append(
+                f"class {tokens} is underrepresented in QASPER train: "
+                f"count={count}, fraction={count / total:.4f}"
+            )
+    return warnings
 
 
 def examples_to_arrays(
@@ -568,6 +639,10 @@ def train_command(args) -> int:
         raise ValueError("epochs and batch-size must be positive")
     if args.mlp_min_improvement < 0:
         raise ValueError("mlp-min-improvement cannot be negative")
+    if args.min_class_count_warning < 1:
+        raise ValueError("min-class-count-warning must be positive")
+    if not 0.0 < args.min_class_fraction_warning <= 1.0:
+        raise ValueError("min-class-fraction-warning must be in (0, 1]")
     if any(value <= 0 for value in args.logistic_learning_rates):
         raise ValueError("logistic learning rates must be positive")
     if any(value < 0 for value in args.weight_decays):
@@ -578,7 +653,7 @@ def train_command(args) -> int:
         raise ValueError("MLP learning rates must be positive")
     if any(not 0.0 <= dropout < 1.0 for dropout in args.mlp_dropouts):
         raise ValueError("MLP dropout values must be in [0, 1)")
-    client = get_qdrant_client()
+    client = get_router_qdrant_client()
     try:
         examples, config_hash = load_router_examples(
             client,
@@ -608,6 +683,19 @@ def train_command(args) -> int:
         raise ValueError(
             "No QASPER validation router examples exist; validation is required for tuning"
         )
+    train_classes = {item["target_tokens"] for item in train_examples}
+    if len(train_classes) < 2:
+        raise ValueError(
+            "QASPER train must contain at least two router target classes; "
+            f"found {sorted(train_classes)}"
+        )
+    balance_warnings = class_balance_warnings(
+        train_examples,
+        min_count=args.min_class_count_warning,
+        min_fraction=args.min_class_fraction_warning,
+    )
+    for warning in balance_warnings:
+        logger.warning("%s", warning)
 
     train_x, train_y = examples_to_arrays(train_examples)
     validation_x, validation_y = examples_to_arrays(validation_examples)
@@ -727,6 +815,7 @@ def train_command(args) -> int:
                 Counter(str(item["target_tokens"]) for item in validation_examples)
             ),
         },
+        "class_balance_warnings": balance_warnings,
         "majority_validation_metrics": tuned["majority_validation_metrics"],
         "logistic_validation_metrics": tuned["best_logistic"]["validation_metrics"],
         "mlp_validation_metrics": (
@@ -884,7 +973,7 @@ def _load_prediction_questions(client, args) -> list:
 
 def predict_command(args) -> int:
     artifact = torch.load(args.model, map_location="cpu", weights_only=False)
-    client = get_qdrant_client()
+    client = get_router_qdrant_client()
     try:
         points = _load_prediction_questions(client, args)
     finally:
@@ -978,6 +1067,8 @@ def parse_args():
         default=[0.001],
     )
     train.add_argument("--mlp-min-improvement", type=float, default=0.01)
+    train.add_argument("--min-class-count-warning", type=int, default=20)
+    train.add_argument("--min-class-fraction-warning", type=float, default=0.05)
     train.add_argument(
         "--evaluate-test",
         action="store_true",

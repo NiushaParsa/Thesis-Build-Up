@@ -1,0 +1,104 @@
+{
+  "mean_f1_ci95": {
+    "fixed_10": {
+      "ci_high": 0.22779189718614726,
+      "ci_low": 0.2142796991341992,
+      "iterations": 500,
+      "mean": 0.2211194404761905,
+      "seed": 13
+    },
+    "fixed_160": {
+      "ci_high": 0.2260199502164504,
+      "ci_low": 0.2090451753246754,
+      "iterations": 500,
+      "mean": 0.21679366125541147,
+      "seed": 13
+    },
+    "fixed_20": {
+      "ci_high": 0.2957286623376622,
+      "ci_low": 0.281308055194805,
+      "iterations": 500,
+      "mean": 0.2887496958874461,
+      "seed": 13
+    },
+    "fixed_40": {
+      "ci_high": 0.32430762554112524,
+      "ci_low": 0.30748579004329024,
+      "iterations": 500,
+      "mean": 0.3158559274891774,
+      "seed": 13
+    },
+    "fixed_80": {
+      "ci_high": 0.29553903787878777,
+      "ci_low": 0.27707255735930697,
+      "iterations": 500,
+      "mean": 0.28572452056277065,
+      "seed": 13
+    },
+    "mixed_deduplicated": {
+      "ci_high": 0.27030439935064904,
+      "ci_low": 0.2531134112554112,
+      "iterations": 500,
+      "mean": 0.2617835800865796,
+      "seed": 13
+    },
+    "mixed_raw": {
+      "ci_high": 0.2641459015151516,
+      "ci_low": 0.247690579004329,
+      "iterations": 500,
+      "mean": 0.25617516883116886,
+      "seed": 13
+    },
+    "oracle_upper_bound": {
+      "ci_high": 0.3901278300865805,
+      "ci_low": 0.37322776298701305,
+      "iterations": 500,
+      "mean": 0.3820733257575755,
+      "seed": 13
+    },
+    "router_selected": {
+      "ci_high": 0.29364578896103916,
+      "ci_low": 0.27725570238095265,
+      "iterations": 500,
+      "mean": 0.28530679978355006,
+      "seed": 13
+    }
+  },
+  "paired_differences": {
+    "mixed_deduplicated_minus_best_fixed_single_level": {
+      "ci_high": -0.046418690476190384,
+      "ci_low": -0.06230523376623379,
+      "iterations": 500,
+      "mean_difference": -0.05407234740259736,
+      "seed": 13
+    },
+    "mixed_raw_minus_best_fixed_single_level": {
+      "ci_high": -0.05184669480519479,
+      "ci_low": -0.06714835930735927,
+      "iterations": 500,
+      "mean_difference": -0.05968075865800858,
+      "seed": 13
+    },
+    "router_selected_minus_best_fixed_single_level": {
+      "ci_high": -0.024279372294372294,
+      "ci_low": -0.03684218506493513,
+      "iterations": 500,
+      "mean_difference": -0.030549127705627694,
+      "seed": 13
+    },
+    "router_selected_minus_mixed_deduplicated": {
+      "ci_high": 0.03232689177489179,
+      "ci_low": 0.014981153679653683,
+      "iterations": 500,
+      "mean_difference": 0.02352321969696968,
+      "seed": 13
+    },
+    "router_selected_minus_mixed_raw": {
+      "ci_high": 0.03760250000000002,
+      "ci_low": 0.02127339393939394,
+      "iterations": 500,
+      "mean_difference": 0.02913163095238098,
+      "seed": 13
+    }
+  }
+}

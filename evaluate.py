@@ -10,6 +10,7 @@ from collections import Counter, defaultdict
 from contextlib import ExitStack
 from datetime import datetime, timezone
 from pathlib import Path
+from statistics import median
 from typing import Dict, Optional
 
 from qdrant_client.models import FieldCondition, Filter, MatchValue
@@ -51,6 +52,14 @@ from mixed_granularity import (
     evaluate_mixed_question,
 )
 from qdrant_schema import ensure_evaluation_collections, get_qdrant_client
+from router_selected import (
+    ROUTER_SELECTED_CLI_METHOD,
+    ROUTER_SELECTED_FILTER_BEHAVIOR,
+    ROUTER_SELECTED_METHOD,
+    RouterPredictor,
+    build_router_selected_config,
+    evaluate_router_selected_question,
+)
 
 
 logging.basicConfig(
@@ -63,16 +72,41 @@ METHODS = {
     "fixed-separate": METHOD_NAME,
     MIXED_RAW_METHOD: MIXED_RAW_METHOD,
     MIXED_DEDUPLICATED_METHOD: MIXED_DEDUPLICATED_METHOD,
+    ROUTER_SELECTED_CLI_METHOD: ROUTER_SELECTED_METHOD,
 }
 OUTPUT_STEMS = {
     "fixed-separate": "RetrievalEvalFixedSeparate",
     MIXED_RAW_METHOD: "RetrievalEvalMixedRaw",
     MIXED_DEDUPLICATED_METHOD: "RetrievalEvalMixedDeduplicated",
+    ROUTER_SELECTED_CLI_METHOD: "RetrievalEvalRouterSelected",
 }
 
 
-def load_questions(client, collection_name: str, split=None, limit=None):
+def load_questions(client, collection_name: str, split=None, limit=None, question_ids=None):
     """Load question payloads and vectors, preserving their stored split."""
+    if question_ids:
+        points = client.retrieve(
+            collection_name=collection_name,
+            ids=question_ids,
+            with_payload=True,
+            with_vectors=True,
+        )
+        questions = []
+        for point in points:
+            payload = point.payload or {}
+            if split and payload.get("split") != split:
+                continue
+            questions.append(
+                {
+                    "point_id": str(point.id),
+                    "vector": point.vector,
+                    "document_id": payload.get("document_id", ""),
+                    "question_text": payload.get("question_text", ""),
+                    "split": payload.get("split", ""),
+                }
+            )
+        return questions[:limit] if limit is not None else questions
+
     scroll_filter = None
     if split:
         scroll_filter = Filter(
@@ -128,6 +162,8 @@ def parse_args():
     parser.add_argument("--split", default=None)
     parser.add_argument("--top-k", type=int, default=None)
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--question-id", action="append", default=None)
+    parser.add_argument("--question-ids-file", type=Path, default=None)
     parser.add_argument("--store-text", action="store_true")
     parser.add_argument("--log-every", type=int, default=50)
     parser.add_argument("--output-dir", type=Path, default=None)
@@ -138,6 +174,16 @@ def parse_args():
     parser.add_argument("--overlap-threshold", type=float, default=None)
     parser.add_argument("--dedup-candidate-multiplier", type=int, default=None)
     parser.add_argument("--evaluation-run-id", default=None)
+    parser.add_argument(
+        "--evaluation-config-hash",
+        default=None,
+        help=(
+            "For router-selected evaluation, the frozen fixed-separate oracle "
+            "configuration hash used to join RouterDataset labels."
+        ),
+    )
+    parser.add_argument("--router-model", type=Path, default=None)
+    parser.add_argument("--router-model-choice", default="primary")
     _add_boolean_switch(
         parser,
         "persist-evaluations",
@@ -207,6 +253,22 @@ def parse_args():
         parser.error("overlap-threshold must be in (0, 1]")
     if args.method != "fixed-separate" and args.persist_router_dataset:
         parser.error("router-dataset persistence is available only for fixed-separate")
+    if args.method == ROUTER_SELECTED_CLI_METHOD and not args.router_model:
+        parser.error("router-selected evaluation requires --router-model")
+    if args.method != ROUTER_SELECTED_CLI_METHOD and args.evaluation_config_hash:
+        parser.error("--evaluation-config-hash is reserved for router-selected oracle joins")
+    question_ids = []
+    if args.question_id:
+        question_ids.extend(args.question_id)
+    if args.question_ids_file:
+        if not args.question_ids_file.exists():
+            parser.error(f"question IDs file does not exist: {args.question_ids_file}")
+        question_ids.extend(
+            line.strip()
+            for line in args.question_ids_file.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        )
+    args.question_ids = question_ids or None
     return args
 
 
@@ -217,10 +279,27 @@ def _make_upserter(client, collection: str, batch_size: int):
 def main() -> None:
     args = parse_args()
     is_fixed_separate = args.method == "fixed-separate"
+    is_mixed = args.method in {MIXED_RAW_METHOD, MIXED_DEDUPLICATED_METHOD}
+    is_router_selected = args.method == ROUTER_SELECTED_CLI_METHOD
     method_name = METHODS[args.method]
     timestamp_tag = datetime.now().strftime("%Y%m%d_%H%M%S")
     evaluation_timestamp = datetime.now(timezone.utc).isoformat()
     evaluation_run_id = args.evaluation_run_id or new_evaluation_run_id()
+    router_predictor = None
+    oracle_evaluation_config_hash = None
+    if is_router_selected:
+        router_predictor = RouterPredictor.from_path(
+            args.router_model, model_choice=args.router_model_choice
+        )
+        oracle_evaluation_config_hash = (
+            args.evaluation_config_hash
+            or router_predictor.oracle_evaluation_config_hash
+        )
+        if not oracle_evaluation_config_hash:
+            raise ValueError(
+                "router-selected evaluation requires an oracle evaluation config hash "
+                "via --evaluation-config-hash or router artifact metadata"
+            )
     args.output_dir.mkdir(parents=True, exist_ok=True)
     evaluation_path = args.output_dir / f"{OUTPUT_STEMS[args.method]}_{timestamp_tag}.jsonl"
     router_path = (
@@ -232,7 +311,7 @@ def main() -> None:
 
     strategy_settings = None
     filter_behavior = None
-    if not is_fixed_separate:
+    if is_mixed:
         filter_behavior = MIXED_FILTER_BEHAVIOR
         strategy_settings = {"variant": args.method}
         if args.method == MIXED_DEDUPLICATED_METHOD:
@@ -243,24 +322,52 @@ def main() -> None:
                     "candidate_multiplier": args.dedup_candidate_multiplier,
                 }
             )
+    elif is_router_selected:
+        filter_behavior = ROUTER_SELECTED_FILTER_BEHAVIOR
+        strategy_settings = {
+            "router_model_path": router_predictor.model_path,
+            "router_model_hash": router_predictor.model_hash,
+            "router_model_version": router_predictor.model_version,
+            "router_model_choice": router_predictor.model_choice,
+            "router_selected_model_type": router_predictor.selected_model_type,
+            "oracle_evaluation_config_hash": oracle_evaluation_config_hash,
+        }
 
-    evaluation_config = build_evaluation_config(
-        method=method_name,
-        top_k=args.top_k,
-        chunk_sizes=CHUNK_SIZES,
-        embedding_model=OPENAI_EMBEDDING_MODEL,
-        embedding_dimension=EMBEDDING_DIM,
-        tokenizer=TOKENIZER_NAME,
-        chunk_collection=PAPER_CHUNK_COLLECTION,
-        question_collection=PAPER_QUESTION_COLLECTION,
-        evidence_collection=PAPER_EVIDENCE_COLLECTION,
-        evaluation_collection=args.evaluation_collection,
-        router_collection=args.router_dataset_collection,
-        router_label_tie_epsilon=args.tie_epsilon,
-        store_text=args.store_text,
-        **({"filter_behavior": filter_behavior} if filter_behavior else {}),
-        strategy_settings=strategy_settings,
-    )
+    if is_router_selected:
+        evaluation_config = build_router_selected_config(
+            top_k=args.top_k,
+            chunk_sizes=CHUNK_SIZES,
+            router_predictor=router_predictor,
+            oracle_evaluation_config_hash=oracle_evaluation_config_hash,
+            store_text=args.store_text,
+            chunk_collection=PAPER_CHUNK_COLLECTION,
+            question_collection=PAPER_QUESTION_COLLECTION,
+            evidence_collection=PAPER_EVIDENCE_COLLECTION,
+            evaluation_collection=args.evaluation_collection,
+            router_collection=args.router_dataset_collection,
+            embedding_model=OPENAI_EMBEDDING_MODEL,
+            embedding_dimension=EMBEDDING_DIM,
+            tokenizer_name=TOKENIZER_NAME,
+            tie_epsilon=args.tie_epsilon,
+        )
+    else:
+        evaluation_config = build_evaluation_config(
+            method=method_name,
+            top_k=args.top_k,
+            chunk_sizes=CHUNK_SIZES,
+            embedding_model=OPENAI_EMBEDDING_MODEL,
+            embedding_dimension=EMBEDDING_DIM,
+            tokenizer=TOKENIZER_NAME,
+            chunk_collection=PAPER_CHUNK_COLLECTION,
+            question_collection=PAPER_QUESTION_COLLECTION,
+            evidence_collection=PAPER_EVIDENCE_COLLECTION,
+            evaluation_collection=args.evaluation_collection,
+            router_collection=args.router_dataset_collection,
+            router_label_tie_epsilon=args.tie_epsilon,
+            store_text=args.store_text,
+            **({"filter_behavior": filter_behavior} if filter_behavior else {}),
+            strategy_settings=strategy_settings,
+        )
     config_hash = evaluation_config_hash(evaluation_config)
     levels = list(range(1, len(CHUNK_SIZES) + 1))
 
@@ -296,6 +403,7 @@ def main() -> None:
             PAPER_QUESTION_COLLECTION,
             split=args.split,
             limit=args.limit,
+            question_ids=args.question_ids,
         )
         logger.info(
             "Loaded %d questions; run=%s config=%s top_k=%d",
@@ -318,6 +426,13 @@ def main() -> None:
         mixed_f1_values = []
         mixed_similarity_values = []
         mixed_granularity_counts = Counter()
+        router_selected_f1_values = []
+        router_selected_regrets = []
+        router_selected_latencies = []
+        router_selected_predictions = Counter()
+        router_oracle_matches = 0
+        router_oracle_compared = 0
+        router_missing_oracles = 0
 
         with ExitStack() as stack:
             evaluation_file = stack.enter_context(
@@ -334,6 +449,7 @@ def main() -> None:
             for question_index, question in enumerate(
                 tqdm(questions, desc="Evaluating"), start=1
             ):
+                no_records_reason = "no_valid_evidence"
                 try:
                     if is_fixed_separate:
                         records = list(
@@ -359,7 +475,7 @@ def main() -> None:
                                 evaluation_timestamp=evaluation_timestamp,
                             )
                         )
-                    else:
+                    elif is_mixed:
                         mixed_record = evaluate_mixed_question(
                             client=client,
                             question_point_id=question["point_id"],
@@ -386,6 +502,38 @@ def main() -> None:
                             evaluation_timestamp=evaluation_timestamp,
                         )
                         records = [mixed_record] if mixed_record else []
+                    else:
+                        router_record, incomplete_reason = evaluate_router_selected_question(
+                            client=client,
+                            question_point_id=question["point_id"],
+                            question_vector=question["vector"],
+                            document_id=question["document_id"],
+                            question_text=question["question_text"],
+                            split=question["split"],
+                            router_predictor=router_predictor,
+                            oracle_evaluation_config_hash=oracle_evaluation_config_hash,
+                            top_k=args.top_k,
+                            store_retrieved_text=args.store_text,
+                            chunk_sizes=CHUNK_SIZES,
+                            chunk_collection=PAPER_CHUNK_COLLECTION,
+                            question_collection=PAPER_QUESTION_COLLECTION,
+                            evidence_collection=PAPER_EVIDENCE_COLLECTION,
+                            evaluation_collection=args.evaluation_collection,
+                            router_collection=args.router_dataset_collection,
+                            embedding_model=OPENAI_EMBEDDING_MODEL,
+                            embedding_dimension=EMBEDDING_DIM,
+                            tokenizer_name=TOKENIZER_NAME,
+                            evaluation_run_id=evaluation_run_id,
+                            evaluation_config_hash=config_hash,
+                            evaluation_timestamp=evaluation_timestamp,
+                        )
+                        if router_record is None:
+                            records = []
+                            no_records_reason = (
+                                incomplete_reason or "router_selected_incomplete"
+                            )
+                        else:
+                            records = [router_record]
                 except Exception as exc:
                     incomplete_questions += 1
                     logger.exception(
@@ -407,14 +555,17 @@ def main() -> None:
                     continue
 
                 if not records:
-                    skipped_no_evidence += 1
+                    if no_records_reason == "no_valid_evidence":
+                        skipped_no_evidence += 1
+                    else:
+                        incomplete_questions += 1
                     incomplete_file.write(
                         json.dumps(
                             {
                                 "question_id": question["point_id"],
                                 "document_id": question["document_id"],
                                 "split": question["split"],
-                                "reason": "no_valid_evidence",
+                                "reason": no_records_reason,
                                 "evaluation_run_id": evaluation_run_id,
                                 "evaluation_config_hash": config_hash,
                             }
@@ -432,7 +583,7 @@ def main() -> None:
                         per_gran_similarity[level].append(
                             record["mean_max_evidence_similarity_topk"]
                         )
-                    else:
+                    elif is_mixed:
                         mixed_f1_values.append(record["f1_joined_topk"])
                         mixed_similarity_values.append(
                             record["mean_max_evidence_similarity_topk"]
@@ -441,6 +592,19 @@ def main() -> None:
                             mixed_granularity_counts[item["granularity_level"]] += item[
                                 "count"
                             ]
+                    elif is_router_selected:
+                        router_selected_f1_values.append(record["f1_joined_topk"])
+                        if record.get("regret_f1") is not None:
+                            router_selected_regrets.append(record["regret_f1"])
+                        router_selected_latencies.append(record.get("total_latency_ms", 0.0))
+                        router_selected_predictions[
+                            record["predicted_granularity_tokens"]
+                        ] += 1
+                        if record.get("router_oracle_match") is not None:
+                            router_oracle_compared += 1
+                            router_oracle_matches += int(record["router_oracle_match"])
+                        if record.get("oracle_lookup_status") in {"missing", "duplicate"}:
+                            router_missing_oracles += 1
                     if evaluation_upserter:
                         evaluation_upserter.add(
                             point_id=record["eval_id"], payload=record, vector={}
@@ -544,7 +708,7 @@ def main() -> None:
             )
             logger.info("router_target_distribution=%s", dict(router_distribution))
             logger.info("f1_similarity_label_disagreements=%d", disagreements)
-        else:
+        elif is_mixed:
             logger.info(
                 "method=%s records=%d mean_joined_f1=%.6f "
                 "mean_evidence_similarity=%.6f",
@@ -563,6 +727,46 @@ def main() -> None:
                     CHUNK_SIZES[level - 1]: mixed_granularity_counts[level]
                     for level in levels
                 },
+            )
+        else:
+            logger.info(
+                "method=%s records=%d mean_joined_f1=%.6f median_joined_f1=%.6f",
+                method_name,
+                len(router_selected_f1_values),
+                sum(router_selected_f1_values) / len(router_selected_f1_values)
+                if router_selected_f1_values
+                else 0.0,
+                median(router_selected_f1_values)
+                if router_selected_f1_values
+                else 0.0,
+            )
+            logger.info(
+                "predicted_granularity_distribution=%s",
+                dict(router_selected_predictions),
+            )
+            logger.info(
+                "router_oracle_match_rate=%.6f compared=%d missing_oracle_records=%d",
+                router_oracle_matches / router_oracle_compared
+                if router_oracle_compared
+                else 0.0,
+                router_oracle_compared,
+                router_missing_oracles,
+            )
+            logger.info(
+                "mean_regret_f1=%.6f",
+                sum(router_selected_regrets) / len(router_selected_regrets)
+                if router_selected_regrets
+                else 0.0,
+            )
+            logger.info(
+                "latency_ms mean=%.2f median=%.2f max=%.2f",
+                sum(router_selected_latencies) / len(router_selected_latencies)
+                if router_selected_latencies
+                else 0.0,
+                median(router_selected_latencies)
+                if router_selected_latencies
+                else 0.0,
+                max(router_selected_latencies) if router_selected_latencies else 0.0,
             )
         logger.info("evaluation_jsonl=%s", evaluation_path)
         if router_path:
