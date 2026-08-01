@@ -1,0 +1,15 @@
+{
+  "instruction": "You are a router for a retrieval-augmented generation system. Based only on the question, select the chunk size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 10, 20, 40, 80, 160. Return only the number.",
+  "question_format": "{instruction}\\n\\nQuestion: {original_question_text}",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "<formatted prompt>"
+        }
+      ]
+    }
+  ]
+}

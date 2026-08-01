@@ -1,0 +1,65 @@
+{
+  "label_version": "oracle-evidence-length-gpt2-smaller-midpoint-v1",
+  "candidate_classes": [
+    10,
+    20,
+    40,
+    80,
+    160
+  ],
+  "tokenizer": "gpt2",
+  "tie_rule": "smaller_candidate",
+  "source_router_evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+  "splits": {
+    "train": {
+      "total": 2245,
+      "classes": {
+        "10": {
+          "count": 55,
+          "percentage": 2.4498886414253898
+        },
+        "20": {
+          "count": 267,
+          "percentage": 11.893095768374165
+        },
+        "40": {
+          "count": 586,
+          "percentage": 26.102449888641427
+        },
+        "80": {
+          "count": 687,
+          "percentage": 30.601336302895323
+        },
+        "160": {
+          "count": 650,
+          "percentage": 28.953229398663698
+        }
+      }
+    },
+    "validation": {
+      "total": 924,
+      "classes": {
+        "10": {
+          "count": 13,
+          "percentage": 1.406926406926407
+        },
+        "20": {
+          "count": 81,
+          "percentage": 8.766233766233766
+        },
+        "40": {
+          "count": 178,
+          "percentage": 19.264069264069263
+        },
+        "80": {
+          "count": 232,
+          "percentage": 25.10822510822511
+        },
+        "160": {
+          "count": 420,
+          "percentage": 45.45454545454545
+        }
+      }
+    }
+  }
+}

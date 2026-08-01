@@ -1,0 +1,12 @@
+# Qwen-only Phase 1/Phase 2 environment. Do not install into the legacy .venv.
+# Install torch/torchvision from the CPU wheel index first; see docs/QWEN_ENVIRONMENT.md.
+transformers @ git+https://github.com/huggingface/transformers.git@2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7
+qdrant-client==1.16.1
+numpy==2.0.2
+openai==2.19.0
+python-dotenv==1.2.1
+tqdm==4.67.3
+pytest==9.1.1
+matplotlib==3.10.9
+psutil==7.2.2
+pillow==12.2.0

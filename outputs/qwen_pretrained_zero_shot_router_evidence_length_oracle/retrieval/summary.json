@@ -1,0 +1,16 @@
+{
+  "evaluated_examples": 924,
+  "valid_prediction_retrievals": 924,
+  "invalid_predictions_without_retrieval": 0,
+  "retrieval_coverage": 1.0,
+  "valid_only_mean_joined_retrieval_f1": 0.23910868506493507,
+  "valid_only_median_joined_retrieval_f1": 0.2210845,
+  "coverage_adjusted_full_set_mean_joined_retrieval_f1": 0.23910868506493507,
+  "full_set_note": "Invalid outputs have no fabricated retrieval record. The coverage-adjusted aggregate assigns zero contribution only when summarizing the complete set; the valid-only mean is reported separately.",
+  "top_k": 5,
+  "paper_restricted": true,
+  "embedding_model": "text-embedding-3-small",
+  "tokenizer": "gpt2",
+  "metric": "f1_joined_topk",
+  "current_segment_wall_seconds": 367.7590293000012
+}

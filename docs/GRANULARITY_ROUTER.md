@@ -97,4 +97,25 @@ Predict from `PaperQuestion` embeddings without accessing oracle/evidence payloa
 
 ## Current data readiness
 
+## Pretrained Qwen3.5-0.8B Phase 1 result
+
+The Phase 1 Qwen router is separate from the embedding routers. Logistic
+Regression and MLP consume 1,536-dimensional question embeddings;
+`Qwen/Qwen3.5-0.8B` consumes only the fixed instruction and original question
+text. No evidence, answer, paper content, retrieval output, embedding,
+metadata, or handcrafted feature is supplied.
+
+The evidence-length Oracle strips, exact-deduplicates, sorts, and newline-joins
+all evidence spans, counts GPT-2 tokens, and selects the nearest class with
+smaller-candidate midpoint ties. Validation support for 10/20/40/80/160 is
+13/81/178/232/420, making class 160 the 45.45% majority. Qwen predictions were
+767/40/116/0/1. Its accuracy/macro-F1/weighted F1 was
+0.040043/0.049046/0.032613; all 924 outputs were valid. Unchanged same-paper
+top-five retrieval achieved mean joined retrieval F1 0.239109 with 100%
+coverage. Top-2 accuracy is unavailable.
+
+These classification results are not directly comparable with earlier
+Logistic/MLP results because those use the old retrieval-F1 Oracle. See
+`docs/QWEN_PHASE1_RESULTS.md` and the standalone experiment report.
+
 As checked on 2026-06-22, the local `RouterDataset` contains two validation records, both targeting the 20-token class, under two different evaluation configuration hashes. It contains no train records. The live training command therefore stops with `No QASPER train router examples exist for the selected configuration`; no scientifically valid model has been trained from the live collection yet. Generate complete train and validation oracle records with one frozen evaluation configuration before training.

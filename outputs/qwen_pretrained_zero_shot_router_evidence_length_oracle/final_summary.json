@@ -1,0 +1,49 @@
+{
+  "status": "complete",
+  "evaluated_examples": 924,
+  "model_id": "Qwen/Qwen3.5-0.8B",
+  "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+  "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+  "python_version": "3.10.7",
+  "torch_version": "2.8.0+cpu",
+  "device": "cpu",
+  "dtype": "torch.bfloat16",
+  "quantization": null,
+  "classification": {
+    "accuracy": 0.04004329004329004,
+    "macro_f1": 0.049045932422555796,
+    "weighted_f1": 0.032612933907418644,
+    "balanced_accuracy": 0.23369399361908724,
+    "top_2_accuracy": null,
+    "top_2_accuracy_status": "unavailable_no_comparable_class_scores"
+  },
+  "oracle_distribution": {"10": 13, "20": 81, "40": 178, "80": 232, "160": 420},
+  "predicted_distribution": {"10": 767, "20": 40, "40": 116, "80": 0, "160": 1},
+  "invalid_outputs": 0,
+  "invalid_output_percentage": 0.0,
+  "valid_outputs": 924,
+  "valid_output_rate": 1.0,
+  "majority_class": 160,
+  "majority_baseline_accuracy": 0.45454545454545453,
+  "majority_baseline_macro_f1": 0.125,
+  "retrieval": {
+    "coverage": 1.0,
+    "valid_only_mean_joined_f1": 0.23910868506493507,
+    "valid_only_median_joined_f1": 0.2210845,
+    "coverage_adjusted_full_set_mean_joined_f1": 0.23910868506493507,
+    "top_k": 5,
+    "paper_restricted": true
+  },
+  "runtime": {
+    "inference_wall_seconds": 5774.1708899,
+    "total_generation_seconds": 5745.052051800007,
+    "mean_inference_seconds": 6.217588800649358,
+    "median_inference_seconds": 4.982720050000353,
+    "retrieval_wall_seconds": 367.7590293000012,
+    "known_inference_plus_retrieval_wall_seconds": 6141.929919200001,
+    "approximate_peak_rss_gib": 2.8409423828125
+  },
+  "parameter_updates": 0,
+  "optimizer_created": false,
+  "backward_passes": 0
+}

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620">
+<rect width="100%" height="100%" fill="white"/>
+<style>text{font-family:Arial,sans-serif;fill:#222}.axis{stroke:#333;stroke-width:1}.grid{stroke:#ddd;stroke-width:1}</style>
+<text x="500" y="32" text-anchor="middle" font-size="22" font-weight="bold">Oracle granularity distribution (test unavailable)</text>
+<line class="grid" x1="90" y1="520.0" x2="950" y2="520.0"/>
+<text x="78" y="525.0" text-anchor="end" font-size="13">0%</text>
+<line class="grid" x1="90" y1="455.7142857142857" x2="950" y2="455.7142857142857"/>
+<text x="78" y="460.7142857142857" text-anchor="end" font-size="13">5%</text>
+<line class="grid" x1="90" y1="391.42857142857144" x2="950" y2="391.42857142857144"/>
+<text x="78" y="396.42857142857144" text-anchor="end" font-size="13">10%</text>
+<line class="grid" x1="90" y1="327.14285714285717" x2="950" y2="327.14285714285717"/>
+<text x="78" y="332.14285714285717" text-anchor="end" font-size="13">15%</text>
+<line class="grid" x1="90" y1="262.8571428571429" x2="950" y2="262.8571428571429"/>
+<text x="78" y="267.8571428571429" text-anchor="end" font-size="13">20%</text>
+<line class="grid" x1="90" y1="198.57142857142856" x2="950" y2="198.57142857142856"/>
+<text x="78" y="203.57142857142856" text-anchor="end" font-size="13">25%</text>
+<line class="grid" x1="90" y1="134.28571428571433" x2="950" y2="134.28571428571433"/>
+<text x="78" y="139.28571428571433" text-anchor="end" font-size="13">30%</text>
+<line class="grid" x1="90" y1="70.0" x2="950" y2="70.0"/>
+<text x="78" y="75.0" text-anchor="end" font-size="13">35%</text>
+<line class="axis" x1="90" y1="70" x2="90" y2="520"/>
+<line class="axis" x1="90" y1="520" x2="950" y2="520"/>
+<rect x="120" y="256.5574292077633" width="28" height="263.4425707922367" fill="#4C78A8"><title>train: 10 tokens, 460 (20.49%)</title></rect>
+<rect x="156" y="329.3692022263451" width="28" height="190.63079777365488" fill="#F58518"><title>validation: 10 tokens, 137 (14.83%)</title></rect>
+<rect x="192" y="277.7874949285489" width="28" height="242.21250507145112" fill="#54A24B"><title>available_combined: 10 tokens, 597 (18.84%)</title></rect>
+<text x="170" y="545" text-anchor="middle" font-size="15">10</text>
+<rect x="290" y="133.42666242443528" width="28" height="386.5733375755647" fill="#4C78A8"><title>train: 20 tokens, 675 (30.07%)</title></rect>
+<rect x="326" y="193.0055658627087" width="28" height="326.9944341372913" fill="#F58518"><title>validation: 20 tokens, 235 (25.43%)</title></rect>
+<rect x="362" y="150.79835910381826" width="28" height="369.20164089618174" fill="#54A24B"><title>available_combined: 20 tokens, 910 (28.72%)</title></rect>
+<text x="340" y="545" text-anchor="middle" font-size="15">20</text>
+<rect x="460" y="127.12694877505567" width="28" height="392.87305122494433" fill="#4C78A8"><title>train: 40 tokens, 686 (30.56%)</title></rect>
+<rect x="496" y="126.21521335807051" width="28" height="393.7847866419295" fill="#F58518"><title>validation: 40 tokens, 283 (30.63%)</title></rect>
+<rect x="532" y="126.86110985890099" width="28" height="393.138890141099" fill="#54A24B"><title>available_combined: 40 tokens, 969 (30.58%)</title></rect>
+<text x="510" y="545" text-anchor="middle" font-size="15">40</text>
+<rect x="630" y="323.56347438752783" width="28" height="196.43652561247217" fill="#4C78A8"><title>train: 80 tokens, 343 (15.28%)</title></rect>
+<rect x="666" y="259.7959183673469" width="28" height="260.2040816326531" fill="#F58518"><title>validation: 80 tokens, 187 (20.24%)</title></rect>
+<rect x="702" y="304.9704728846414" width="28" height="215.02952711535858" fill="#54A24B"><title>available_combined: 80 tokens, 530 (16.72%)</title></rect>
+<text x="680" y="545" text-anchor="middle" font-size="15">80</text>
+<rect x="800" y="473.6111994909322" width="28" height="46.38880050906778" fill="#4C78A8"><title>train: 160 tokens, 81 (3.61%)</title></rect>
+<rect x="836" y="405.8998144712431" width="28" height="114.10018552875692" fill="#F58518"><title>validation: 160 tokens, 82 (8.87%)</title></rect>
+<rect x="872" y="453.8682775098048" width="28" height="66.13172249019522" fill="#54A24B"><title>available_combined: 160 tokens, 163 (5.14%)</title></rect>
+<text x="850" y="545" text-anchor="middle" font-size="15">160</text>
+<text x="520" y="580" text-anchor="middle" font-size="16">Granularity (tokens)</text>
+<rect x="300" y="595" width="18" height="12" fill="#4C78A8"/>
+<text x="325" y="606" font-size="13">train</text>
+<rect x="490" y="595" width="18" height="12" fill="#F58518"/>
+<text x="515" y="606" font-size="13">validation</text>
+<rect x="680" y="595" width="18" height="12" fill="#54A24B"/>
+<text x="705" y="606" font-size="13">available combined</text>
+</svg>

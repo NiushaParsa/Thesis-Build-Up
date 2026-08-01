@@ -2,5 +2,9 @@
 *__pycache__/
 *.pyc
 .env
+.venv-qwen/
+.venv-qwen-repair-backup/
+tmp/huggingface_qwen_cache/
+tmp/matplotlib/
 json_output/
 checkpoint.json

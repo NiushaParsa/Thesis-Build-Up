@@ -1,0 +1,187 @@
+{
+  "artifact": "models/granularity_router/frozen_topk5/router_model.pt",
+  "oracle_evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+  "candidate_granularities_tokens": [
+    10,
+    20,
+    40,
+    80,
+    160
+  ],
+  "top_k": 5,
+  "oracle_distributions": {
+    "train": {
+      "10": {
+        "count": 460,
+        "percentage": 20.489977728285076
+      },
+      "20": {
+        "count": 675,
+        "percentage": 30.066815144766146
+      },
+      "40": {
+        "count": 686,
+        "percentage": 30.556792873051226
+      },
+      "80": {
+        "count": 343,
+        "percentage": 15.278396436525613
+      },
+      "160": {
+        "count": 81,
+        "percentage": 3.6080178173719375
+      }
+    },
+    "validation": {
+      "10": {
+        "count": 137,
+        "percentage": 14.826839826839826
+      },
+      "20": {
+        "count": 235,
+        "percentage": 25.432900432900432
+      },
+      "40": {
+        "count": 283,
+        "percentage": 30.627705627705627
+      },
+      "80": {
+        "count": 187,
+        "percentage": 20.238095238095237
+      },
+      "160": {
+        "count": 82,
+        "percentage": 8.874458874458874
+      }
+    },
+    "test": null,
+    "available_combined": {
+      "10": {
+        "count": 597,
+        "percentage": 18.838750394446198
+      },
+      "20": {
+        "count": 910,
+        "percentage": 28.715683180814136
+      },
+      "40": {
+        "count": 969,
+        "percentage": 30.57746923319659
+      },
+      "80": {
+        "count": 530,
+        "percentage": 16.724518775639
+      },
+      "160": {
+        "count": 163,
+        "percentage": 5.143578415904071
+      }
+    },
+    "all_official_splits": null
+  },
+  "test_status": "unavailable: zero RouterDataset records for test under the artifact evaluation_config_hash; model report says test_evaluated=false",
+  "majority_class": 40,
+  "majority_baseline": {
+    "train_prevalence": 0.30556792873051225,
+    "validation_accuracy_using_train_majority": 0.30627705627705626
+  },
+  "selected_router_validation_metrics": {
+    "accuracy": 0.24783549783549783,
+    "macro_f1": 0.21488823387106787,
+    "weighted_f1": 0.24392437277987059,
+    "balanced_accuracy": 0.214545396519922,
+    "top_2_accuracy": 0.45346320346320346,
+    "per_class": {
+      "10": {
+        "precision": 0.15204678362573099,
+        "recall": 0.1897810218978102,
+        "f1": 0.16883116883116883,
+        "support": 137
+      },
+      "20": {
+        "precision": 0.25769230769230766,
+        "recall": 0.2851063829787234,
+        "f1": 0.2707070707070707,
+        "support": 235
+      },
+      "40": {
+        "precision": 0.31543624161073824,
+        "recall": 0.3321554770318021,
+        "f1": 0.3235800344234079,
+        "support": 283
+      },
+      "80": {
+        "precision": 0.21951219512195122,
+        "recall": 0.1925133689839572,
+        "f1": 0.20512820512820515,
+        "support": 187
+      },
+      "160": {
+        "precision": 0.1935483870967742,
+        "recall": 0.07317073170731707,
+        "f1": 0.10619469026548671,
+        "support": 82
+      }
+    },
+    "confusion_matrix": [
+      [
+        26,
+        47,
+        39,
+        24,
+        1
+      ],
+      [
+        42,
+        67,
+        78,
+        41,
+        7
+      ],
+      [
+        52,
+        79,
+        94,
+        47,
+        11
+      ],
+      [
+        36,
+        43,
+        66,
+        36,
+        6
+      ],
+      [
+        15,
+        24,
+        21,
+        16,
+        6
+      ]
+    ],
+    "class_distribution": {
+      "10": 137,
+      "20": 235,
+      "40": 283,
+      "80": 187,
+      "160": 82
+    }
+  },
+  "validation_true_distribution": {
+    "10": 137,
+    "20": 235,
+    "40": 283,
+    "80": 187,
+    "160": 82
+  },
+  "validation_predicted_distribution": {
+    "10": 171,
+    "20": 260,
+    "40": 298,
+    "80": 164,
+    "160": 31
+  },
+  "confusion_matrix_orientation": "rows=true, columns=predicted; class order [10,20,40,80,160]",
+  "imbalance_observation": "Moderate multiclass imbalance; class 160 is rarest (3.61% train), while 40 is largest (30.56% train)."
+}

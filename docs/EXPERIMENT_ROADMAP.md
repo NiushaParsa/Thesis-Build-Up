@@ -404,4 +404,22 @@ A later reproducibility guide should add, at minimum:
 
 ## Completion definition
 
+## Qwen router phases
+
+Phase 1 is complete for the pretrained `Qwen/Qwen3.5-0.8B`: separate
+evidence-length Oracle generation, 924-question zero-shot validation,
+classification reporting, and unchanged end-to-end retrieval are finished.
+Accuracy/macro-F1/weighted F1 is 0.040043/0.049046/0.032613, all outputs are
+valid, and mean joined retrieval F1 is 0.239109 at 100% coverage. The new
+Oracle is strongly imbalanced toward class 160 (420/924, 45.45%), whereas Qwen
+predicts class 10 for 767/924 examples. See `docs/QWEN_PHASE1_RESULTS.md`.
+
+Phase 2 will fine-tune the same model separately in `.venv-qwen`, using the
+same evidence-length Oracle, examples, splits, and evaluation conditions. It
+must not overwrite or merge with this pretrained Phase 1 baseline.
+
+The Qwen interpreter audit, separate-environment rationale, minimal dependency
+manifest, exact package lock, and recreation commands are recorded in
+`docs/QWEN_ENVIRONMENT.md`. The legacy `.venv` remains separate and unchanged.
+
 The roadmap is complete when ingestion is validated, all planned evaluators and router components exist with automated tests, full split-safe experiments have immutable record-level artifacts, and the final statistical comparison can be reproduced from a clean environment without undocumented manual steps. Fixed-separate, oracle-label generation, mixed retrieval, and leakage-safe router training/prediction code now exist. Full oracle generation, live router training, routed evaluation, and final analysis remain unfinished.

@@ -1,0 +1,184 @@
+{
+  "classification_metrics": {
+    "accuracy": 0.04004329004329004,
+    "macro_f1": 0.049045932422555796,
+    "weighted_f1": 0.032612933907418644,
+    "balanced_accuracy": 0.23369399361908724,
+    "top_2_accuracy": null,
+    "top_2_accuracy_status": "unavailable_no_comparable_class_scores",
+    "per_class": {
+      "10": {
+        "precision": 0.01694915254237288,
+        "recall": 1.0,
+        "f1": 0.03333333333333333,
+        "support": 13
+      },
+      "20": {
+        "precision": 0.125,
+        "recall": 0.06172839506172839,
+        "f1": 0.08264462809917356,
+        "support": 81
+      },
+      "40": {
+        "precision": 0.16379310344827586,
+        "recall": 0.10674157303370786,
+        "f1": 0.1292517006802721,
+        "support": 178
+      },
+      "80": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 232
+      },
+      "160": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 420
+      }
+    },
+    "confusion_matrix": [
+      [
+        13,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        73,
+        5,
+        2,
+        0,
+        1
+      ],
+      [
+        155,
+        4,
+        19,
+        0,
+        0
+      ],
+      [
+        197,
+        10,
+        25,
+        0,
+        0
+      ],
+      [
+        329,
+        21,
+        70,
+        0,
+        0
+      ]
+    ],
+    "confusion_matrix_note": "5x5 valid-prediction matrix; invalid outputs are omitted from cells but remain false negatives in support, recall, F1, and complete-set accuracy",
+    "evaluated_examples": 924,
+    "valid_predictions": 924,
+    "invalid_predictions": 0
+  },
+  "oracle_distribution": {
+    "10": 13,
+    "20": 81,
+    "40": 178,
+    "80": 232,
+    "160": 420
+  },
+  "predicted_distribution": {
+    "10": 767,
+    "20": 40,
+    "40": 116,
+    "80": 0,
+    "160": 1
+  },
+  "invalid_output_count": 0,
+  "invalid_output_percentage": 0.0,
+  "valid_output_count": 924,
+  "majority_class": 160,
+  "majority_baseline_accuracy": 0.45454545454545453,
+  "majority_baseline_macro_f1": 0.125,
+  "majority_baseline_metrics": {
+    "accuracy": 0.45454545454545453,
+    "macro_f1": 0.125,
+    "weighted_f1": 0.2840909090909091,
+    "balanced_accuracy": 0.2,
+    "top_2_accuracy": null,
+    "top_2_accuracy_status": "unavailable_no_comparable_class_scores",
+    "per_class": {
+      "10": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13
+      },
+      "20": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 81
+      },
+      "40": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 178
+      },
+      "80": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 232
+      },
+      "160": {
+        "precision": 0.45454545454545453,
+        "recall": 1.0,
+        "f1": 0.625,
+        "support": 420
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        0,
+        0,
+        13
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        81
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        178
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        232
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        420
+      ]
+    ],
+    "confusion_matrix_note": "5x5 valid-prediction matrix; invalid outputs are omitted from cells but remain false negatives in support, recall, F1, and complete-set accuracy",
+    "evaluated_examples": 924,
+    "valid_predictions": 924,
+    "invalid_predictions": 0
+  }
+}
