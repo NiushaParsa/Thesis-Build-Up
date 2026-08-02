@@ -1,0 +1,2 @@
+-r requirements-qwen.txt
+tensorboard==2.20.0
