@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "verified_at": "2026-08-08T16:33:12.7593856Z",
+  "source_instance_id": 46617164,
+  "source_checkpoint": "/dev/shm/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/runs/qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1/checkpoints/step-000213",
+  "destination_checkpoint": "outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/runs/qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1/checkpoints/step-000213",
+  "transfer_archive": {
+    "sha256": "2dd4d23ff77179e1b33e522829cb2fdd6dd12684500a2158cc95f5f79a242a56",
+    "bytes": 2886773596,
+    "chunks": 28,
+    "remote_and_local_hash_match": true
+  },
+  "metadata_archive": {
+    "sha256": "178a5ed25f6fd62270e1ba1814811d352f9d6d2073303d7cb2cb0a0e036fa4f8",
+    "remote_and_local_hash_match": true
+  },
+  "checkpoint_files": {
+    "model/chat_template.jinja": "273d8e0e683b885071fb17e08d71e5f2a5ddfb5309756181681de4f5a1822d80",
+    "model/config.json": "673afcf342eaf36ad7199497c41096e6c708cf507cd9b9bb2ae39021b936e99d",
+    "model/model.safetensors": "020af0a83af773239e7e60e9983afad29cae3f31493c7073e9162e040b732814",
+    "model/tokenizer.json": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523",
+    "model/tokenizer_config.json": "8671bed7c852ce9e661be94f179a7b4ffd091c2a65aea0363e5501c20318ee45",
+    "optimizer.pt": "c28574d57ad40573809ef89fa1ee47a0744efc091f4e76b448dcacf268bf0a50",
+    "random_states.pt": "ba9f0d77b032bdbc48f609766b66f7b9da1b9cc3847bbadc84fc2aad0097fd88",
+    "scheduler.pt": "e36840627572c3cd524a43a1e55903dc6c03f7189b9d35a0b653108c3522dcd7",
+    "training_state.json": "ad6618632d0c7ee5eb0e370c7bcb21442ac3d0ff08ddebabe49b68eef802e7c9"
+  },
+  "checkpoint_file_count": 9,
+  "all_remote_and_local_file_hashes_match": true,
+  "note": "The selected checkpoint and non-checkpoint metadata were transferred from the ephemeral Vast.ai instance as independently hashed archives. The checkpoint archive was split into 28 chunks, reconstructed locally, verified against the remote archive SHA-256, extracted, and then verified file by file against the remote SHA-256 manifest."
+}

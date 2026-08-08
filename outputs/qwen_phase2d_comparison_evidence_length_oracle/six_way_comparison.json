@@ -1,0 +1,523 @@
+{
+  "status": "complete",
+  "comparison": "Qwen Phases 1, 2, 2B-A, 2B-B, 2C, and 2D under the evidence-length Oracle",
+  "evaluated_examples": 924,
+  "oracle_distribution": {
+    "10": 13,
+    "20": 81,
+    "40": 178,
+    "80": 232,
+    "160": 420
+  },
+  "prompt_only_protocol_audit": {
+    "status": "passed",
+    "relationship": "prompt_only_single_seed_ablation",
+    "phase2c_instruction_sha256": "9e879535647c2bfcd3627d0d65f84c36a1bf442ed95bb5b07029c878ca990de7",
+    "phase2d_instruction_sha256": "b3237368922abe709e2bd2d756fb9f25d39e7f5670e5c4cb15daaa3a2d1cf2e5",
+    "only_semantic_change": {
+      "phase2c_mapping": "1 = very short context, 2 = short context, 3 = medium context, 4 = long context, 5 = very long context",
+      "phase2d_mapping": "1 = 10 tokens, 2 = 20 tokens, 3 = 40 tokens, 4 = 80 tokens, 5 = 160 tokens"
+    },
+    "allowed_training_metadata_differences": [
+      "created_at",
+      "experiment_fingerprint",
+      "formulation_version",
+      "instruction",
+      "instruction_sha256",
+      "output_root",
+      "repository_commit",
+      "resume_contract_sha256",
+      "run_id",
+      "training_script_sha256"
+    ],
+    "allowed_dataset_consequences": [
+      "created_at",
+      "experiment_fingerprint",
+      "sequence_length",
+      "verified_at"
+    ],
+    "frozen_model_id": "Qwen/Qwen3.5-0.8B-Base",
+    "frozen_model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "train_oracle_sha256": "64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88",
+    "validation_oracle_sha256": "ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d",
+    "phase2c": {
+      "summary": "outputs\\qwen_phase2c_sequence_classifier_evidence_length_oracle\\final_summary.json",
+      "training_config": "outputs\\qwen_phase2c_sequence_classifier_evidence_length_oracle\\runs\\qwen-phase2c-base-sequence-classifier-full-parameter-20260804-seed42-v1\\training_config.json",
+      "training_config_sha256": "1cc29aedce526960b226161437308598039499bf42e58bc1ca756906d7ecdcc5",
+      "dataset_manifest": "outputs\\qwen_phase2c_sequence_classifier_evidence_length_oracle\\runs\\qwen-phase2c-base-sequence-classifier-full-parameter-20260804-seed42-v1\\dataset_manifest.json",
+      "dataset_manifest_sha256": "4067b67172d992fffe5f36e3a7a95f23aea03e08c56d22918af5e7e5d7d5a53b"
+    },
+    "phase2d": {
+      "summary": "outputs\\qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle\\final_summary.json",
+      "training_config": "outputs\\qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle\\runs\\qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1\\training_config.json",
+      "training_config_sha256": "8d65efdf42a116dfecf685afaeca603d36e94e72faf6d556572d42386904bbed",
+      "dataset_manifest": "outputs\\qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle\\runs\\qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1\\dataset_manifest.json",
+      "dataset_manifest_sha256": "9f692bc8b4078760c6af0075ae808fb615dd58bc603c81d51a577cf356f73ba3"
+    }
+  },
+  "retrieval_identity_handling": {
+    "phase1_zero_shot": {
+      "status": "accepted_explicit_legacy_schema",
+      "mode": "legacy_topk_paper_only",
+      "validated": {
+        "top_k": 5,
+        "paper_restricted": true
+      },
+      "legacy_missing_fields": [
+        "embedding_dimension",
+        "embedding_model",
+        "evaluation_config_hash",
+        "metric",
+        "metric_version",
+        "normalization_version",
+        "schema_version",
+        "tokenizer"
+      ]
+    },
+    "phase2_numeric_sft": {
+      "status": "accepted_explicit_legacy_schema",
+      "mode": "legacy_partial",
+      "validated": {
+        "top_k": 5,
+        "paper_restricted": true,
+        "embedding_model": "text-embedding-3-small",
+        "tokenizer": "gpt2",
+        "metric": "f1_joined_topk"
+      },
+      "legacy_missing_fields": [
+        "embedding_dimension",
+        "evaluation_config_hash",
+        "metric_version",
+        "normalization_version",
+        "schema_version"
+      ]
+    },
+    "phase2b_alias_unweighted": {
+      "status": "complete_frozen_identity",
+      "mode": "full",
+      "validated": {
+        "top_k": 5,
+        "paper_restricted": true,
+        "embedding_model": "text-embedding-3-small",
+        "embedding_dimension": 1536,
+        "tokenizer": "gpt2",
+        "metric": "f1_joined_topk",
+        "evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+        "schema_version": 2,
+        "metric_version": "qasper-token-prf-v2",
+        "normalization_version": "lowercase-remove-punctuation-collapse-whitespace-v1"
+      },
+      "legacy_missing_fields": []
+    },
+    "phase2b_alias_classbalanced": {
+      "status": "complete_frozen_identity",
+      "mode": "full",
+      "validated": {
+        "top_k": 5,
+        "paper_restricted": true,
+        "embedding_model": "text-embedding-3-small",
+        "embedding_dimension": 1536,
+        "tokenizer": "gpt2",
+        "metric": "f1_joined_topk",
+        "evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+        "schema_version": 2,
+        "metric_version": "qasper-token-prf-v2",
+        "normalization_version": "lowercase-remove-punctuation-collapse-whitespace-v1"
+      },
+      "legacy_missing_fields": []
+    },
+    "phase2c_base_sequence_classifier": {
+      "status": "complete_frozen_identity",
+      "mode": "full",
+      "validated": {
+        "top_k": 5,
+        "paper_restricted": true,
+        "embedding_model": "text-embedding-3-small",
+        "embedding_dimension": 1536,
+        "tokenizer": "gpt2",
+        "metric": "f1_joined_topk",
+        "evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+        "schema_version": 2,
+        "metric_version": "qasper-token-prf-v2",
+        "normalization_version": "lowercase-remove-punctuation-collapse-whitespace-v1"
+      },
+      "legacy_missing_fields": []
+    },
+    "phase2d_base_sequence_classifier_token_count_prompt": {
+      "status": "complete_frozen_identity",
+      "mode": "full",
+      "validated": {
+        "top_k": 5,
+        "paper_restricted": true,
+        "embedding_model": "text-embedding-3-small",
+        "embedding_dimension": 1536,
+        "tokenizer": "gpt2",
+        "metric": "f1_joined_topk",
+        "evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+        "schema_version": 2,
+        "metric_version": "qasper-token-prf-v2",
+        "normalization_version": "lowercase-remove-punctuation-collapse-whitespace-v1"
+      },
+      "legacy_missing_fields": []
+    }
+  },
+  "comparability_note": "All rows use the same preserved validation questions, evidence-length Oracle, five chunk classes, and downstream retrieval. Phase 2C and Phase 2D form a prompt-only single-seed ablation: Phase 2D replaces the qualitative 1--5 context descriptions with exact 10/20/40/80/160 token counts while preserving the Base checkpoint, classifier, data, optimization, seed, selection rule, and retrieval configuration. Earlier cross-phase differences remain multiply confounded.",
+  "rows": [
+    {
+      "name": "phase1_zero_shot",
+      "source": "outputs\\qwen_pretrained_zero_shot_router_evidence_length_oracle\\final_summary.json",
+      "status": "complete",
+      "phase": null,
+      "variant": null,
+      "formulation_version": null,
+      "run_id": null,
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "evaluated_examples": 924,
+      "oracle_distribution": {
+        "10": 13,
+        "20": 81,
+        "40": 178,
+        "80": 232,
+        "160": 420
+      },
+      "predicted_distribution": {
+        "10": 767,
+        "20": 40,
+        "40": 116,
+        "80": 0,
+        "160": 1
+      },
+      "valid_output_rate": 1.0,
+      "accuracy": 0.04004329004329004,
+      "macro_f1": 0.049045932422555796,
+      "weighted_f1": 0.032612933907418644,
+      "balanced_accuracy": 0.23369399361908724,
+      "top_2_accuracy": null,
+      "top_2_accuracy_status": "unavailable_no_comparable_class_scores",
+      "retrieval_coverage": 1.0,
+      "mean_joined_retrieval_f1": 0.23910868506493507,
+      "median_joined_retrieval_f1": 0.2210845,
+      "top_k": 5,
+      "paper_restricted": true,
+      "retrieval_identity": {
+        "status": "accepted_explicit_legacy_schema",
+        "mode": "legacy_topk_paper_only",
+        "validated": {
+          "top_k": 5,
+          "paper_restricted": true
+        },
+        "legacy_missing_fields": [
+          "embedding_dimension",
+          "embedding_model",
+          "evaluation_config_hash",
+          "metric",
+          "metric_version",
+          "normalization_version",
+          "schema_version",
+          "tokenizer"
+        ]
+      },
+      "known_total_runtime_seconds": 6141.929919200001
+    },
+    {
+      "name": "phase2_numeric_sft",
+      "source": "outputs\\qwen_finetuned_router_evidence_length_oracle\\final_summary.json",
+      "status": "complete",
+      "phase": "Phase 2 full-parameter supervised fine-tuning",
+      "variant": null,
+      "formulation_version": null,
+      "run_id": "qwen-phase2-full-parameter-20260802-seed42-v2",
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "evaluated_examples": 924,
+      "oracle_distribution": {
+        "10": 13,
+        "20": 81,
+        "40": 178,
+        "80": 232,
+        "160": 420
+      },
+      "predicted_distribution": {
+        "10": 0,
+        "20": 0,
+        "40": 0,
+        "80": 149,
+        "160": 775
+      },
+      "valid_output_rate": 1.0,
+      "accuracy": 0.4318181818181818,
+      "macro_f1": 0.16502267760462996,
+      "weighted_f1": 0.32805741427623947,
+      "balanced_accuracy": 0.20697865353037764,
+      "top_2_accuracy": null,
+      "top_2_accuracy_status": "unavailable_no_comparable_class_scores",
+      "retrieval_coverage": 1.0,
+      "mean_joined_retrieval_f1": 0.22658488852813854,
+      "median_joined_retrieval_f1": 0.19615549999999998,
+      "top_k": 5,
+      "paper_restricted": true,
+      "retrieval_identity": {
+        "status": "accepted_explicit_legacy_schema",
+        "mode": "legacy_partial",
+        "validated": {
+          "top_k": 5,
+          "paper_restricted": true,
+          "embedding_model": "text-embedding-3-small",
+          "tokenizer": "gpt2",
+          "metric": "f1_joined_topk"
+        },
+        "legacy_missing_fields": [
+          "embedding_dimension",
+          "evaluation_config_hash",
+          "metric_version",
+          "normalization_version",
+          "schema_version"
+        ]
+      },
+      "known_total_runtime_seconds": 2584.5100175873376
+    },
+    {
+      "name": "phase2b_alias_unweighted",
+      "source": "outputs\\qwen_phase2b_alias_unweighted_evidence_length_oracle\\final_summary.json",
+      "status": "complete",
+      "phase": "Phase 2B restricted-alias full-parameter fine-tuning",
+      "variant": "alias-unweighted",
+      "formulation_version": "qwen-phase2b-restricted-five-alias-next-token-v1",
+      "run_id": "qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1",
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "evaluated_examples": 924,
+      "oracle_distribution": {
+        "10": 13,
+        "20": 81,
+        "40": 178,
+        "80": 232,
+        "160": 420
+      },
+      "predicted_distribution": {
+        "10": 0,
+        "20": 0,
+        "40": 427,
+        "80": 189,
+        "160": 308
+      },
+      "valid_output_rate": 1.0,
+      "accuracy": 0.35064935064935066,
+      "macro_f1": 0.20922603632601472,
+      "weighted_f1": 0.3406050804511769,
+      "balanced_accuracy": 0.2383201416948027,
+      "top_2_accuracy": 0.6071428571428571,
+      "top_2_accuracy_status": "available_from_comparable_restricted_five_class_logits",
+      "retrieval_coverage": 1.0,
+      "mean_joined_retrieval_f1": 0.28646775432900434,
+      "median_joined_retrieval_f1": 0.2748425,
+      "top_k": 5,
+      "paper_restricted": true,
+      "retrieval_identity": {
+        "status": "complete_frozen_identity",
+        "mode": "full",
+        "validated": {
+          "top_k": 5,
+          "paper_restricted": true,
+          "embedding_model": "text-embedding-3-small",
+          "embedding_dimension": 1536,
+          "tokenizer": "gpt2",
+          "metric": "f1_joined_topk",
+          "evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+          "schema_version": 2,
+          "metric_version": "qasper-token-prf-v2",
+          "normalization_version": "lowercase-remove-punctuation-collapse-whitespace-v1"
+        },
+        "legacy_missing_fields": []
+      },
+      "known_total_runtime_seconds": 1525.3599762628437
+    },
+    {
+      "name": "phase2b_alias_classbalanced",
+      "source": "outputs\\qwen_phase2b_alias_classbalanced_evidence_length_oracle\\final_summary.json",
+      "status": "complete",
+      "phase": "Phase 2B restricted-alias full-parameter fine-tuning",
+      "variant": "alias-classbalanced",
+      "formulation_version": "qwen-phase2b-restricted-five-alias-next-token-v1",
+      "run_id": "qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1",
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "evaluated_examples": 924,
+      "oracle_distribution": {
+        "10": 13,
+        "20": 81,
+        "40": 178,
+        "80": 232,
+        "160": 420
+      },
+      "predicted_distribution": {
+        "10": 0,
+        "20": 0,
+        "40": 0,
+        "80": 434,
+        "160": 490
+      },
+      "valid_output_rate": 1.0,
+      "accuracy": 0.37012987012987014,
+      "macro_f1": 0.16836616836616836,
+      "weighted_f1": 0.3142183142183142,
+      "balanced_accuracy": 0.20607553366174058,
+      "top_2_accuracy": 0.7056277056277056,
+      "top_2_accuracy_status": "available_from_comparable_restricted_five_class_logits",
+      "retrieval_coverage": 1.0,
+      "mean_joined_retrieval_f1": 0.24962774025974027,
+      "median_joined_retrieval_f1": 0.223194,
+      "top_k": 5,
+      "paper_restricted": true,
+      "retrieval_identity": {
+        "status": "complete_frozen_identity",
+        "mode": "full",
+        "validated": {
+          "top_k": 5,
+          "paper_restricted": true,
+          "embedding_model": "text-embedding-3-small",
+          "embedding_dimension": 1536,
+          "tokenizer": "gpt2",
+          "metric": "f1_joined_topk",
+          "evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+          "schema_version": 2,
+          "metric_version": "qasper-token-prf-v2",
+          "normalization_version": "lowercase-remove-punctuation-collapse-whitespace-v1"
+        },
+        "legacy_missing_fields": []
+      },
+      "known_total_runtime_seconds": 1726.121181287046
+    },
+    {
+      "name": "phase2c_base_sequence_classifier",
+      "source": "outputs\\qwen_phase2c_sequence_classifier_evidence_length_oracle\\final_summary.json",
+      "status": "complete",
+      "phase": "Phase 2C Base sequence-classification fine-tuning",
+      "variant": null,
+      "formulation_version": "qwen-phase2c-base-sequence-classifier-v1",
+      "run_id": "qwen-phase2c-base-sequence-classifier-full-parameter-20260804-seed42-v1",
+      "model_id": "Qwen/Qwen3.5-0.8B-Base",
+      "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "evaluated_examples": 924,
+      "oracle_distribution": {
+        "10": 13,
+        "20": 81,
+        "40": 178,
+        "80": 232,
+        "160": 420
+      },
+      "predicted_distribution": {
+        "10": 0,
+        "20": 20,
+        "40": 224,
+        "80": 374,
+        "160": 306
+      },
+      "valid_output_rate": 1.0,
+      "accuracy": 0.34523809523809523,
+      "macro_f1": 0.21763191244497584,
+      "weighted_f1": 0.3435657773957275,
+      "balanced_accuracy": 0.22993634120458348,
+      "top_2_accuracy": 0.6428571428571429,
+      "top_2_accuracy_status": "available_from_comparable_five_class_head_logits",
+      "retrieval_coverage": 1.0,
+      "mean_joined_retrieval_f1": 0.27914719588744585,
+      "median_joined_retrieval_f1": 0.2607245,
+      "top_k": 5,
+      "paper_restricted": true,
+      "retrieval_identity": {
+        "status": "complete_frozen_identity",
+        "mode": "full",
+        "validated": {
+          "top_k": 5,
+          "paper_restricted": true,
+          "embedding_model": "text-embedding-3-small",
+          "embedding_dimension": 1536,
+          "tokenizer": "gpt2",
+          "metric": "f1_joined_topk",
+          "evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+          "schema_version": 2,
+          "metric_version": "qasper-token-prf-v2",
+          "normalization_version": "lowercase-remove-punctuation-collapse-whitespace-v1"
+        },
+        "legacy_missing_fields": []
+      },
+      "known_total_runtime_seconds": 1448.0395123510389
+    },
+    {
+      "name": "phase2d_base_sequence_classifier_token_count_prompt",
+      "source": "outputs\\qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle\\final_summary.json",
+      "status": "complete",
+      "phase": "Phase 2D Base sequence-classification fine-tuning",
+      "variant": null,
+      "formulation_version": "qwen-phase2d-base-sequence-classifier-token-count-prompt-v1",
+      "run_id": "qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1",
+      "model_id": "Qwen/Qwen3.5-0.8B-Base",
+      "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "evaluated_examples": 924,
+      "oracle_distribution": {
+        "10": 13,
+        "20": 81,
+        "40": 178,
+        "80": 232,
+        "160": 420
+      },
+      "predicted_distribution": {
+        "10": 0,
+        "20": 16,
+        "40": 219,
+        "80": 332,
+        "160": 357
+      },
+      "valid_output_rate": 1.0,
+      "accuracy": 0.36904761904761907,
+      "macro_f1": 0.22994524079282935,
+      "weighted_f1": 0.3644656337102369,
+      "balanced_accuracy": 0.2391812745015638,
+      "top_2_accuracy": 0.6341991341991342,
+      "top_2_accuracy_status": "available_from_comparable_five_class_head_logits",
+      "retrieval_coverage": 1.0,
+      "mean_joined_retrieval_f1": 0.2767166677489178,
+      "median_joined_retrieval_f1": 0.2558975,
+      "top_k": 5,
+      "paper_restricted": true,
+      "retrieval_identity": {
+        "status": "complete_frozen_identity",
+        "mode": "full",
+        "validated": {
+          "top_k": 5,
+          "paper_restricted": true,
+          "embedding_model": "text-embedding-3-small",
+          "embedding_dimension": 1536,
+          "tokenizer": "gpt2",
+          "metric": "f1_joined_topk",
+          "evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+          "schema_version": 2,
+          "metric_version": "qasper-token-prf-v2",
+          "normalization_version": "lowercase-remove-punctuation-collapse-whitespace-v1"
+        },
+        "legacy_missing_fields": []
+      },
+      "known_total_runtime_seconds": 1413.0690299463458
+    }
+  ],
+  "highest_metrics": {
+    "accuracy": [
+      "phase2_numeric_sft"
+    ],
+    "macro_f1": [
+      "phase2d_base_sequence_classifier_token_count_prompt"
+    ],
+    "weighted_f1": [
+      "phase2d_base_sequence_classifier_token_count_prompt"
+    ],
+    "balanced_accuracy": [
+      "phase2d_base_sequence_classifier_token_count_prompt"
+    ],
+    "mean_joined_retrieval_f1": [
+      "phase2b_alias_unweighted"
+    ]
+  },
+  "created_at": "2026-08-08T16:37:25.487759+00:00"
+}

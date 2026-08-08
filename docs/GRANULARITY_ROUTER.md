@@ -371,8 +371,9 @@ filtering, `top_k=5`, `text-embedding-3-small`, cosine ranking, canonical chunk
 ordering and concatenation, GPT-2 tokenization, and joined token-level F1.
 Classification metrics and joined retrieval F1 remain different outcomes.
 
-Across the five saved evidence-length-Oracle Qwen runs, Phase 2C has the best
-macro-F1 so far at 0.21763191244497584. Numeric-target Phase 2 retains the best
+At the completion of Phase 2C, across the five saved evidence-length-Oracle
+Qwen runs, Phase 2C had the best macro-F1 at 0.21763191244497584.
+Numeric-target Phase 2 retained the best
 accuracy at 0.4318181818181818, and Phase 2B-A retains the best mean joined
 retrieval F1 at 0.28646775432900434 versus Phase 2C's
 0.27914719588744585. Phase 2C simultaneously changes the checkpoint family,
@@ -396,4 +397,141 @@ two validation records, both targeting the 20-token class, under two different
 evaluation-configuration hashes, and no train records. This snapshot concerns
 the live old-Oracle embedding-router command only. It does not describe the
 preserved 2,245/924 Qwen evidence-length-Oracle files used by completed Phases
-1, 2, 2B, and 2C.
+1, 2, 2B, 2C, and 2D.
+
+### Qwen3.5-0.8B-Base Phase 2D token-count-prompt result
+
+Phase 2D repeats the Phase 2C five-logit sequence-classifier experiment as a
+controlled prompt-only, single-seed ablation. The qualitative mapping in the
+Phase 2C instruction is replaced by the exact candidate token counts:
+
+> You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = 10 tokens, 2 = 20 tokens, 3 = 40 tokens, 4 = 80 tokens, 5 = 160 tokens. Return only the number
+
+The instruction SHA-256 is
+`b3237368922abe709e2bd2d756fb9f25d39e7f5670e5c4cb15daaa3a2d1cf2e5`.
+The saved six-way protocol audit passed and confirms that the Phase 2C to
+Phase 2D semantic change is only the mapping from qualitative descriptions to
+10/20/40/80/160 token counts. The Base model and revision, sequence-classifier
+architecture, fresh seed-42 head initialization, frozen questions and Oracle
+hashes, input template, uniform loss, hyperparameters, checkpoint selection,
+and downstream retrieval configuration are unchanged. Run identifiers,
+timestamps, script hashes, fingerprints, output paths, and prompt-caused
+sequence lengths necessarily differ.
+
+The Phase 2D experiment fingerprint is
+`dad60bd9a0530865110c2310f62a896c73350fa383c7812d5c6733e376bc377d`.
+
+The model is `Qwen/Qwen3.5-0.8B-Base` at revision
+`dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68`, loaded with
+`AutoModelForSequenceClassification`. Five logits map class IDs 0--4 directly
+to 10/20/40/80/160. Input remains only the fixed instruction, two newlines,
+`Question: `, and the original question. There is no chat template,
+generation, parser, evidence, answer, paper text, retrieved chunk, retrieval
+score, embedding, metadata, or handcrafted feature. The new prompt produces
+95--121-token train inputs and 96--124-token validation inputs; all remain
+below the frozen maximum of 128 and none is truncated.
+
+Training uses the same 2,245 examples from 845 papers and validation uses the
+same 924 examples from 277 papers. The validation Oracle distribution is
+13/81/178/232/420 for 10/20/40/80/160; class 160 therefore remains the
+420/924 = 45.45% majority and class 10 has only 13 examples. The training
+distribution is 55/267/586/687/650. All 852,991,040 parameters were marked
+trainable under uniform cross-entropy for three epochs and 213 updates. The
+text backbone and classifier head received gradients; the 100,592,896 vision
+parameters received none on this text-only path. Epoch 3, `step-000213`, was
+selected by validation macro-F1.
+
+| Metric | Phase 2C | Phase 2D | Phase 2D minus Phase 2C |
+|---|---:|---:|---:|
+| Accuracy | 0.34523809523809523 | 0.36904761904761907 | +0.023809523809523836 |
+| Macro-F1 | 0.21763191244497584 | 0.22994524079282935 | +0.012313328347853508 |
+| Weighted F1 | 0.3435657773957275 | 0.3644656337102369 | +0.020899856314509357 |
+| Balanced accuracy | 0.22993634120458348 | 0.2391812745015638 | +0.009244933296980312 |
+| Top-2 accuracy | 0.6428571428571429 | 0.6341991341991342 | -0.008658008658008698 |
+| Mean joined retrieval F1 | 0.27914719588744585 | 0.2767166677489178 | -0.0024305281385280653 |
+| Median joined retrieval F1 | 0.2607245 | 0.2558975 | -0.004827000000000026 |
+
+All 924 Phase 2D classifier outputs are valid. The prediction distribution is
+0/16/219/332/357. The prompt change improves the four reported top-1
+classification aggregates relative to Phase 2C, but it does not solve the
+minority-class problem: class 10 is never predicted and has zero precision,
+recall, and F1. Class 20 has precision 0.125, recall
+0.024691358024691357, and F1 0.041237113402061855, corresponding to only 2
+correct examples among its 81 Oracle examples. Per-class precision/recall/F1
+for 40, 80, and 160 is respectively
+0.2876712328767123/0.3539325842696629/0.31738035264483627,
+0.25/0.3577586206896552/0.29432624113475175, and
+0.5406162464985994/0.4595238095238095/0.49678249678249675.
+
+The final confusion matrix has Oracle rows and predicted columns ordered 10,
+20, 40, 80, 160:
+
+| Oracle \ predicted | 10 | 20 | 40 | 80 | 160 |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 0 | 0 | 3 | 7 | 3 |
+| 20 | 0 | 2 | 21 | 33 | 25 |
+| 40 | 0 | 4 | 63 | 60 | 51 |
+| 80 | 0 | 4 | 60 | 83 | 85 |
+| 160 | 0 | 6 | 72 | 149 | 193 |
+
+Phase 2D accuracy remains below the class-160 majority baseline
+0.45454545454545453; macro-F1 is above the majority baseline 0.125. Across
+the six saved new-Oracle Qwen runs, Phase 2D has the highest macro-F1,
+weighted F1, and balanced accuracy. Numeric-target Phase 2 retains the highest
+accuracy, 0.4318181818181818, and Phase 2B-A retains the highest mean joined
+retrieval F1, 0.28646775432900434.
+
+The unchanged source-paper-restricted `top_k=5` retrieval covers 924/924
+questions. Mean/median joined retrieval F1 is
+0.2767166677489178/0.2558975. Classification metrics measure prediction of the
+evidence-length Oracle label; joined retrieval F1 measures GPT-2-token overlap
+after the predicted class controls downstream retrieval. They are distinct
+outcomes, which is why improved Phase 2D classification does not imply improved
+retrieval relative to Phase 2C.
+
+Training took 1224.5802961867303 seconds. Selected-checkpoint loading and
+isolated final inference took 2.7541816290467978 and 34.72815803065896
+seconds; mean/median inference time was
+0.0374373855065248/0.03656412195414305 seconds per question. Retrieval took
+151.0063940999098 seconds, and known training plus final validation and
+retrieval time is 1413.0690299463458 seconds. Peak allocated/reserved training
+GPU memory was 9.0316162109375/9.6015625 GiB.
+
+This is a clean Phase 2C-to-Phase 2D prompt comparison, but it remains one
+seed. The same validation set selects the checkpoint and supplies the reported
+metrics, no QASPER test result is claimed, and no run-to-run variance is
+available. Earlier cross-phase comparisons remain multiply confounded, while
+old-Oracle Logistic Regression and MLP classification results remain not
+directly comparable.
+
+Authoritative artifacts are under
+`outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/`:
+`final_summary.json`; experiment/preflight configuration; the run
+configuration, dataset manifest, histories, checkpoint manifest and selected
+checkpoint; canonical/raw/parsed/invalid validation records and runtime;
+classification metrics, confusion matrix and histogram; retrieval records,
+runtime segments and summary; and
+`integrity/selected_checkpoint_transfer_verification.json`. The independent
+73-assertion final audit and recorded 102-test focused regression result are in
+`integrity/final_integrity_audit.json`. The machine-readable prompt-only audit
+and six-run comparison are in
+`outputs/qwen_phase2d_comparison_evidence_length_oracle/six_way_comparison.json`.
+The transfer audit verifies the 2,886,773,596-byte checkpoint archive at
+SHA-256
+`2dd4d23ff77179e1b33e522829cb2fdd6dd12684500a2158cc95f5f79a242a56`
+and all nine extracted files against the remote source.
+
+Recorded CUDA-host commands:
+
+```bash
+.venv-qwen/bin/python qwen_phase2d_sequence_classifier.py --output-root /dev/shm/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle inspect
+.venv-qwen/bin/python qwen_phase2d_sequence_classifier.py --output-root /dev/shm/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle train --mode full --run-id qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1
+.venv-qwen/bin/python qwen_phase2d_sequence_classifier.py --output-root /dev/shm/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle final-validation --run-id qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1
+```
+
+Recorded local read-only Qdrant and comparison commands:
+
+```powershell
+.\.venv-qwen\Scripts\python.exe qwen_phase2d_posttraining.py evaluate-retrieval --run-id qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1
+.\.venv-qwen\Scripts\python.exe qwen_phase2d_posttraining.py compare --output outputs\qwen_phase2d_comparison_evidence_length_oracle\six_way_comparison.json
+```

@@ -126,7 +126,7 @@ Full retrieved and evidence text is omitted by default and can be included with 
 As inspected through 2026-06-22, the legacy local ingestion checkpoint
 represents 1,585 papers, but not every stage is complete. This dated snapshot
 does not supersede the later, file-backed Qwen Phase 1/Phase 2/Phase 2B/Phase
-2C results:
+2C/Phase 2D results:
 
 | Checkpoint stage | Papers marked complete |
 |---|---:|
@@ -154,8 +154,8 @@ Additional limitations are:
   generated. This is separate from the preserved evidence-length-Oracle files
   used by Qwen.
 - No unified legacy embedding-router routed evaluator exists. The separate Qwen
-  routed evaluator is implemented and completed for Phases 1, 2, and both
-  Phase 2B variants, and Phase 2C.
+  routed evaluator is implemented and completed for Phases 1, 2, both
+  Phase 2B variants, Phase 2C, and Phase 2D.
 - Focused unit tests exist, but no live-Qdrant integration or complete end-to-end experiment test exists.
 - There is no complete reproducibility guide covering environment setup, service lifecycle, ingestion verification, experiments, analysis, and artifact provenance.
 
@@ -267,8 +267,8 @@ The implementation exposes two separately named policies: `mixed-raw` preserves 
 **Status:** The legacy embedding-router code is implemented and tested; its
 live-collection rerun remains blocked by the old-Oracle `RouterDataset`
 snapshot. The separate Qwen evidence-length-Oracle path completed full Phase 2
-and both Phase 2B training and validation runs, plus the Phase 2C Base-model
-sequence-classification run, from preserved files.
+and both Phase 2B training and validation runs, plus the Phase 2C and Phase 2D
+Base-model sequence-classification runs, from preserved files.
 
 **Goal:** Train a model that predicts the oracle granularity label from a question embedding without access to evidence at inference time.
 
@@ -299,9 +299,9 @@ The implemented framing is fixed five-class classification from question embeddi
 ### Milestone 4 — Router-based retrieval
 
 **Status:** Partially complete. The Qwen routed evaluator is implemented and
-has completed same-paper top-five retrieval for Phase 1, Phase 2, and both
-Phase 2B variants, and Phase 2C. A unified legacy embedding-router comparison
-evaluator remains planned.
+has completed same-paper top-five retrieval for Phase 1, Phase 2, both
+Phase 2B variants, Phase 2C, and Phase 2D. A unified legacy embedding-router
+comparison evaluator remains planned.
 
 **Goal:** For each question, predict one granularity from question-only input,
 retrieve top K chunks only at that granularity, and evaluate the result without
@@ -637,11 +637,12 @@ took 2.5492455568164587 and 33.99719780869782 seconds; retrieval took
 134.9306207000045 seconds. Known training plus final validation and retrieval
 time is 1448.0395123510389 seconds.
 
-In the five-way evidence-length-Oracle comparison, Phase 2C has the best saved
-Qwen macro-F1 so far at 0.21763191244497584. Phase 2 numeric SFT retains the
-best accuracy at 0.4318181818181818. Phase 2B-A retains the best mean joined
-retrieval F1 at 0.28646775432900434, compared with Phase 2C at
-0.27914719588744585. These outcomes measure different stages.
+At the completion of Phase 2C, the five-way evidence-length-Oracle comparison
+placed Phase 2C first on saved Qwen macro-F1 at 0.21763191244497584. Phase 2
+numeric SFT had the best accuracy at 0.4318181818181818. Phase 2B-A had the
+best mean joined retrieval F1 at 0.28646775432900434, compared with Phase 2C
+at 0.27914719588744585. These outcomes measure different stages; the Phase 2D
+section below reports the expanded six-run comparison.
 
 Phase 2C changes the checkpoint family, classifier formulation, and revised
 prompt simultaneously. It is comparable on the preserved benchmark but is
@@ -672,6 +673,94 @@ and
 human-readable reports are `docs/QWEN_PHASE2C_RESULTS.md` and
 `reports/qwen_phase2c_sequence_classifier_evidence_length_oracle/experiment_report.md`.
 
+#### Phase 2D exact-token prompt ablation
+
+Phase 2D is complete as a controlled prompt-only follow-up to Phase 2C. It
+uses the same `Qwen/Qwen3.5-0.8B-Base` revision
+`dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68`, freshly initialized seed-42
+five-logit classification head, frozen 2,245/924 examples, evidence-length
+Oracle hashes, uniform cross-entropy, three-epoch/213-update schedule,
+checkpoint-selection rule, and downstream retrieval identity. The one
+semantic change replaces Phase 2C's qualitative context descriptions with
+exact candidate token counts:
+
+> You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = 10 tokens, 2 = 20 tokens, 3 = 40 tokens, 4 = 80 tokens, 5 = 160 tokens. Return only the number
+
+The prompt SHA-256 is
+`b3237368922abe709e2bd2d756fb9f25d39e7f5670e5c4cb15daaa3a2d1cf2e5`.
+The saved protocol audit passes and proves equality of the non-prompt training
+configuration and frozen dataset metadata. Prompt-caused tokenization changes
+are recorded explicitly: Phase 2D train sequences span 95--121 tokens and
+validation sequences 96--124, with no truncation at maximum length 128.
+
+Phase 2D runs in Python 3.10.7 with Transformers `5.15.0.dev0` at commit
+`2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7`, PyTorch `2.8.0+cu128`, CUDA
+12.8 BF16 on one `NVIDIA A100-SXM4-40GB`, no quantization, and seed 42. The
+input remains the instruction plus original question only. The text backbone
+and classifier head received gradients; the unused vision tower did not on
+the text-only path. Epoch 3 `step-000213` was selected by validation macro-F1.
+
+| Metric | Phase 2C | Phase 2D |
+|---|---:|---:|
+| Accuracy | 0.34523809523809523 | 0.36904761904761907 |
+| Macro-F1 | 0.21763191244497584 | 0.22994524079282935 |
+| Weighted F1 | 0.3435657773957275 | 0.3644656337102369 |
+| Balanced accuracy | 0.22993634120458348 | 0.2391812745015638 |
+| Top-2 accuracy | 0.6428571428571429 | 0.6341991341991342 |
+| Mean joined retrieval F1 | 0.27914719588744585 | 0.2767166677489178 |
+| Median joined retrieval F1 | 0.2607245 | 0.2558975 |
+
+Phase 2D predicts 0/16/219/332/357 against Oracle support
+13/81/178/232/420. All 924 outputs are valid, but class 10 is never predicted
+and class 20 recall is only 0.024691358024691357. The exact-token wording
+therefore improves accuracy, macro-F1, weighted F1, and balanced accuracy over
+Phase 2C, but it does not resolve the class imbalance. Accuracy also remains
+below the 160-majority baseline 0.45454545454545453.
+
+Unchanged same-paper `top_k=5` retrieval covers 924/924 examples and yields
+mean/median joined retrieval F1
+0.2767166677489178/0.2558975. These retrieval-overlap scores are not
+classification metrics: the modest Phase 2D classification improvement is
+paired with a small mean retrieval decrease of 0.0024305281385280653 relative
+to Phase 2C. The six-way comparison now places Phase 2D first on macro-F1,
+weighted F1, and balanced accuracy; numeric Phase 2 remains first on accuracy,
+and Phase 2B-A remains first on mean joined retrieval F1.
+
+Training took 1224.5802961867303 seconds; selected-checkpoint loading and
+isolated final inference took 2.7541816290467978 and 34.72815803065896
+seconds; retrieval took 151.0063940999098 seconds. Known training, final
+validation, and retrieval time is 1413.0690299463458 seconds. This is a clean
+Phase 2C-to-Phase 2D one-factor comparison, but it remains a single seed with
+checkpoint selection and reporting on validation. No held-out test result or
+run-to-run variance is claimed. Earlier Qwen cross-phase differences remain
+confounded, and old-Oracle Logistic Regression/MLP classification remains not
+directly comparable.
+
+Recorded Phase 2D execution sequence on the CUDA host:
+
+```bash
+.venv-qwen/bin/python qwen_phase2d_sequence_classifier.py --output-root /dev/shm/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle inspect
+.venv-qwen/bin/python qwen_phase2d_sequence_classifier.py --output-root /dev/shm/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle train --mode full --run-id qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1
+.venv-qwen/bin/python qwen_phase2d_sequence_classifier.py --output-root /dev/shm/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle final-validation --run-id qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1
+```
+
+Against the unchanged local Qdrant service:
+
+```powershell
+.\.venv-qwen\Scripts\python.exe qwen_phase2d_posttraining.py evaluate-retrieval --run-id qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1
+.\.venv-qwen\Scripts\python.exe qwen_phase2d_posttraining.py compare --output outputs\qwen_phase2d_comparison_evidence_length_oracle\six_way_comparison.json
+```
+
+Authoritative Phase 2D results are
+`outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/final_summary.json`;
+the complete prompt-only protocol audit and six-run comparison are in
+`outputs/qwen_phase2d_comparison_evidence_length_oracle/six_way_comparison.json`.
+The Phase 2D experiment fingerprint is
+`dad60bd9a0530865110c2310f62a896c73350fa383c7812d5c6733e376bc377d`.
+The Phase 2D output tree retains configuration, per-epoch and canonical
+predictions, classification and retrieval records, runtimes, the selected
+checkpoint, and remote/local transfer verification.
+
 The Qwen interpreter audit, separate-environment rationale, minimal dependency
 manifest, exact package lock, and recreation commands are recorded in
 `docs/QWEN_ENVIRONMENT.md`. The legacy `.venv` remains separate and unchanged.
@@ -681,7 +770,7 @@ and router components exist with automated tests, full split-safe experiments
 have immutable record-level artifacts, and the final statistical comparison
 can be reproduced from a clean environment without undocumented manual steps.
 Fixed-separate, both Oracle-label paths, mixed retrieval, leakage-safe legacy
-router code, and complete Qwen Phase 1/Phase 2/Phase 2B/Phase 2C
+router code, and complete Qwen Phase 1/Phase 2/Phase 2B/Phase 2C/Phase 2D
 classification and routed retrieval now exist. The broader matched-method
 final analysis and any
 same-new-Oracle retraining of Logistic Regression/MLP remain unfinished.

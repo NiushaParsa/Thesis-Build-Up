@@ -1,0 +1,86 @@
+{
+  "status": "passed",
+  "verified_at": "2026-08-08T16:45:53.3149132Z",
+  "independent_assertions_passed": 73,
+  "independent_assertions_failed": 0,
+  "test_suite": {
+    "status": "passed",
+    "tests_passed": 102,
+    "tests_failed": 0,
+    "scope": "Phase 2, Phase 2B, Phase 2C, and Phase 2D focused regression suites",
+    "command": ".\\.venv-qwen\\Scripts\\python.exe -m pytest tests\\test_qwen_phase2.py tests\\test_qwen_phase2b.py tests\\test_qwen_phase2b_posttraining.py tests\\test_qwen_phase2c_sequence_classifier.py tests\\test_qwen_phase2c_posttraining.py tests\\test_qwen_phase2d_sequence_classifier.py tests\\test_qwen_phase2d_posttraining.py -q"
+  },
+  "artifact_counts": {
+    "canonical_predictions": 924,
+    "raw_outputs": 924,
+    "parsed_predictions": 924,
+    "invalid_outputs": 0,
+    "retrieval_records": 924,
+    "training_steps": 213,
+    "validation_events": 3,
+    "validation_steps": [71, 142, 213],
+    "selected_checkpoint_files": 9
+  },
+  "checks": {
+    "question_ids_and_order_match_preserved_oracle": true,
+    "argmax_predictions_match_saved_logits": true,
+    "top2_predictions_match_saved_logits": true,
+    "classification_metrics_recomputed_exactly": true,
+    "confusion_matrix_recomputed_exactly": true,
+    "per_class_metrics_recomputed_exactly": true,
+    "runtime_statistics_recomputed_exactly": true,
+    "retrieval_metrics_recomputed_exactly": true,
+    "retrieval_granularity_matches_predictions": true,
+    "retrieval_configuration_frozen": true,
+    "selected_epoch_reload_scores_match": true,
+    "tensorboard_training_points": 213,
+    "tensorboard_validation_steps": [71, 142, 213],
+    "checkpoint_file_hashes_match_remote_manifest": true,
+    "non_checkpoint_local_remote_hashes_match": true,
+    "non_checkpoint_files_compared": 23,
+    "phase2c_tracked_files_unchanged": true,
+    "prompt_only_protocol_audit_passed": true,
+    "six_way_comparison_recomputed": true
+  },
+  "qdrant": {
+    "container": "thesisbuildup-qdrant-1",
+    "image": "qdrant/qdrant:v1.13.2",
+    "grpc_endpoint": "127.0.0.1:6334",
+    "grpc_connectivity": "passed",
+    "ports_6333_and_6334_mapped": true,
+    "all_collections_green": true,
+    "pre_and_post_counts_match": true,
+    "mutations_performed": false,
+    "collection_counts": {
+      "PaperChunk": 1701822,
+      "PaperEvidence": 9522,
+      "PaperQuestion": 4526,
+      "RetrievalEvaluation": 18622,
+      "RouterDataset": 3170,
+      "Stage4VerifyRetrievalEval": 10,
+      "Stage4VerifyRouterDataset": 2,
+      "Stage5MixedEvaluation": 2
+    }
+  },
+  "sha256": {
+    "final_summary.json": "0faa66be05336708c77a46a54ed647b148f5948cae1772f4900428c703797828",
+    "validation/predictions.jsonl": "beba102ad8e82dc2c0dc6227913c330bd16c869387424deb309778d4c8bd893d",
+    "classification/metrics.json": "ebcdd0ad45a9faffad6f68b207f560cf27a241c86819046ef2328b03bb0b0a9c",
+    "validation/runtime_summary.json": "6f648be38bcb3b043d73d9230d0be06736f8ce1fd00ad05f69afd8e2c81be32c",
+    "retrieval/results.jsonl": "6248aeaf8abc073cc8fbf80992ca872a67173672a8f227ca2dddfba1d3217c64",
+    "six_way_comparison.json": "518e8c89b5f9d72541597541b55a08bdb995fb2cc9c63a41d2ea820a21ca25eb",
+    "tensorboard_event": "02c5c15367155927c4686af5b5988f2ad0cb0e7f366285800ec43fdda18885b5",
+    "qwen_phase2d_sequence_classifier.py": "99ba4f9a57b5547e776d81d2c7c94aece2670a9b5ccaf348c8a1fbeb0baa5efc",
+    "qwen_phase2d_posttraining.py": "d75fc54b7d4f41acd2bf31c6c4e2709ad1c13a4485b285ad110b3d5a39b34060"
+  },
+  "frozen_phase2c_sha256": {
+    "qwen_phase2c_sequence_classifier.py": "6eeb155296b239463d5ba7c8c75dfed8dd59f8c5285cab1edf7cb6a553f9aefb",
+    "qwen_phase2c_posttraining.py": "fcf21a7e27bd9557eb630e4fbf7c512004dd29b137bd02a93557d648ae63aec5",
+    "final_summary.json": "28b42fc75ee7deab2d55d95b34ef21198249ae62f2c9766f644d29fc76a66133"
+  },
+  "provenance_notes": [
+    "The saved repository_commit field is the unambiguous abbreviated base HEAD 40f79e1; its full value is 40f79e12dbe27ab42934d10732188c1d76087b17. That base commit predates the uncommitted Phase 2D files, so the executed training-script SHA-256 is the authoritative Phase 2D code identity.",
+    "Some final-summary artifact strings intentionally retain their remote /dev/shm provenance paths. Verified local copies exist under the Phase 2D output root.",
+    "The Qdrant Python client is newer than the frozen server, producing the known compatibility warning, but gRPC connectivity and all read-only evaluations passed."
+  ]
+}

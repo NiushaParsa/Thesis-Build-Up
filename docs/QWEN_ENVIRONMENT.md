@@ -12,8 +12,8 @@ Python 3.12.6 at
 `C:\Users\behno\AppData\Local\Programs\Python\Python312\python.exe`.
 Python 3.11 was not installed. Following the requested fallback rule,
 `.venv-qwen` was created with Python 3.10.7. It is reserved for pretrained
-Qwen Phase 1 and the completed fine-tuned Qwen Phase 2, Phase 2B, and Phase 2C
-experiments; it is not used to rerun the earlier baselines.
+Qwen Phase 1 and the completed fine-tuned Qwen Phase 2, Phase 2B, Phase 2C,
+and Phase 2D experiments; it is not used to rerun the earlier baselines.
 
 The Qwen executable is
 `C:\Users\behno\Repos\Thesis Build Up\.venv-qwen\Scripts\python.exe`.
@@ -298,6 +298,110 @@ The original protected local Python 3.9 `.venv`, the local Phase 1 CPU
 environment, system Python, and all earlier experiment artifacts remained
 separate and unchanged.
 
+## Phase 2D remote CUDA environment
+
+Phase 2D reused the Phase 2C remote CUDA environment without changing either
+the legacy `.venv` or `.venv-qwen`. The recorded executable is
+`/workspace/thesis-granularity-router/.venv-qwen/bin/python`, with exact Python
+version `3.10.7 (main, Oct  3 2022, 02:19:58) [Clang 14.0.3 ]`. Software and
+hardware provenance is:
+
+- Transformers `5.15.0.dev0`, commit
+  `2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7`;
+- PyTorch `2.8.0+cu128`, CUDA 12.8, TensorBoard `2.20.0`;
+- one `NVIDIA A100-SXM4-40GB` on `cuda`;
+- `torch.bfloat16`, no quantization;
+- strict deterministic execution with seed 42.
+
+The model remains `Qwen/Qwen3.5-0.8B-Base`, revision
+`dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68`, loaded with
+`AutoModelForSequenceClassification`, five labels, a bias-free 5×1024
+`score.weight` head, right padding, and pad token ID 248044. The fresh seed-42
+head initialization hash is
+`09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5`,
+the same initial head identity recorded for Phase 2C. Class IDs 0--4 map to
+10/20/40/80/160.
+
+The only scientific change from Phase 2C is the instruction:
+
+> You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = 10 tokens, 2 = 20 tokens, 3 = 40 tokens, 4 = 80 tokens, 5 = 160 tokens. Return only the number
+
+Its SHA-256 is
+`b3237368922abe709e2bd2d756fb9f25d39e7f5670e5c4cb15daaa3a2d1cf2e5`.
+The input template remains
+`{instruction}\n\nQuestion: {original_question_text}` and the model receives
+no evidence, evidence length, answer, paper text, retrieved chunk or score,
+embedding, metadata, or handcrafted feature. No chat template, generation, or
+parser is used. Train sequence lengths are 95--121 tokens and validation
+lengths are 96--124, so all 3,169 examples remain within maximum length 128
+without truncation.
+
+The saved Phase 2C-to-Phase 2D protocol audit passed. It verifies the same
+model/revision, architecture, seed, initial head, environment, uniform loss,
+optimizer and schedule, checkpoint-selection rule, 2,245/924 preserved
+examples, and frozen train/validation Oracle hashes. Only prompt identity and
+necessary provenance fields differ; tokenized sequence lengths are an expected
+consequence of the prompt change. The Phase 2D experiment fingerprint is
+`dad60bd9a0530865110c2310f62a896c73350fa383c7812d5c6733e376bc377d`.
+
+All 852,991,040 parameters were marked trainable. Uniform five-class
+cross-entropy, AdamW, batch size 4, gradient accumulation 8, effective batch
+32, learning rate 2e-5, weight decay 0.01, cosine scheduling, 5% warmup (11
+steps), clipping 1.0, three epochs, and 213 updates are unchanged. The gradient
+audit records gradients for the language backbone and classifier head:
+752,398,144 parameters had gradients. The 100,592,896 vision parameters had
+none because the path is text-only.
+
+Training took 1224.5802961867303 seconds. Peak allocated/reserved training GPU
+memory was 9.0316162109375/9.6015625 GiB and recorded RSS was
+1.9677543640136719 GiB. Selected-checkpoint loading took
+2.7541816290467978 seconds and isolated 924-example inference took
+34.72815803065896 seconds. Final-validation peak allocated/reserved GPU memory
+was 1.7161517143249512/1.77734375 GiB with RSS 1.7001190185546875 GiB.
+Local retrieval took 151.0063940999098 seconds; known training, final
+validation, and retrieval duration is 1413.0690299463458 seconds.
+
+The selected checkpoint produces 924/924 valid outputs. Final
+accuracy/macro-F1/weighted F1/balanced accuracy/top-2 accuracy is
+0.36904761904761907/0.22994524079282935/0.3644656337102369/
+0.2391812745015638/0.6341991341991342. It predicts
+0/16/219/332/357 against Oracle support 13/81/178/232/420. The class-160
+majority remains 420/924 = 45.45%, class 10 remains unpredicted with zero
+recall, and class-20 recall is 0.024691358024691357. The exact-token prompt
+therefore does not remove the imbalance.
+
+Unchanged same-paper `top_k=5` retrieval covers 924/924 examples with
+mean/median joined retrieval F1
+0.2767166677489178/0.2558975. These are downstream token-overlap metrics, not
+Oracle-label classification metrics. Relative to Phase 2C, Phase 2D improves
+accuracy, macro-F1, weighted F1, and balanced accuracy, while mean joined
+retrieval F1 decreases by 0.0024305281385280653. This is a clean prompt-only
+comparison but remains a single seed selected and reported on validation.
+
+Recorded CUDA-host commands using the separate RAM-backed Phase 2D root:
+
+```bash
+.venv-qwen/bin/python qwen_phase2d_sequence_classifier.py --output-root /dev/shm/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle inspect
+.venv-qwen/bin/python qwen_phase2d_sequence_classifier.py --output-root /dev/shm/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle train --mode full --run-id qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1
+.venv-qwen/bin/python qwen_phase2d_sequence_classifier.py --output-root /dev/shm/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle final-validation --run-id qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1
+```
+
+Canonical predictions were copied back and evaluated through the unchanged
+local Qdrant service. The retrieval evaluator is read-only, paper-restricted,
+and uses the frozen `top_k=5` joined-F1 protocol. Local commands are:
+
+```powershell
+.\.venv-qwen\Scripts\python.exe qwen_phase2d_posttraining.py evaluate-retrieval --run-id qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1
+.\.venv-qwen\Scripts\python.exe qwen_phase2d_posttraining.py compare --output outputs\qwen_phase2d_comparison_evidence_length_oracle\six_way_comparison.json
+```
+
+The selected `step-000213` checkpoint was transferred from Vast.ai instance
+46617164. The independently hashed 2,886,773,596-byte archive has SHA-256
+`2dd4d23ff77179e1b33e522829cb2fdd6dd12684500a2158cc95f5f79a242a56`;
+all nine extracted checkpoint-file hashes match the remote source. The
+original Python 3.9 `.venv`, system Python, prior Qwen artifacts, Qdrant
+collections, records, port, and storage path remained unchanged.
+
 ## Phase 1 records
 
 - Direct dependencies: `requirements-qwen.txt`
@@ -377,3 +481,36 @@ under `reports/qwen_phase2b_alias_unweighted_evidence_length_oracle/` and
   `outputs/qwen_phase2c_comparison_evidence_length_oracle/five_way_comparison.json`.
 - Human-readable reports: `docs/QWEN_PHASE2C_RESULTS.md` and
   `reports/qwen_phase2c_sequence_classifier_evidence_length_oracle/experiment_report.md`.
+
+## Phase 2D records
+
+- Experiment marker and preflight audit:
+  `outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/configuration/experiment.json`
+  and `configuration/preflight_manifest.json`.
+- Authoritative final summary:
+  `outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/final_summary.json`.
+- Run configuration, dataset manifest, formatted-example inspection,
+  gradient-coverage audit, training/validation histories, checkpoint manifest,
+  selected-checkpoint metadata, TensorBoard events, and the locally retained
+  checkpoint under
+  `outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/runs/qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1/`.
+- Canonical predictions, raw logits, parsed predictions, the empty invalid
+  record, and final runtime under `validation/`; metrics, confusion matrix,
+  and predicted-vs-Oracle histogram under `classification/`; durable records,
+  runtime segments, and summary under `retrieval/`.
+- Remote/local selected-checkpoint verification:
+  `outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/integrity/selected_checkpoint_transfer_verification.json`.
+- Independent 73-assertion artifact/Qdrant/TensorBoard audit and recorded
+  102-test focused regression result:
+  `outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/integrity/final_integrity_audit.json`.
+- Six-way comparison and Phase 2C-to-Phase 2D prompt-only protocol audit:
+  `outputs/qwen_phase2d_comparison_evidence_length_oracle/six_way_comparison.json`.
+- Reproduction implementations and focused regression tests:
+  `qwen_phase2d_sequence_classifier.py`, `qwen_phase2d_posttraining.py`,
+  `tests/test_qwen_phase2d_sequence_classifier.py`, and
+  `tests/test_qwen_phase2d_posttraining.py`.
+
+Large selected-checkpoint and TensorBoard files remain local/Git-ignored where
+configured; the lightweight provenance, predictions, metrics, retrieval
+records, and integrity manifests are the commit-oriented records. Phase 2D is
+separate from Phase 2C and does not overwrite it.

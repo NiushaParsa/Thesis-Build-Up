@@ -1,0 +1,72 @@
+{
+  "source": "post_training_selected_checkpoint_reload",
+  "new_inference_performed": true,
+  "inference_method": "five_logit_sequence_classifier_argmax",
+  "model_load_seconds": 2.7541816290467978,
+  "isolated_inference_wall_seconds": 34.72815803065896,
+  "selected_epoch_validation_wall_seconds": 31.920586789026856,
+  "selected_epoch_exact_score_match": true,
+  "selected_epoch_outputs_compared": 924,
+  "mean_inference_seconds": 0.0374373855065248,
+  "median_inference_seconds": 0.03656412195414305,
+  "total_allocated_batch_forward_seconds": 34.59214420802891,
+  "inference_timing_basis": "synchronized_batch_forward_wall_divided_evenly_per_batch",
+  "uniform_validation_cross_entropy": 1.3543887827303502,
+  "peak_gpu_allocated_gib": 1.7161517143249512,
+  "peak_gpu_reserved_gib": 1.77734375,
+  "rss_gib": 1.7001190185546875,
+  "selected_checkpoint": "/dev/shm/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/runs/qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1/checkpoints/step-000213",
+  "selected_checkpoint_id": "step-000213",
+  "checkpoint_model_loading_audit": {
+    "configuration": {
+      "status": "passed",
+      "checks": {
+        "num_labels": true,
+        "problem_type": true,
+        "id2label": true,
+        "label2id": true,
+        "top_level_pad_token_id": true,
+        "text_config_pad_token_id": true,
+        "top_level_use_cache": true,
+        "text_config_use_cache": true
+      },
+      "num_labels": 5,
+      "id2label": {
+        "0": "10",
+        "1": "20",
+        "2": "40",
+        "3": "80",
+        "4": "160"
+      },
+      "label2id": {
+        "10": 0,
+        "20": 1,
+        "40": 2,
+        "80": 3,
+        "160": 4
+      },
+      "pad_token_id": 248044
+    },
+    "classifier_head": {
+      "status": "passed",
+      "initial_base_load": false,
+      "seed_set_before_model_load": 42,
+      "head_parameter_name": "score.weight",
+      "head_shape": [
+        5,
+        1024
+      ],
+      "head_bias": false,
+      "head_weight_dtype": "torch.bfloat16",
+      "head_weight_sha256_float32": "cbc44bdd71b91be4a7f97c19f87651003eac05b292eb61ea5634dee0cb351025",
+      "loading_info": {
+        "missing_keys": [],
+        "unexpected_keys": [],
+        "mismatched_keys": [],
+        "error_msgs": []
+      }
+    }
+  },
+  "evaluated_examples": 924,
+  "completed_at": "2026-08-08T16:22:19.522750+00:00"
+}

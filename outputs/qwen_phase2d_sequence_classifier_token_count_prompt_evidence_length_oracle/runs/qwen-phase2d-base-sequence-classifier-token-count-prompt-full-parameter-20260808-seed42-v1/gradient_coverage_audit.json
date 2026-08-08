@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "classifier_head_received_gradient": true,
+  "language_backbone_received_gradient": true,
+  "parameters_with_gradient": 752398144,
+  "parameters_without_gradient": 100592896,
+  "tensors_with_gradient": 321,
+  "tensors_without_gradient": 153,
+  "without_gradient_note": "The composite qwen3_5 model contains a vision tower; text-only inputs may intentionally leave vision parameters without gradients.",
+  "sample_names_with_gradient": [
+    "model.language_model.embed_tokens.weight",
+    "model.language_model.layers.0.linear_attn.dt_bias",
+    "model.language_model.layers.0.linear_attn.A_log",
+    "model.language_model.layers.0.linear_attn.conv1d.weight",
+    "model.language_model.layers.0.linear_attn.norm.weight",
+    "model.language_model.layers.0.linear_attn.out_proj.weight",
+    "model.language_model.layers.0.linear_attn.in_proj_qkv.weight",
+    "model.language_model.layers.0.linear_attn.in_proj_z.weight",
+    "model.language_model.layers.0.linear_attn.in_proj_b.weight",
+    "model.language_model.layers.0.linear_attn.in_proj_a.weight"
+  ],
+  "sample_names_without_gradient": [
+    "model.visual.patch_embed.proj.weight",
+    "model.visual.patch_embed.proj.bias",
+    "model.visual.pos_embed.weight",
+    "model.visual.blocks.0.norm1.weight",
+    "model.visual.blocks.0.norm1.bias",
+    "model.visual.blocks.0.norm2.weight",
+    "model.visual.blocks.0.norm2.bias",
+    "model.visual.blocks.0.attn.qkv.weight",
+    "model.visual.blocks.0.attn.qkv.bias",
+    "model.visual.blocks.0.attn.proj.weight"
+  ]
+}

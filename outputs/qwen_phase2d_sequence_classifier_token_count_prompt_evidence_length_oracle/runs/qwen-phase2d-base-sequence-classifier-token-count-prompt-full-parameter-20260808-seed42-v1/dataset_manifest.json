@@ -1,0 +1,51 @@
+{
+  "train_examples": 2245,
+  "validation_examples": 924,
+  "train_documents": 845,
+  "validation_documents": 277,
+  "train_distribution": {
+    "10": 55,
+    "20": 267,
+    "40": 586,
+    "80": 687,
+    "160": 650
+  },
+  "validation_distribution": {
+    "10": 13,
+    "20": 81,
+    "40": 178,
+    "80": 232,
+    "160": 420
+  },
+  "train_oracle_sha256": "64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88",
+  "validation_oracle_sha256": "ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d",
+  "verified_at": "2026-08-08T16:00:01.743057+00:00",
+  "active_train_examples": 2245,
+  "active_validation_examples": 924,
+  "active_train_distribution": {
+    "160": 650,
+    "40": 586,
+    "80": 687,
+    "20": 267,
+    "10": 55
+  },
+  "active_validation_distribution": {
+    "160": 420,
+    "40": 178,
+    "20": 81,
+    "80": 232,
+    "10": 13
+  },
+  "sequence_length": {
+    "train_minimum": 95,
+    "train_maximum": 121,
+    "validation_minimum": 96,
+    "validation_maximum": 124
+  },
+  "model_inputs": [
+    "fixed_supervisor_instruction",
+    "original_question_text"
+  ],
+  "experiment_fingerprint": "dad60bd9a0530865110c2310f62a896c73350fa383c7812d5c6733e376bc377d",
+  "created_at": "2026-08-08T16:00:03.867693+00:00"
+}
