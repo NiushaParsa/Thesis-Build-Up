@@ -1,0 +1,106 @@
+{
+  "classification_metrics": {
+    "accuracy": 0.34523809523809523,
+    "macro_f1": 0.21763191244497584,
+    "weighted_f1": 0.3435657773957275,
+    "balanced_accuracy": 0.22993634120458348,
+    "top_2_accuracy": 0.6428571428571429,
+    "top_2_accuracy_status": "available_from_comparable_five_class_head_logits",
+    "per_class": {
+      "10": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13
+      },
+      "20": {
+        "precision": 0.05,
+        "recall": 0.012345679012345678,
+        "f1": 0.019801980198019802,
+        "support": 81
+      },
+      "40": {
+        "precision": 0.29017857142857145,
+        "recall": 0.3651685393258427,
+        "f1": 0.3233830845771144,
+        "support": 178
+      },
+      "80": {
+        "precision": 0.23529411764705882,
+        "recall": 0.3793103448275862,
+        "f1": 0.29042904290429045,
+        "support": 232
+      },
+      "160": {
+        "precision": 0.5392156862745098,
+        "recall": 0.39285714285714285,
+        "f1": 0.45454545454545453,
+        "support": 420
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        5,
+        7,
+        1
+      ],
+      [
+        0,
+        1,
+        19,
+        39,
+        22
+      ],
+      [
+        0,
+        4,
+        65,
+        66,
+        43
+      ],
+      [
+        0,
+        5,
+        64,
+        88,
+        75
+      ],
+      [
+        0,
+        10,
+        71,
+        174,
+        165
+      ]
+    ],
+    "evaluated_examples": 924,
+    "valid_predictions": 924,
+    "invalid_predictions": 0
+  },
+  "oracle_distribution": {
+    "10": 13,
+    "20": 81,
+    "40": 178,
+    "80": 232,
+    "160": 420
+  },
+  "predicted_distribution": {
+    "10": 0,
+    "20": 20,
+    "40": 224,
+    "80": 374,
+    "160": 306
+  },
+  "valid_output_count": 924,
+  "valid_output_rate": 1.0,
+  "invalid_output_count": 0,
+  "invalid_output_percentage": 0.0,
+  "majority_class": 160,
+  "majority_baseline_accuracy": 0.45454545454545453,
+  "majority_baseline_macro_f1": 0.125,
+  "selected_checkpoint_id": "step-000213",
+  "checkpoint_selection_metric": "validation_macro_f1",
+  "confusion_matrix_note": "Rows are Oracle labels and columns are classifier predictions, ordered 10, 20, 40, 80, 160."
+}

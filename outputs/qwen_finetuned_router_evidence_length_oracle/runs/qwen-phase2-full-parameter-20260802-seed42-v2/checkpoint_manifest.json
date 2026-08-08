@@ -1,0 +1,290 @@
+[
+  {
+    "checkpoint": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/checkpoints/step-000071",
+    "checkpoint_id": "step-000071",
+    "global_step": 71,
+    "epoch": 1,
+    "validation_loss": 0.304930741717289,
+    "classification_metrics": {
+      "accuracy": 0.45454545454545453,
+      "macro_f1": 0.125,
+      "weighted_f1": 0.2840909090909091,
+      "balanced_accuracy": 0.2,
+      "top_2_accuracy": null,
+      "top_2_accuracy_status": "unavailable_no_comparable_class_scores",
+      "per_class": {
+        "10": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 13
+        },
+        "20": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 81
+        },
+        "40": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 178
+        },
+        "80": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 232
+        },
+        "160": {
+          "precision": 0.45454545454545453,
+          "recall": 1.0,
+          "f1": 0.625,
+          "support": 420
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          0,
+          13
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          81
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          178
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          232
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          420
+        ]
+      ],
+      "evaluated_examples": 924,
+      "valid_predictions": 924,
+      "invalid_predictions": 0
+    },
+    "predicted_distribution": {
+      "10": 0,
+      "20": 0,
+      "40": 0,
+      "80": 0,
+      "160": 924
+    },
+    "predictions": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/validation/predictions_step-000071.jsonl",
+    "validation_wall_seconds": 340.64150045998394
+  },
+  {
+    "checkpoint": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/checkpoints/step-000142",
+    "checkpoint_id": "step-000142",
+    "global_step": 142,
+    "epoch": 2,
+    "validation_loss": 0.30652774386591725,
+    "classification_metrics": {
+      "accuracy": 0.4556277056277056,
+      "macro_f1": 0.12698176971774003,
+      "weighted_f1": 0.28686332944508014,
+      "balanced_accuracy": 0.20086206896551725,
+      "top_2_accuracy": null,
+      "top_2_accuracy_status": "unavailable_no_comparable_class_scores",
+      "per_class": {
+        "10": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 13
+        },
+        "20": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 81
+        },
+        "40": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 178
+        },
+        "80": {
+          "precision": 0.3333333333333333,
+          "recall": 0.004310344827586207,
+          "f1": 0.00851063829787234,
+          "support": 232
+        },
+        "160": {
+          "precision": 0.4560260586319218,
+          "recall": 1.0,
+          "f1": 0.6263982102908278,
+          "support": 420
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          0,
+          13
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          81
+        ],
+        [
+          0,
+          0,
+          0,
+          2,
+          176
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          231
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          420
+        ]
+      ],
+      "evaluated_examples": 924,
+      "valid_predictions": 924,
+      "invalid_predictions": 0
+    },
+    "predicted_distribution": {
+      "10": 0,
+      "20": 0,
+      "40": 0,
+      "80": 3,
+      "160": 921
+    },
+    "predictions": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/validation/predictions_step-000142.jsonl",
+    "validation_wall_seconds": 327.1569862253964
+  },
+  {
+    "checkpoint": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/checkpoints/step-000213",
+    "checkpoint_id": "step-000213",
+    "global_step": 213,
+    "epoch": 3,
+    "validation_loss": 0.3081164950932259,
+    "classification_metrics": {
+      "accuracy": 0.4318181818181818,
+      "macro_f1": 0.16502267760462996,
+      "weighted_f1": 0.32805741427623947,
+      "balanced_accuracy": 0.20697865353037764,
+      "top_2_accuracy": null,
+      "top_2_accuracy_status": "unavailable_no_comparable_class_scores",
+      "per_class": {
+        "10": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 13
+        },
+        "20": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 81
+        },
+        "40": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 178
+        },
+        "80": {
+          "precision": 0.2953020134228188,
+          "recall": 0.1896551724137931,
+          "f1": 0.23097112860892388,
+          "support": 232
+        },
+        "160": {
+          "precision": 0.45806451612903226,
+          "recall": 0.8452380952380952,
+          "f1": 0.5941422594142259,
+          "support": 420
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          1,
+          12
+        ],
+        [
+          0,
+          0,
+          0,
+          16,
+          65
+        ],
+        [
+          0,
+          0,
+          0,
+          23,
+          155
+        ],
+        [
+          0,
+          0,
+          0,
+          44,
+          188
+        ],
+        [
+          0,
+          0,
+          0,
+          65,
+          355
+        ]
+      ],
+      "evaluated_examples": 924,
+      "valid_predictions": 924,
+      "invalid_predictions": 0
+    },
+    "predicted_distribution": {
+      "10": 0,
+      "20": 0,
+      "40": 0,
+      "80": 149,
+      "160": 775
+    },
+    "predictions": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/validation/predictions_step-000213.jsonl",
+    "validation_wall_seconds": 321.21750357560813
+  }
+]

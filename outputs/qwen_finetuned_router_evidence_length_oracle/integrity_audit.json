@@ -1,0 +1,49 @@
+{
+  "status": "passed",
+  "run_id": "qwen-phase2-full-parameter-20260802-seed42-v2",
+  "checks": {
+    "predictions_unique_and_in_frozen_order": true,
+    "classification_recomputed_exactly": true,
+    "presentation_artifacts_reconcile": true,
+    "invalid_outputs_receive_no_default": true,
+    "retrieval_exactly_covers_valid_predictions": true,
+    "retrieval_summary_recomputed": true,
+    "training_steps_complete": true,
+    "three_validation_events_complete": true,
+    "checkpoint_selection_rule_reproduced": true,
+    "tensorboard_structured_logs_agree": true,
+    "checkpoint_generation_is_deterministic": true,
+    "selected_checkpoint_archive_sha256_verified": true,
+    "phase1_source_hashes_unchanged": true
+  },
+  "counts": {
+    "predictions": 924,
+    "valid_predictions": 924,
+    "invalid_predictions": 0,
+    "retrieval_records": 924,
+    "training_steps": 213,
+    "validation_events": 3
+  },
+  "phase1_source_hashes": {
+    "final_summary.json": "d421d57342331b2d6418d9fe3a10a0886a5fa4f24bbf146fadb7e41a050500c1",
+    "configuration/fixed_prompt.json": "656a0b01d61532176e75334e48aca3250cba4a46b4f845bf39383bd27b98550c",
+    "oracle/train_oracle.jsonl": "64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88",
+    "oracle/validation_oracle.jsonl": "ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d"
+  },
+  "phase2_artifact_sha256": {
+    "outputs\\qwen_finetuned_router_evidence_length_oracle\\final_summary.json": "73f9ffb773aedcc47ba7ebe3850d28e372038ae795e3f6cb69f888bfcfb87d04",
+    "outputs\\qwen_finetuned_router_evidence_length_oracle\\validation\\predictions.jsonl": "18f61c181084f64c93f6cd5b1735f33ea14a444714732bee79f51d17e6a6f935",
+    "outputs\\qwen_finetuned_router_evidence_length_oracle\\classification\\metrics.json": "89691b0d4dc10c225dff6545dfc7a968175a1a78632243169222a4785611d9f8",
+    "outputs\\qwen_finetuned_router_evidence_length_oracle\\classification\\confusion_matrix.csv": "dfe4c6009306c16e9eb6fbca2d15ef69aea4f42449059bc035edfca16882e145",
+    "outputs\\qwen_finetuned_router_evidence_length_oracle\\retrieval\\results.jsonl": "7ce2bf51a00374fc8eae877cb2d85848dac478262c21474a8809b63b3e01fdd1",
+    "outputs\\qwen_finetuned_router_evidence_length_oracle\\retrieval\\summary.json": "080e6ca01ad80acb19504dcf3a73c0c9adb1cf392f206f4830fced87c4b5e3ec",
+    "outputs\\qwen_finetuned_router_evidence_length_oracle\\runs\\qwen-phase2-full-parameter-20260802-seed42-v2\\training_config.json": "1503c73e89c6f49c8fa10784993314bb77951fff00fea186312985bd50c51dc4",
+    "outputs\\qwen_finetuned_router_evidence_length_oracle\\runs\\qwen-phase2-full-parameter-20260802-seed42-v2\\dataset_manifest.json": "cb9417ca7a64c8719f951c299e2f55e11d7359e9c72560c08d5509a6fa9c3ad5",
+    "outputs\\qwen_finetuned_router_evidence_length_oracle\\runs\\qwen-phase2-full-parameter-20260802-seed42-v2\\best_checkpoint.json": "131d09595a61297c8309d29bcefb154959ad284db60cd7a9bd601dac168fa65c",
+    "outputs\\qwen_finetuned_router_evidence_length_oracle\\runs\\qwen-phase2-full-parameter-20260802-seed42-v2\\checkpoint_manifest.json": "1832ea4f96df9ad87e3de65bcc52baea8386986360134e96768d43fdddfc662c",
+    "outputs\\qwen_finetuned_router_evidence_length_oracle\\runs\\qwen-phase2-full-parameter-20260802-seed42-v2\\tensorboard_scalar_inventory.json": "985daaf9e0c35687b62b6efdda76b133746585bdcd0528214d03227b3bfca3c2",
+    "outputs\\qwen_finetuned_router_evidence_length_oracle\\runs\\qwen-phase2-full-parameter-20260802-seed42-v2\\checkpoint_verification.json": "c4ee4b450768ad34379b3b4b1b5bf79d9680aceadb80da088468bba126cb67b0",
+    "outputs\\qwen_finetuned_router_evidence_length_oracle\\runs\\qwen-phase2-full-parameter-20260802-seed42-v2\\checkpoint_archive_verification.json": "5ad473021f0c0ed78bdf3d61afff3941f025b85f96e62424e9bcac6842aa030b"
+  },
+  "verified_at": "2026-08-02T18:25:59.155538+00:00"
+}

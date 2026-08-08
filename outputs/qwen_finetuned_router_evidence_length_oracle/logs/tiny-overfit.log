@@ -1,0 +1,126 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s]Loading weights:  72%|███████▏  | 341/473 [00:00<00:00, 3408.44it/s]Loading weights: 100%|██████████| 473/473 [00:00<00:00, 3499.23it/s]
+/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py:164: UserWarning: Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA >= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:233.)
+  freqs = (inv_freq_expanded.float() @ position_ids_expanded.float()).transpose(2, 3)
+/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/torch/nn/modules/linear.py:125: UserWarning: Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA >= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:233.)
+  return F.linear(input, self.weight, self.bias)
+/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py:313: UserWarning: Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA >= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:233.)
+  attn = -((k_beta @ key.transpose(-1, -2)) * decay_mask).masked_fill(mask, 0)
+/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py:319: UserWarning: Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA >= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:233.)
+  value = attn @ v_beta
+/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py:320: UserWarning: Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA >= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:233.)
+  k_cumdecay = attn @ (k_beta * g.exp().unsqueeze(-1))
+/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py:332: UserWarning: Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA >= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:233.)
+  attn = q_i @ k_i.transpose(-1, -2) * decay_mask[:, :, i]
+/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py:333: UserWarning: Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA >= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:233.)
+  v_prime = (k_cumdecay[:, :, i]) @ last_recurrent_state
+/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py:335: UserWarning: Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA >= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:233.)
+  attn_inter = (q_i * g[:, :, i, :, None].exp()) @ last_recurrent_state
+/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py:336: UserWarning: Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA >= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:233.)
+  core_attn_out[:, :, i] = attn_inter + attn @ v_new
+/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/transformers/models/qwen3_5/modeling_qwen3_5.py:339: UserWarning: Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA >= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:233.)
+  + (k_i * (g[:, :, i, -1, None] - g[:, :, i]).exp()[..., None]).transpose(-1, -2) @ v_new
+/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/torch/autograd/graph.py:829: UserWarning: Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA >= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#results-reproducibility (Triggered internally at /pytorch/aten/src/ATen/Context.cpp:233.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/torch/autograd/graph.py:829: UserWarning: Flash Attention defaults to a non-deterministic algorithm. To explicitly enable determinism call torch.use_deterministic_algorithms(True, warn_only=False). (Triggered internally at /pytorch/aten/src/ATen/native/transformers/cuda/attention_backward.cu:110.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:03<00:00,  3.14s/it]Writing model shards: 100%|██████████| 1/1 [00:03<00:00,  3.14s/it]
+{
+  "status": "complete",
+  "mode": "tiny-overfit",
+  "run_id": "qwen-phase2-tiny-overfit-seed42-v1",
+  "global_step": 20,
+  "initial_loss": 0.418969988822937,
+  "final_loss": 0.24350161850452423,
+  "validation_loss": 0.47484251856803894,
+  "validation_metrics": {
+    "accuracy": 0.2,
+    "macro_f1": 0.06666666666666668,
+    "weighted_f1": 0.06666666666666668,
+    "balanced_accuracy": 0.2,
+    "top_2_accuracy": null,
+    "top_2_accuracy_status": "unavailable_no_comparable_class_scores",
+    "per_class": {
+      "10": {
+        "precision": 0.2,
+        "recall": 1.0,
+        "f1": 0.33333333333333337,
+        "support": 1
+      },
+      "20": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      },
+      "40": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      },
+      "80": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      },
+      "160": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      }
+    },
+    "confusion_matrix": [
+      [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "evaluated_examples": 5,
+    "valid_predictions": 5,
+    "invalid_predictions": 0
+  },
+  "elapsed_seconds": 24.677159760147333,
+  "peak_gpu_allocated_gib": 7.415684700012207,
+  "peak_gpu_reserved_gib": 8.806640625,
+  "rss_gib": 2.6749343872070312,
+  "checkpoint": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-tiny-overfit-seed42-v1/checkpoints/step-000020",
+  "tensorboard_directory": "outputs/qwen_finetuned_router_evidence_length_oracle/tensorboard/qwen-phase2-tiny-overfit-seed42-v1",
+  "total_parameters": 852985920,
+  "trainable_parameters": 852985920,
+  "created_at": "2026-08-02T16:28:20.570771+00:00"
+}

@@ -1,0 +1,28 @@
+W0802 19:54:54.117000 25676 .venv-qwen\Lib\site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (1204 > 1024). Running this sequence through the model will result in indexing errors
+{
+  "evaluated_examples": 924,
+  "valid_prediction_retrievals": 924,
+  "invalid_predictions_without_retrieval": 0,
+  "retrieval_coverage": 1.0,
+  "valid_only_mean_joined_retrieval_f1": 0.22658488852813854,
+  "valid_only_median_joined_retrieval_f1": 0.19615549999999998,
+  "coverage_adjusted_full_set_mean_joined_retrieval_f1": 0.22658488852813866,
+  "full_set_note": "Invalid Qwen outputs receive no retrieval record and no default granularity. Valid-only F1 summarizes retrieved valid predictions; the coverage-adjusted full-set mean assigns zero contribution to invalid predictions solely for a transparent complete-set summary.",
+  "top_k": 5,
+  "paper_restricted": true,
+  "embedding_model": "text-embedding-3-small",
+  "tokenizer": "gpt2",
+  "metric": "f1_joined_topk",
+  "current_segment_wall_seconds": 178.12831589998677,
+  "cumulative_durable_question_processing_seconds": 168.32030229995144,
+  "run_id": "qwen-phase2-full-parameter-20260802-seed42-v2",
+  "evaluation_run_id": "qwen-phase2-full-parameter-20260802-seed42-v2-retrieval-top5-paper",
+  "runtime_segments": 1,
+  "completed_invocation_wall_seconds": 178.12831589998677,
+  "complete_uninterrupted_run_wall_seconds": 178.12831589998677,
+  "reported_retrieval_wall_seconds": 178.12831589998677,
+  "reported_retrieval_wall_basis": "complete_uninterrupted_invocation",
+  "runtime_note": "Each completed question stores its own fsynced processing duration. Completed invocation walls are also retained; after an interrupted resume, the durable per-question sum is the non-fabricated runtime basis."
+}

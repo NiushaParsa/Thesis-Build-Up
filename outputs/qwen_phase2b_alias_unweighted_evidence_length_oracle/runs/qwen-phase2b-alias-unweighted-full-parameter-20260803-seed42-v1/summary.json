@@ -1,0 +1,108 @@
+{
+  "status": "complete",
+  "phase": "Phase 2B",
+  "variant": "alias-unweighted",
+  "mode": "full",
+  "run_id": "qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1",
+  "global_step": 213,
+  "initial_loss": 1.835081309080124,
+  "final_loss": 1.541044330596924,
+  "validation_unweighted_ce": 1.3402932242397623,
+  "validation_objective_weighted_ce": 1.3402932242397623,
+  "validation_metrics": {
+    "accuracy": 0.35064935064935066,
+    "macro_f1": 0.20922603632601472,
+    "weighted_f1": 0.3406050804511769,
+    "balanced_accuracy": 0.2383201416948027,
+    "top_2_accuracy": 0.6071428571428571,
+    "top_2_accuracy_status": "available_from_comparable_restricted_five_class_logits",
+    "per_class": {
+      "10": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13
+      },
+      "20": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 81
+      },
+      "40": {
+        "precision": 0.234192037470726,
+        "recall": 0.5617977528089888,
+        "f1": 0.33057851239669417,
+        "support": 178
+      },
+      "80": {
+        "precision": 0.26455026455026454,
+        "recall": 0.21551724137931033,
+        "f1": 0.2375296912114014,
+        "support": 232
+      },
+      "160": {
+        "precision": 0.564935064935065,
+        "recall": 0.4142857142857143,
+        "f1": 0.47802197802197804,
+        "support": 420
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        10,
+        2,
+        1
+      ],
+      [
+        0,
+        0,
+        48,
+        13,
+        20
+      ],
+      [
+        0,
+        0,
+        100,
+        35,
+        43
+      ],
+      [
+        0,
+        0,
+        112,
+        50,
+        70
+      ],
+      [
+        0,
+        0,
+        157,
+        89,
+        174
+      ]
+    ],
+    "evaluated_examples": 924,
+    "valid_predictions": 924,
+    "invalid_predictions": 0
+  },
+  "validation_events": 3,
+  "selected_checkpoint": "outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/runs/qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1/checkpoints/step-000213",
+  "selected_checkpoint_id": "step-000213",
+  "selection_reason": "validation_macro_f1",
+  "elapsed_seconds": 1308.664808139205,
+  "peak_gpu_allocated_gib": 10.058899402618408,
+  "peak_gpu_reserved_gib": 11.99609375,
+  "rss_gib": 1.9831161499023438,
+  "retained_checkpoint": "outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/runs/qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1/checkpoints/step-000213",
+  "checkpoint_retention": "at_most_current_and_best_during_training_selected_only_at_completion",
+  "checkpoints_pruned_at_completion": [],
+  "tensorboard_directory": "outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/tensorboard/qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1",
+  "total_parameters": 852985920,
+  "trainable_parameters": 852985920,
+  "experiment_fingerprint": "961786801daa066b40cd2ad9325cb48b08a45942dacb7516470891aa715bc61d",
+  "created_at": "2026-08-03T17:06:33.533094+00:00"
+}

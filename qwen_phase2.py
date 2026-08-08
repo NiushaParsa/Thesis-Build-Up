@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import importlib.metadata
 import json
 import math
 import os
@@ -21,6 +22,7 @@ os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
 import random
 import re
 import shutil
+import sys
 import time
 from collections import Counter
 from dataclasses import asdict, dataclass
@@ -46,6 +48,14 @@ EXPECTED_DISTRIBUTIONS = {
     "validation": {10: 13, 20: 81, 40: 178, 80: 232, 160: 420},
 }
 ORACLE_VERSION = "oracle-evidence-length-gpt2-smaller-midpoint-v1"
+RETRIEVAL_CONFIG_HASH = "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8"
+RETRIEVAL_SCHEMA_VERSION = 2
+RETRIEVAL_METRIC_VERSION = "qasper-token-prf-v2"
+RETRIEVAL_NORMALIZATION_VERSION = "lowercase-remove-punctuation-collapse-whitespace-v1"
+PHASE1_FINAL_SUMMARY_SHA256 = "d421d57342331b2d6418d9fe3a10a0886a5fa4f24bbf146fadb7e41a050500c1"
+FIXED_PROMPT_SHA256 = "656a0b01d61532176e75334e48aca3250cba4a46b4f845bf39383bd27b98550c"
+TRAIN_ORACLE_SHA256 = "64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88"
+VALIDATION_ORACLE_SHA256 = "ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d"
 VALID_CLASS_PATTERN = re.compile(r"(?<!\d)(10|20|40|80|160)(?!\d)")
 PHASE1_ROOT = Path("outputs/qwen_pretrained_zero_shot_router_evidence_length_oracle")
 DEFAULT_OUTPUT_ROOT = Path("outputs/qwen_finetuned_router_evidence_length_oracle")
@@ -71,9 +81,10 @@ class TrainingConfig:
     epochs: int = 3
     gradient_clipping: float = 1.0
     seed: int = 42
-    logging_steps: int = 10
+    logging_steps: int = 1
     evaluation_frequency: str = "end_of_epoch"
     checkpoint_frequency: str = "end_of_epoch"
+    checkpoint_retention_policy: str = "retain_all_three_epoch_checkpoints"
     checkpoint_selection_metric: str = "validation_macro_f1"
     checkpoint_tie_break: str = (
         "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step"
@@ -99,6 +110,45 @@ def append_jsonl(path: Path, value: dict[str, Any]) -> None:
         handle.write(json.dumps(value, ensure_ascii=False) + "\n")
         handle.flush()
         os.fsync(handle.fileno())
+
+
+def atomic_jsonl(path: Path, values: Iterable[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("w", encoding="utf-8") as handle:
+        for value in values:
+            handle.write(json.dumps(value, ensure_ascii=False) + "\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(temporary, path)
+
+
+def read_jsonl(path: Path) -> list[dict[str, Any]]:
+    """Read a JSONL artifact without silently accepting blank-only files."""
+    rows = [
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    if not rows:
+        raise RuntimeError(f"JSONL artifact is empty: {path}")
+    return rows
+
+
+def truncate_jsonl_after_step(path: Path, maximum_step: int) -> int:
+    """Atomically discard post-checkpoint events before a resumed run."""
+    if not path.exists():
+        return 0
+    rows = [
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    retained = [row for row in rows if int(row.get("global_step", 0)) <= maximum_step]
+    removed = len(rows) - len(retained)
+    if removed:
+        atomic_jsonl(path, retained)
+    return removed
 
 
 def sha256_file(path: Path) -> str:
@@ -343,6 +393,39 @@ def cosine_scheduler(optimizer: torch.optim.Optimizer, total_steps: int, warmup_
     return torch.optim.lr_scheduler.LambdaLR(optimizer, factor)
 
 
+def optimizer_steps_for_batches(batch_count: int, accumulation_steps: int) -> int:
+    if batch_count < 0 or accumulation_steps < 1:
+        raise ValueError("Invalid batch or accumulation count")
+    return math.ceil(batch_count / accumulation_steps)
+
+
+def partial_window_gradient_scale(
+    accumulation_steps: int,
+    nominal_batch_size: int,
+    observed_examples: int,
+) -> float:
+    """Normalize accumulated batch-mean gradients by the examples observed."""
+    if accumulation_steps < 1 or nominal_batch_size < 1 or observed_examples < 1:
+        raise ValueError("Invalid accumulation-window size")
+    return accumulation_steps * nominal_batch_size / observed_examples
+
+
+def select_best_evaluation(records: Sequence[dict[str, Any]]) -> dict[str, Any]:
+    if not records:
+        raise ValueError("At least one checkpoint evaluation is required")
+    return max(
+        records,
+        key=lambda record: (
+            record["classification_metrics"]["macro_f1"],
+            record["classification_metrics"]["accuracy"],
+            record["classification_metrics"]["weighted_f1"],
+            record["classification_metrics"]["balanced_accuracy"],
+            -record["validation_loss"],
+            -record["global_step"],
+        ),
+    )
+
+
 def select_balanced_subset(records: Sequence[dict[str, Any]], per_class: int, seed: int) -> list[dict[str, Any]]:
     rng = random.Random(seed)
     selected: list[dict[str, Any]] = []
@@ -387,6 +470,7 @@ def save_checkpoint(
     optimizer: torch.optim.Optimizer,
     scheduler: Any,
     state: dict[str, Any],
+    data_generator: torch.Generator | None = None,
 ) -> None:
     if checkpoint_dir.exists():
         raise FileExistsError(f"Checkpoint already exists: {checkpoint_dir}")
@@ -398,15 +482,15 @@ def save_checkpoint(
     processor.save_pretrained(temporary / "model")
     torch.save(optimizer.state_dict(), temporary / "optimizer.pt")
     torch.save(scheduler.state_dict(), temporary / "scheduler.pt")
-    torch.save(
-        {
+    random_states = {
             "torch_rng_state": torch.get_rng_state(),
             "cuda_rng_state_all": torch.cuda.get_rng_state_all(),
             "python_random_state": random.getstate(),
             "numpy_random_state": np.random.get_state(),
-        },
-        temporary / "random_states.pt",
-    )
+    }
+    if data_generator is not None:
+        random_states["data_loader_generator_state"] = data_generator.get_state()
+    torch.save(random_states, temporary / "random_states.pt")
     atomic_json(temporary / "training_state.json", state)
     os.replace(temporary, checkpoint_dir)
 
@@ -415,6 +499,7 @@ def load_checkpoint(
     checkpoint_dir: Path,
     optimizer_factory: Any,
     scheduler_factory: Any,
+    data_generator: torch.Generator | None = None,
 ) -> tuple[Any, Any, torch.optim.Optimizer, Any, dict[str, Any]]:
     processor, model = _load_model_processor(str(checkpoint_dir / "model"), None)
     optimizer = optimizer_factory(model)
@@ -427,6 +512,8 @@ def load_checkpoint(
     torch.cuda.set_rng_state_all(random_states["cuda_rng_state_all"])
     random.setstate(random_states["python_random_state"])
     np.random.set_state(random_states["numpy_random_state"])
+    if data_generator is not None and "data_loader_generator_state" in random_states:
+        data_generator.set_state(random_states["data_loader_generator_state"])
     return processor, model, optimizer, scheduler, state
 
 
@@ -524,7 +611,6 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
         raise FileExistsError(f"Run already exists: {run_dir}")
     run_dir.mkdir(parents=True, exist_ok=True)
     tensorboard_dir = output_root / "tensorboard" / run_id
-    writer = SummaryWriter(log_dir=str(tensorboard_dir), purge_step=None)
 
     processor, model = _load_model_processor()
     pad_id = processor.tokenizer.pad_token_id
@@ -552,6 +638,18 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
         "active_gradient_accumulation_steps": active_gradient_accumulation,
         "active_effective_batch_size": active_batch_size * active_gradient_accumulation,
         "maximum_optimizer_steps": args.max_steps,
+        "run_id": run_id,
+        "repository_commit": os.getenv("PHASE2_REPOSITORY_COMMIT", "unavailable"),
+        "training_script_sha256": sha256_file(Path(__file__)),
+        "python_version": sys.version,
+        "python_executable": sys.executable,
+        "torch_version": torch.__version__,
+        "torch_cuda_version": torch.version.cuda,
+        "transformers_version": importlib.metadata.version("transformers"),
+        "transformers_commit": TRANSFORMERS_COMMIT,
+        "tensorboard_version": importlib.metadata.version("tensorboard"),
+        "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
+        "tensorboard_directory": str(tensorboard_dir),
     }
     atomic_json(run_dir / "training_config.json", run_config)
     atomic_json(run_dir / "formatted_example_inspection.json", formatted_train[:5])
@@ -571,7 +669,9 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
         shuffle=False,
         collate_fn=collator,
     )
-    steps_per_epoch = math.ceil(len(train_loader) / active_gradient_accumulation)
+    steps_per_epoch = optimizer_steps_for_batches(
+        len(train_loader), active_gradient_accumulation
+    )
     configured_total = steps_per_epoch * config.epochs
     total_steps = args.max_steps or configured_total
     warmup_steps = round(total_steps * config.warmup_ratio)
@@ -589,10 +689,30 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
     state = {"global_step": 0, "epoch": 0, "micro_step": 0, "run_id": run_id}
     if args.resume is not None:
         processor, model, optimizer, scheduler, state = load_checkpoint(
-            args.resume, optimizer_factory, scheduler_factory
+            args.resume, optimizer_factory, scheduler_factory, generator
         )
         if state["run_id"] != run_id:
             raise RuntimeError("Resume run ID does not match requested run ID")
+        removed_train = truncate_jsonl_after_step(
+            run_dir / "training_history.jsonl", int(state["global_step"])
+        )
+        removed_validation = truncate_jsonl_after_step(
+            run_dir / "validation_history.jsonl", int(state["global_step"])
+        )
+        append_jsonl(
+            run_dir / "resume_history.jsonl",
+            {
+                "checkpoint": str(args.resume),
+                "resumed_global_step": int(state["global_step"]),
+                "removed_post_checkpoint_train_events": removed_train,
+                "removed_post_checkpoint_validation_events": removed_validation,
+                "timestamp": utc_now(),
+            },
+        )
+    writer = SummaryWriter(
+        log_dir=str(tensorboard_dir),
+        purge_step=int(state["global_step"]) + 1 if args.resume is not None else None,
+    )
     model.to("cuda")
     move_optimizer_state(optimizer, torch.device("cuda"))
     model.train()
@@ -601,49 +721,175 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
     trainable_parameters = sum(parameter.numel() for parameter in model.parameters() if parameter.requires_grad)
     if trainable_parameters != total_parameters:
         raise RuntimeError("Full-parameter run unexpectedly contains frozen parameters")
-    writer.add_text("configuration/run", _metadata_text(config, manifest, run_id, total_parameters, trainable_parameters), 0)
+    if args.resume is None:
+        writer.add_text("configuration/run", _metadata_text(config, manifest, run_id, total_parameters, trainable_parameters), 0)
     optimizer.zero_grad(set_to_none=True)
     process = psutil.Process()
     started = time.perf_counter()
-    initial_loss: float | None = None
-    final_loss: float | None = None
+    initial_loss: float | None = state.get("initial_loss")
+    final_loss: float | None = state.get("last_loss")
+    elapsed_before_resume = float(state.get("cumulative_elapsed_seconds", 0.0))
     stop = False
+    checkpoint_manifest_path = run_dir / "checkpoint_manifest.json"
+    evaluation_records: list[dict[str, Any]] = []
+    if args.resume is not None and checkpoint_manifest_path.exists():
+        evaluation_records = [
+            record
+            for record in json.loads(checkpoint_manifest_path.read_text(encoding="utf-8"))
+            if int(record["global_step"]) <= int(state["global_step"])
+        ]
+
+    def evaluate_and_checkpoint(completed_epoch: int) -> dict[str, Any]:
+        validation_started = time.perf_counter()
+        validation_loss = evaluate_loss(model, validation_loader)
+        checkpoint_id = f"step-{state['global_step']:06d}"
+        predictions = generate_predictions(
+            processor, model, validation_records, instruction, checkpoint_id
+        )
+        metrics = fixed_classification_metrics(predictions)
+        prediction_distribution = Counter(
+            row["parsed_prediction"]
+            for row in predictions
+            if row["parsed_prediction"] is not None
+        )
+        validation_event = {
+            "event": "validation",
+            "global_step": state["global_step"],
+            "epoch": completed_epoch,
+            "loss": validation_loss,
+            **metrics,
+            "predicted_distribution": {
+                str(label): prediction_distribution[label] for label in CLASS_TOKENS
+            },
+            "wall_seconds": time.perf_counter() - validation_started,
+            "timestamp": utc_now(),
+        }
+        append_jsonl(run_dir / "validation_history.jsonl", validation_event)
+        writer.add_scalar("validation/loss", validation_loss, state["global_step"])
+        for key in ("accuracy", "macro_f1", "weighted_f1", "balanced_accuracy"):
+            writer.add_scalar(f"validation/{key}", metrics[key], state["global_step"])
+        writer.add_scalar(
+            "validation/invalid_output_count",
+            metrics["invalid_predictions"],
+            state["global_step"],
+        )
+        writer.add_scalar(
+            "validation/invalid_output_percentage",
+            100.0 * metrics["invalid_predictions"] / len(predictions),
+            state["global_step"],
+        )
+        for label, values in metrics["per_class"].items():
+            for metric_name in ("precision", "recall", "f1"):
+                writer.add_scalar(
+                    f"validation/class_{label}_{metric_name}",
+                    values[metric_name],
+                    state["global_step"],
+                )
+        for label in CLASS_TOKENS:
+            writer.add_scalar(
+                f"validation/predicted_class_{label}_count",
+                prediction_distribution[label],
+                state["global_step"],
+            )
+        writer.flush()
+
+        checkpoint = run_dir / "checkpoints" / checkpoint_id
+        state.update(
+            {
+                "epoch": completed_epoch,
+                "validation_metrics": metrics,
+                "validation_loss": validation_loss,
+                "initial_loss": initial_loss,
+                "last_loss": final_loss,
+                "cumulative_elapsed_seconds": (
+                    elapsed_before_resume + time.perf_counter() - started
+                ),
+            }
+        )
+        save_checkpoint(
+            checkpoint, model, processor, optimizer, scheduler, state, generator
+        )
+        prediction_path = run_dir / "validation" / f"predictions_{checkpoint_id}.jsonl"
+        atomic_jsonl(prediction_path, predictions)
+        record = {
+            "checkpoint": str(checkpoint),
+            "checkpoint_id": checkpoint_id,
+            "global_step": state["global_step"],
+            "epoch": completed_epoch,
+            "validation_loss": validation_loss,
+            "classification_metrics": metrics,
+            "predicted_distribution": validation_event["predicted_distribution"],
+            "predictions": str(prediction_path),
+            "validation_wall_seconds": validation_event["wall_seconds"],
+        }
+        evaluation_records.append(record)
+        atomic_json(checkpoint_manifest_path, evaluation_records)
+        return record
+
     active_epochs = max(config.epochs, math.ceil(total_steps / max(steps_per_epoch, 1)))
     for epoch in range(int(state["epoch"]), active_epochs):
-        for batch in train_loader:
-            micro_started = time.perf_counter()
+        accumulated_batches = 0
+        accumulated_examples = 0
+        accumulated_tokens = 0
+        accumulated_weighted_loss = 0.0
+        accumulation_started = time.perf_counter()
+        for batch_index, batch in enumerate(train_loader):
+            batch_examples = int(batch["input_ids"].shape[0])
+            batch_tokens = int(batch["attention_mask"].sum().item())
             outputs = model(
                 input_ids=batch["input_ids"].to("cuda"),
                 attention_mask=batch["attention_mask"].to("cuda"),
                 labels=batch["labels"].to("cuda"),
             )
-            loss = outputs.loss / active_gradient_accumulation
+            loss = (
+                outputs.loss
+                * batch_examples
+                / (active_gradient_accumulation * active_batch_size)
+            )
             if not torch.isfinite(loss):
                 raise RuntimeError(f"Non-finite loss at global step {state['global_step']}")
             loss.backward()
             observed_loss = float(outputs.loss.detach().cpu())
-            initial_loss = observed_loss if initial_loss is None else initial_loss
-            final_loss = observed_loss
             state["micro_step"] += 1
-            if state["micro_step"] % active_gradient_accumulation != 0:
+            accumulated_batches += 1
+            accumulated_examples += batch_examples
+            accumulated_tokens += batch_tokens
+            accumulated_weighted_loss += observed_loss * batch_examples
+            end_of_epoch = batch_index + 1 == len(train_loader)
+            if accumulated_batches < active_gradient_accumulation and not end_of_epoch:
                 continue
+            correction = partial_window_gradient_scale(
+                active_gradient_accumulation,
+                active_batch_size,
+                accumulated_examples,
+            )
+            if not math.isclose(correction, 1.0):
+                for parameter in model.parameters():
+                    if parameter.grad is not None:
+                        parameter.grad.mul_(correction)
             gradient_norm = float(torch.nn.utils.clip_grad_norm_(model.parameters(), config.gradient_clipping).detach().cpu())
+            used_lr = float(optimizer.param_groups[0]["lr"])
             optimizer.step()
             scheduler.step()
             optimizer.zero_grad(set_to_none=True)
             state["global_step"] += 1
             state["epoch"] = epoch
-            duration = time.perf_counter() - micro_started
-            current_lr = float(optimizer.param_groups[0]["lr"])
+            duration = time.perf_counter() - accumulation_started
+            mean_loss = accumulated_weighted_loss / accumulated_examples
+            initial_loss = mean_loss if initial_loss is None else initial_loss
+            final_loss = mean_loss
             log = {
                 "event": "train_step",
                 "global_step": state["global_step"],
-                "epoch": epoch + state["micro_step"] / max(1, len(train_loader)),
-                "loss": observed_loss,
-                "learning_rate": current_lr,
+                "epoch": epoch + (batch_index + 1) / max(1, len(train_loader)),
+                "loss": mean_loss,
+                "learning_rate": used_lr,
                 "gradient_norm": gradient_norm,
                 "step_duration_seconds": duration,
-                "examples_per_second": active_batch_size * active_gradient_accumulation / max(duration, 1e-9),
+                "examples_per_second": accumulated_examples / max(duration, 1e-9),
+                "tokens_per_second": accumulated_tokens / max(duration, 1e-9),
+                "examples_in_step": accumulated_examples,
+                "microbatches_in_step": accumulated_batches,
                 "cpu_ram_gib": process.memory_info().rss / 2**30,
                 "gpu_memory_allocated_gib": torch.cuda.memory_allocated() / 2**30,
                 "gpu_memory_reserved_gib": torch.cuda.memory_reserved() / 2**30,
@@ -655,50 +901,43 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
                 ("train/epoch", "epoch"), ("train/gradient_norm", "gradient_norm"),
                 ("train/step_duration_seconds", "step_duration_seconds"),
                 ("train/examples_per_second", "examples_per_second"),
+                ("train/tokens_per_second", "tokens_per_second"),
                 ("system/cpu_ram_gib", "cpu_ram_gib"),
                 ("system/gpu_memory_allocated_gib", "gpu_memory_allocated_gib"),
                 ("system/gpu_memory_reserved_gib", "gpu_memory_reserved_gib"),
             ):
                 writer.add_scalar(tag, log[key], state["global_step"])
             writer.add_scalar("train/global_step", state["global_step"], state["global_step"])
+            accumulated_batches = 0
+            accumulated_examples = 0
+            accumulated_tokens = 0
+            accumulated_weighted_loss = 0.0
+            accumulation_started = time.perf_counter()
             if state["global_step"] >= total_steps:
                 stop = True
                 break
         state["epoch"] = epoch + 1
+        if args.mode == "train" or stop:
+            evaluate_and_checkpoint(epoch + 1)
         if stop:
             break
 
-    validation_loss = evaluate_loss(model, validation_loader)
-    predictions = generate_predictions(processor, model, validation_records, instruction, f"step-{state['global_step']:06d}")
-    metrics = fixed_classification_metrics(predictions)
-    validation_event = {
-        "event": "validation",
-        "global_step": state["global_step"],
-        "epoch": state["epoch"],
-        "loss": validation_loss,
-        **metrics,
-        "timestamp": utc_now(),
-    }
-    append_jsonl(run_dir / "validation_history.jsonl", validation_event)
-    writer.add_scalar("validation/loss", validation_loss, state["global_step"])
-    for key in ("accuracy", "macro_f1", "weighted_f1", "balanced_accuracy"):
-        writer.add_scalar(f"validation/{key}", metrics[key], state["global_step"])
-    writer.add_scalar("validation/invalid_output_count", metrics["invalid_predictions"], state["global_step"])
-    writer.add_scalar("validation/invalid_output_percentage", 100.0 * metrics["invalid_predictions"] / len(predictions), state["global_step"])
-    for label, values in metrics["per_class"].items():
-        for metric_name in ("precision", "recall", "f1"):
-            writer.add_scalar(f"validation/class_{label}_{metric_name}", values[metric_name], state["global_step"])
-    prediction_distribution = Counter(row["parsed_prediction"] for row in predictions if row["parsed_prediction"] is not None)
-    for label in CLASS_TOKENS:
-        writer.add_scalar(f"validation/predicted_class_{label}_count", prediction_distribution[label], state["global_step"])
-    writer.flush()
-
-    checkpoint = run_dir / "checkpoints" / f"step-{state['global_step']:06d}"
-    state.update({"validation_metrics": metrics, "validation_loss": validation_loss})
-    save_checkpoint(checkpoint, model, processor, optimizer, scheduler, state)
-    prediction_path = run_dir / "validation_predictions.jsonl"
-    for row in predictions:
-        append_jsonl(prediction_path, row)
+    if not evaluation_records:
+        evaluate_and_checkpoint(int(state["epoch"]))
+    if args.mode == "train" and int(state["global_step"]) != total_steps:
+        raise RuntimeError(
+            f"Full run ended at step {state['global_step']}; expected {total_steps}"
+        )
+    best = select_best_evaluation(evaluation_records)
+    atomic_json(
+        run_dir / "best_checkpoint.json",
+        {
+            **best,
+            "selection_metric": config.checkpoint_selection_metric,
+            "tie_break": config.checkpoint_tie_break,
+            "selected_at": utc_now(),
+        },
+    )
     summary = {
         "status": "complete",
         "mode": args.mode,
@@ -706,13 +945,17 @@ def run_training(args: argparse.Namespace) -> dict[str, Any]:
         "global_step": state["global_step"],
         "initial_loss": initial_loss,
         "final_loss": final_loss,
-        "validation_loss": validation_loss,
-        "validation_metrics": metrics,
-        "elapsed_seconds": time.perf_counter() - started,
+        "validation_loss": best["validation_loss"],
+        "validation_metrics": best["classification_metrics"],
+        "validation_events": len(evaluation_records),
+        "selected_checkpoint": best["checkpoint"],
+        "selected_checkpoint_id": best["checkpoint_id"],
+        "selection_reason": config.checkpoint_selection_metric,
+        "elapsed_seconds": elapsed_before_resume + time.perf_counter() - started,
         "peak_gpu_allocated_gib": torch.cuda.max_memory_allocated() / 2**30,
         "peak_gpu_reserved_gib": torch.cuda.max_memory_reserved() / 2**30,
         "rss_gib": process.memory_info().rss / 2**30,
-        "checkpoint": str(checkpoint),
+        "latest_checkpoint": evaluation_records[-1]["checkpoint"],
         "tensorboard_directory": str(tensorboard_dir),
         "total_parameters": total_parameters,
         "trainable_parameters": trainable_parameters,
@@ -745,7 +988,7 @@ def inspect_data(args: argparse.Namespace) -> None:
 
 
 def audit_tensorboard(args: argparse.Namespace) -> None:
-    """Verify TensorBoard train scalars against the authoritative JSONL log."""
+    """Verify all required TensorBoard scalars against authoritative JSONL logs."""
     from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 
     run_dir = args.output_root / "runs" / args.run_id
@@ -759,16 +1002,126 @@ def audit_tensorboard(args: argparse.Namespace) -> None:
         for line in (run_dir / "training_history.jsonl").read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
-    tensorboard_loss = {
-        int(event.step): float(event.value)
-        for event in accumulator.Scalars("train/loss")
+    validation_path = run_dir / "validation_history.jsonl"
+    validation_rows = read_jsonl(validation_path) if validation_path.exists() else []
+    tensorboard_values = {
+        tag: {int(event.step): float(event.value) for event in accumulator.Scalars(tag)}
+        for tag in scalar_tags
     }
-    mismatches = []
+    expected: list[tuple[str, int, float]] = []
+    train_mapping = {
+        "train/loss": "loss",
+        "train/learning_rate": "learning_rate",
+        "train/epoch": "epoch",
+        "train/gradient_norm": "gradient_norm",
+        "train/step_duration_seconds": "step_duration_seconds",
+        "train/examples_per_second": "examples_per_second",
+        "train/tokens_per_second": "tokens_per_second",
+        "system/cpu_ram_gib": "cpu_ram_gib",
+        "system/gpu_memory_allocated_gib": "gpu_memory_allocated_gib",
+        "system/gpu_memory_reserved_gib": "gpu_memory_reserved_gib",
+    }
     for row in train_rows:
         step = int(row["global_step"])
-        observed = tensorboard_loss.get(step)
-        if observed is None or not math.isclose(observed, float(row["loss"]), rel_tol=1e-6, abs_tol=1e-7):
-            mismatches.append({"step": step, "structured": row["loss"], "tensorboard": observed})
+        for tag, key in train_mapping.items():
+            expected.append((tag, step, float(row[key])))
+        expected.append(("train/global_step", step, float(step)))
+    validation_mapping = {
+        "validation/loss": "loss",
+        "validation/accuracy": "accuracy",
+        "validation/macro_f1": "macro_f1",
+        "validation/weighted_f1": "weighted_f1",
+        "validation/balanced_accuracy": "balanced_accuracy",
+        "validation/invalid_output_count": "invalid_predictions",
+    }
+    for row in validation_rows:
+        step = int(row["global_step"])
+        for tag, key in validation_mapping.items():
+            expected.append((tag, step, float(row[key])))
+        expected.append(
+            (
+                "validation/invalid_output_percentage",
+                step,
+                100.0 * float(row["invalid_predictions"]) / EXPECTED_COUNTS["validation"],
+            )
+        )
+        for label in CLASS_TOKENS:
+            values = row["per_class"][str(label)]
+            for metric_name in ("precision", "recall", "f1"):
+                expected.append(
+                    (
+                        f"validation/class_{label}_{metric_name}",
+                        step,
+                        float(values[metric_name]),
+                    )
+                )
+            expected.append(
+                (
+                    f"validation/predicted_class_{label}_count",
+                    step,
+                    float(row["predicted_distribution"][str(label)]),
+                )
+            )
+    mismatches = []
+    expected_counts: Counter[str] = Counter()
+    for tag, step, structured in expected:
+        expected_counts[tag] += 1
+        observed = tensorboard_values.get(tag, {}).get(step)
+        if observed is None or not math.isclose(
+            observed, structured, rel_tol=1e-5, abs_tol=1e-9
+        ):
+            mismatches.append(
+                {
+                    "tag": tag,
+                    "step": step,
+                    "structured": structured,
+                    "tensorboard": observed,
+                }
+            )
+    count_mismatches = {
+        tag: {
+            "expected": count,
+            "tensorboard": len(accumulator.Scalars(tag)) if tag in scalar_tags else 0,
+        }
+        for tag, count in expected_counts.items()
+        if (len(accumulator.Scalars(tag)) if tag in scalar_tags else 0) != count
+    }
+    best_checkpoint = json.loads(
+        (run_dir / "best_checkpoint.json").read_text(encoding="utf-8")
+    )
+    tensorboard_evaluations = (
+        [
+            {
+                "global_step": int(row["global_step"]),
+                "validation_loss": tensorboard_values["validation/loss"][
+                    int(row["global_step"])
+                ],
+                "classification_metrics": {
+                    key: tensorboard_values[f"validation/{key}"][
+                        int(row["global_step"])
+                    ]
+                    for key in (
+                        "accuracy",
+                        "macro_f1",
+                        "weighted_f1",
+                        "balanced_accuracy",
+                    )
+                },
+            }
+            for row in validation_rows
+        ]
+        if not mismatches and not count_mismatches
+        else []
+    )
+    tensorboard_selected_step = (
+        int(select_best_evaluation(tensorboard_evaluations)["global_step"])
+        if tensorboard_evaluations
+        else None
+    )
+    selected_checkpoint_agrees = (
+        tensorboard_selected_step is not None
+        and tensorboard_selected_step == int(best_checkpoint["global_step"])
+    )
     result = {
         "run_id": args.run_id,
         "event_directory": str(event_dir),
@@ -777,13 +1130,32 @@ def audit_tensorboard(args: argparse.Namespace) -> None:
             tag: len(accumulator.Scalars(tag)) for tag in scalar_tags
         },
         "structured_train_steps": len(train_rows),
-        "tensorboard_train_loss_steps": len(tensorboard_loss),
-        "loss_mismatch_count": len(mismatches),
-        "loss_mismatches": mismatches,
+        "structured_validation_events": len(validation_rows),
+        "tensorboard_train_loss_steps": len(
+            tensorboard_values.get("train/loss", {})
+        ),
+        "loss_mismatch_count": sum(
+            row["tag"] == "train/loss" for row in mismatches
+        ),
+        "loss_mismatches": [
+            row for row in mismatches if row["tag"] == "train/loss"
+        ],
+        "required_scalar_value_count": len(expected),
+        "required_scalar_value_mismatch_count": len(mismatches),
+        "required_scalar_value_mismatches": mismatches,
+        "required_scalar_count_mismatch_count": len(count_mismatches),
+        "required_scalar_count_mismatches": count_mismatches,
+        "structured_selected_checkpoint_id": best_checkpoint["checkpoint_id"],
+        "structured_selected_checkpoint_step": int(best_checkpoint["global_step"]),
+        "tensorboard_derived_selected_checkpoint_step": tensorboard_selected_step,
+        "selected_checkpoint_agrees": selected_checkpoint_agrees,
         "verified_at": utc_now(),
     }
-    if mismatches:
-        raise RuntimeError(f"TensorBoard and structured loss disagree: {mismatches[:3]}")
+    if mismatches or count_mismatches or not selected_checkpoint_agrees:
+        raise RuntimeError(
+            "TensorBoard and structured logs disagree: "
+            f"values={mismatches[:3]}, counts={count_mismatches}"
+        )
     atomic_json(run_dir / "tensorboard_scalar_inventory.json", result)
     print(json.dumps(result, indent=2))
 
@@ -839,6 +1211,945 @@ def verify_checkpoint(args: argparse.Namespace) -> None:
     print(json.dumps(result, indent=2))
 
 
+def _write_classification_histogram(
+    output_root: Path,
+    oracle_distribution: dict[str, int],
+    predicted_distribution: dict[str, int],
+) -> None:
+    os.environ.setdefault("MPLCONFIGDIR", str((Path("tmp") / "matplotlib").resolve()))
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    x = np.arange(len(CLASS_TOKENS))
+    width = 0.38
+    oracle = [oracle_distribution[str(label)] for label in CLASS_TOKENS]
+    predicted = [predicted_distribution[str(label)] for label in CLASS_TOKENS]
+    figure, axis = plt.subplots(figsize=(8, 4.5))
+    axis.bar(x - width / 2, oracle, width, label="Evidence-length Oracle")
+    axis.bar(x + width / 2, predicted, width, label="Fine-tuned Qwen")
+    axis.set_xticks(x, [str(label) for label in CLASS_TOKENS])
+    axis.set_xlabel("Chunk size (tokens)")
+    axis.set_ylabel("Validation examples")
+    axis.legend()
+    axis.grid(axis="y", alpha=0.2)
+    figure.tight_layout()
+    path = output_root / "classification" / "predicted_vs_oracle.svg"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(path)
+    plt.close(figure)
+
+
+def materialize_final_classification(
+    output_root: Path,
+    phase1_root: Path,
+    run_id: str,
+    predictions: Sequence[dict[str, Any]],
+    validation_runtime: dict[str, Any],
+) -> dict[str, Any]:
+    """Create the complete selected-checkpoint Phase 2 artifact set."""
+    if len(predictions) != EXPECTED_COUNTS["validation"]:
+        raise RuntimeError(f"Expected 924 final predictions, got {len(predictions)}")
+    final_summary_path = output_root / "final_summary.json"
+    if final_summary_path.exists():
+        existing_summary = json.loads(final_summary_path.read_text(encoding="utf-8"))
+        if existing_summary.get("run_id") != run_id:
+            raise RuntimeError(
+                "Refusing to overwrite canonical Phase 2 artifacts from another run: "
+                f"{existing_summary.get('run_id')}"
+            )
+    run_dir = output_root / "runs" / run_id
+    best = json.loads((run_dir / "best_checkpoint.json").read_text(encoding="utf-8"))
+    run_summary = json.loads((run_dir / "summary.json").read_text(encoding="utf-8"))
+    training_config_path = run_dir / "training_config.json"
+    dataset_manifest_path = run_dir / "dataset_manifest.json"
+    training_config = json.loads(training_config_path.read_text(encoding="utf-8"))
+    dataset_manifest = json.loads(dataset_manifest_path.read_text(encoding="utf-8"))
+    training_history = read_jsonl(run_dir / "training_history.jsonl")
+    maximum_recorded_rss = max(
+        [float(run_summary["rss_gib"])]
+        + [float(row["cpu_ram_gib"]) for row in training_history]
+    )
+    current_data = validate_frozen_data(phase1_root)
+    for key in (
+        "train_examples",
+        "validation_examples",
+        "train_documents",
+        "validation_documents",
+        "train_oracle_sha256",
+        "validation_oracle_sha256",
+    ):
+        if dataset_manifest[key] != current_data[key]:
+            raise RuntimeError(f"Frozen data changed since training: {key}")
+    metrics = fixed_classification_metrics(predictions)
+    if metrics != best["classification_metrics"]:
+        raise RuntimeError("Selected predictions do not reproduce best-checkpoint metrics")
+    if metrics != run_summary["validation_metrics"]:
+        raise RuntimeError("Selected predictions do not reproduce run-summary metrics")
+    oracle_counter = Counter(int(row["oracle_label"]) for row in predictions)
+    predicted_counter = Counter(
+        int(row["parsed_prediction"])
+        for row in predictions
+        if row["parsed_prediction"] is not None
+    )
+    oracle_distribution = {
+        str(label): oracle_counter[label] for label in CLASS_TOKENS
+    }
+    predicted_distribution = {
+        str(label): predicted_counter[label] for label in CLASS_TOKENS
+    }
+    majority_class = min(
+        CLASS_TOKENS, key=lambda label: (-oracle_counter[label], label)
+    )
+    majority_rows = [
+        {**row, "majority_prediction": majority_class} for row in predictions
+    ]
+    majority_metrics = fixed_classification_metrics(
+        [
+            {**row, "parsed_prediction": row["majority_prediction"]}
+            for row in majority_rows
+        ]
+    )
+    classification = {
+        "classification_metrics": metrics,
+        "oracle_distribution": oracle_distribution,
+        "predicted_distribution": predicted_distribution,
+        "invalid_output_count": metrics["invalid_predictions"],
+        "invalid_output_percentage": (
+            100.0 * metrics["invalid_predictions"] / len(predictions)
+        ),
+        "valid_output_count": metrics["valid_predictions"],
+        "valid_output_rate": metrics["valid_predictions"] / len(predictions),
+        "majority_class": majority_class,
+        "majority_baseline_accuracy": majority_metrics["accuracy"],
+        "majority_baseline_macro_f1": majority_metrics["macro_f1"],
+        "majority_baseline_metrics": majority_metrics,
+        "selected_checkpoint": best["checkpoint"],
+        "selected_checkpoint_id": best["checkpoint_id"],
+        "checkpoint_selection_metric": best["selection_metric"],
+        "confusion_matrix_note": (
+            "Rows are evidence-length Oracle labels and columns are parsed Qwen "
+            "predictions, both ordered as 10, 20, 40, 80, 160. Invalid outputs "
+            "are excluded from matrix cells but remain incorrect in complete-set metrics."
+        ),
+    }
+    validation_dir = output_root / "validation"
+    atomic_jsonl(validation_dir / "predictions.jsonl", predictions)
+    atomic_jsonl(
+        validation_dir / "raw_outputs.jsonl",
+        (
+            {
+                "question_id": row["question_id"],
+                "document_id": row["document_id"],
+                "raw_qwen_output": row["raw_qwen_output"],
+            }
+            for row in predictions
+        ),
+    )
+    atomic_jsonl(
+        validation_dir / "parsed_predictions.jsonl",
+        (
+            {
+                "question_id": row["question_id"],
+                "document_id": row["document_id"],
+                "parsed_prediction": row["parsed_prediction"],
+                "prediction_status": row["prediction_status"],
+            }
+            for row in predictions
+        ),
+    )
+    atomic_jsonl(
+        validation_dir / "invalid_outputs.jsonl",
+        (row for row in predictions if row["parsed_prediction"] is None),
+    )
+    atomic_json(validation_dir / "runtime_summary.json", validation_runtime)
+    classification_dir = output_root / "classification"
+    atomic_json(classification_dir / "metrics.json", classification)
+    classification_dir.mkdir(parents=True, exist_ok=True)
+    with (classification_dir / "confusion_matrix.csv").open(
+        "w", newline="", encoding="utf-8"
+    ) as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["oracle\\predicted", *CLASS_TOKENS])
+        for label, values in zip(CLASS_TOKENS, metrics["confusion_matrix"]):
+            writer.writerow([label, *values])
+    _write_classification_histogram(
+        output_root, oracle_distribution, predicted_distribution
+    )
+    phase1_summary_path = phase1_root / "final_summary.json"
+    phase1_summary = json.loads(phase1_summary_path.read_text(encoding="utf-8"))
+    final_summary = {
+        "status": "classification_complete_retrieval_pending",
+        "phase": "Phase 2 full-parameter supervised fine-tuning",
+        "run_id": run_id,
+        "model_id": MODEL_ID,
+        "model_revision": MODEL_REVISION,
+        "training_method": "full_parameter_sft",
+        "evaluated_examples": len(predictions),
+        "selected_checkpoint": str(run_dir / "checkpoints" / best["checkpoint_id"]),
+        "selected_checkpoint_id": best["checkpoint_id"],
+        "checkpoint_selection": {
+            "metric": best["selection_metric"],
+            "tie_break": best["tie_break"],
+            "validation_loss": best["validation_loss"],
+        },
+        "classification": metrics,
+        "oracle_distribution": oracle_distribution,
+        "predicted_distribution": predicted_distribution,
+        "valid_outputs": metrics["valid_predictions"],
+        "valid_output_rate": metrics["valid_predictions"] / len(predictions),
+        "invalid_outputs": metrics["invalid_predictions"],
+        "invalid_output_percentage": classification["invalid_output_percentage"],
+        "majority_class": majority_class,
+        "majority_baseline_accuracy": majority_metrics["accuracy"],
+        "majority_baseline_macro_f1": majority_metrics["macro_f1"],
+        "phase1_comparison": {
+            "description": (
+                "Same preserved split and same evidence-length Oracle; pretrained "
+                "zero-shot Phase 1 baseline, not an old retrieval-F1-Oracle result."
+            ),
+            "source": str(phase1_summary_path),
+            "accuracy": phase1_summary["classification"]["accuracy"],
+            "macro_f1": phase1_summary["classification"]["macro_f1"],
+            "weighted_f1": phase1_summary["classification"]["weighted_f1"],
+            "balanced_accuracy": phase1_summary["classification"]["balanced_accuracy"],
+            "mean_joined_retrieval_f1": phase1_summary["retrieval"]["valid_only_mean_joined_f1"],
+        },
+        "data": {
+            "train_examples": dataset_manifest["train_examples"],
+            "validation_examples": dataset_manifest["validation_examples"],
+            "train_distribution": dataset_manifest["train_distribution"],
+            "validation_distribution": dataset_manifest["validation_distribution"],
+            "train_oracle_sha256": dataset_manifest["train_oracle_sha256"],
+            "validation_oracle_sha256": dataset_manifest["validation_oracle_sha256"],
+        },
+        "environment": {
+            "environment_name": ".venv-qwen",
+            "python_version": training_config["python_version"],
+            "python_executable": training_config["python_executable"],
+            "torch_version": training_config["torch_version"],
+            "torch_cuda_version": training_config["torch_cuda_version"],
+            "transformers_version": training_config["transformers_version"],
+            "transformers_commit": training_config["transformers_commit"],
+            "tensorboard_version": training_config["tensorboard_version"],
+            "gpu": training_config["gpu"],
+            "device": training_config["device"],
+            "dtype": training_config["dtype"],
+            "quantization": training_config["quantization"],
+        },
+        "training": {
+            "global_steps": run_summary["global_step"],
+            "parameter_updates": run_summary["global_step"],
+            "total_parameters": run_summary["total_parameters"],
+            "trainable_parameters": run_summary["trainable_parameters"],
+            "initial_loss": run_summary["initial_loss"],
+            "final_loss": run_summary["final_loss"],
+            "validation_events": run_summary["validation_events"],
+            "peak_gpu_allocated_gib": run_summary["peak_gpu_allocated_gib"],
+            "peak_gpu_reserved_gib": run_summary["peak_gpu_reserved_gib"],
+            "final_rss_gib": run_summary["rss_gib"],
+            "maximum_recorded_process_rss_gib": maximum_recorded_rss,
+            "configuration_path": str(training_config_path),
+            "configuration_sha256": sha256_file(training_config_path),
+            "dataset_manifest_path": str(dataset_manifest_path),
+            "training_script_sha256": training_config["training_script_sha256"],
+            "repository_commit": training_config["repository_commit"],
+            "trainable_percentage": (
+                100.0
+                * run_summary["trainable_parameters"]
+                / run_summary["total_parameters"]
+            ),
+        },
+        "runtime": {
+            "training_wall_seconds": run_summary["elapsed_seconds"],
+            "training_wall_includes_epoch_validation_and_checkpointing": True,
+            "selected_validation": validation_runtime,
+            "final_validation_load_plus_inference_wall_seconds": (
+                float(validation_runtime.get("model_load_seconds") or 0.0)
+                + float(
+                    validation_runtime.get("isolated_generation_wall_seconds")
+                    or 0.0
+                )
+            ),
+            "known_training_plus_final_validation_wall_seconds": (
+                float(run_summary["elapsed_seconds"])
+                + float(validation_runtime.get("model_load_seconds") or 0.0)
+                + float(
+                    validation_runtime.get("isolated_generation_wall_seconds")
+                    or 0.0
+                )
+            ),
+            "retrieval_wall_seconds": None,
+            "known_training_final_validation_and_retrieval_wall_seconds": None,
+        },
+        "retrieval": None,
+        "artifacts": {
+            "training_config": str(training_config_path),
+            "dataset_manifest": str(dataset_manifest_path),
+            "best_checkpoint": str(run_dir / "best_checkpoint.json"),
+            "selected_epoch_predictions": best["predictions"],
+            "canonical_predictions": str(validation_dir / "predictions.jsonl"),
+            "raw_outputs": str(validation_dir / "raw_outputs.jsonl"),
+            "parsed_predictions": str(
+                validation_dir / "parsed_predictions.jsonl"
+            ),
+            "invalid_outputs": str(validation_dir / "invalid_outputs.jsonl"),
+            "validation_runtime": str(validation_dir / "runtime_summary.json"),
+            "classification_metrics": str(classification_dir / "metrics.json"),
+            "confusion_matrix": str(classification_dir / "confusion_matrix.csv"),
+            "predicted_vs_oracle_histogram": str(
+                classification_dir / "predicted_vs_oracle.svg"
+            ),
+            "fixed_prompt": str(phase1_root / "configuration" / "fixed_prompt.json"),
+            "fixed_prompt_sha256": sha256_file(
+                phase1_root / "configuration" / "fixed_prompt.json"
+            ),
+            "tensorboard_audit": str(
+                run_dir / "tensorboard_scalar_inventory.json"
+            ),
+            "checkpoint_verification": str(
+                run_dir / "checkpoint_verification.json"
+            ),
+            "checkpoint_sha256_manifest": str(
+                run_dir / "selected_checkpoint_sha256.txt"
+            ),
+            "checkpoint_archive_verification": str(
+                run_dir / "checkpoint_archive_verification.json"
+            ),
+            "integrity_audit": str(output_root / "integrity_audit.json"),
+        },
+        "created_at": utc_now(),
+    }
+    atomic_json(final_summary_path, final_summary)
+    return final_summary
+
+
+def validate_and_canonicalize_final_predictions(
+    predictions: Sequence[dict[str, Any]],
+    frozen: Sequence[dict[str, Any]],
+    best: dict[str, Any],
+    run_dir: Path,
+) -> list[dict[str, Any]]:
+    """Verify final inference identity, parser output, and checkpoint provenance."""
+    if len(predictions) != EXPECTED_COUNTS["validation"]:
+        raise RuntimeError(f"Expected 924 final predictions, got {len(predictions)}")
+    ids = [row["question_id"] for row in predictions]
+    if len(set(ids)) != len(ids):
+        raise RuntimeError("Final validation predictions contain duplicate IDs")
+    if ids != [row["question_id"] for row in frozen]:
+        raise RuntimeError("Final predictions do not match frozen validation order")
+    canonical_predictions: list[dict[str, Any]] = []
+    for prediction, oracle in zip(predictions, frozen):
+        for key in ("question_id", "document_id", "question_text", "oracle_label"):
+            if prediction[key] != oracle[key]:
+                raise RuntimeError(
+                    f"Selected prediction differs from frozen Oracle at {key}: "
+                    f"{prediction['question_id']}"
+                )
+        if prediction.get("selected_checkpoint") != best["checkpoint_id"]:
+            raise RuntimeError("Selected prediction checkpoint ID mismatch")
+        reparsed = parse_qwen_class(prediction["raw_qwen_output"])
+        if reparsed != (
+            prediction["parsed_prediction"], prediction["prediction_status"]
+        ):
+            raise RuntimeError(
+                f"Saved parser result is not reproducible: {prediction['question_id']}"
+            )
+        canonical = dict(prediction)
+        canonical.pop("selected_checkpoint", None)
+        canonical["selected_checkpoint_id"] = best["checkpoint_id"]
+        canonical["selected_checkpoint_path"] = str(
+            run_dir / "checkpoints" / best["checkpoint_id"]
+        )
+        canonical_predictions.append(canonical)
+    return canonical_predictions
+
+
+def final_validation(args: argparse.Namespace) -> None:
+    """Reload the selected checkpoint and run required final deterministic inference."""
+    if not torch.cuda.is_available():
+        raise RuntimeError("Final validation requires CUDA")
+    set_deterministic_seed(42)
+    run_dir = args.output_root / "runs" / args.run_id
+    best = json.loads((run_dir / "best_checkpoint.json").read_text(encoding="utf-8"))
+    checkpoint = run_dir / "checkpoints" / best["checkpoint_id"]
+    frozen = load_oracle_records("validation", args.phase1_root)
+    load_started = time.perf_counter()
+    processor, model = _load_model_processor(str(checkpoint / "model"), None)
+    model.to("cuda")
+    model_load_seconds = time.perf_counter() - load_started
+    torch.cuda.reset_peak_memory_stats()
+    inference_started = time.perf_counter()
+    predictions = generate_predictions(
+        processor, model, frozen, load_fixed_instruction(args.phase1_root),
+        best["checkpoint_id"],
+    )
+    inference_wall = time.perf_counter() - inference_started
+    canonical_predictions = validate_and_canonicalize_final_predictions(
+        predictions, frozen, best, run_dir
+    )
+    selected_epoch_predictions = read_jsonl(
+        run_dir / "validation" / f"predictions_{best['checkpoint_id']}.jsonl"
+    )
+    if len(selected_epoch_predictions) != len(predictions):
+        raise RuntimeError("Selected epoch and final inference lengths disagree")
+    for saved, final in zip(selected_epoch_predictions, predictions):
+        comparable = ("question_id", "raw_qwen_output", "parsed_prediction", "prediction_status")
+        if any(saved[key] != final[key] for key in comparable):
+            raise RuntimeError(
+                "Reloaded selected checkpoint does not reproduce its epoch output: "
+                f"{final['question_id']}"
+            )
+    timings = [float(row["inference_seconds"]) for row in predictions]
+    runtime = {
+        "source": "post_training_selected_checkpoint_reload",
+        "new_inference_performed": True,
+        "model_load_seconds": model_load_seconds,
+        "isolated_generation_wall_seconds": inference_wall,
+        "selected_epoch_validation_wall_seconds": best["validation_wall_seconds"],
+        "selected_epoch_validation_wall_includes": (
+            "validation loss pass, deterministic generation, parsing, and metrics"
+        ),
+        "selected_epoch_exact_output_match": True,
+        "selected_epoch_outputs_compared": len(predictions),
+        "mean_inference_seconds": float(np.mean(timings)),
+        "median_inference_seconds": float(np.median(timings)),
+        "total_recorded_generate_call_seconds": float(sum(timings)),
+        "peak_gpu_allocated_gib": torch.cuda.max_memory_allocated() / 2**30,
+        "peak_gpu_reserved_gib": torch.cuda.max_memory_reserved() / 2**30,
+        "rss_gib": psutil.Process().memory_info().rss / 2**30,
+        "selected_checkpoint": str(checkpoint),
+        "selected_checkpoint_id": best["checkpoint_id"],
+        "evaluated_examples": len(predictions),
+        "completed_at": utc_now(),
+    }
+    summary = materialize_final_classification(
+        args.output_root,
+        args.phase1_root,
+        args.run_id,
+        canonical_predictions,
+        runtime,
+    )
+    print(json.dumps(summary, indent=2))
+
+
+def validate_phase2_retrieval_record(
+    record: dict[str, Any],
+    prediction: dict[str, Any],
+    run_id: str,
+    checkpoint_id: str,
+    embedding_model: str,
+    embedding_dimension: int,
+    tokenizer_name: str,
+) -> None:
+    """Reject stale incremental retrieval rows before they can be reused."""
+    predicted_tokens = int(prediction["parsed_prediction"])
+    predicted_level = CLASS_TOKENS.index(predicted_tokens) + 1
+    expected = {
+        "method_name": "qwen-full-parameter-finetuned-router",
+        "phase2_run_id": run_id,
+        "evaluation_run_id": f"{run_id}-retrieval-top5-paper",
+        "question_id": prediction["question_id"],
+        "document_id": prediction["document_id"],
+        "split": "validation",
+        "granularity_tokens": predicted_tokens,
+        "granularity_level": predicted_level,
+        "predicted_granularity_tokens": predicted_tokens,
+        "predicted_granularity_level": predicted_level,
+        "evidence_length_oracle": int(prediction["oracle_label"]),
+        "oracle_label_version": ORACLE_VERSION,
+        "selected_checkpoint_id": checkpoint_id,
+        "selected_checkpoint_path": prediction["selected_checkpoint_path"],
+        "k_requested": 5,
+        "top_k": 5,
+        "paper_restricted": True,
+        "embedding_model": embedding_model,
+        "embedding_dimension": embedding_dimension,
+        "tokenizer_identity": tokenizer_name,
+        "evaluation_config_hash": RETRIEVAL_CONFIG_HASH,
+        "schema_version": RETRIEVAL_SCHEMA_VERSION,
+        "metric_version": RETRIEVAL_METRIC_VERSION,
+        "normalization_version": RETRIEVAL_NORMALIZATION_VERSION,
+    }
+    mismatches = {
+        key: {"expected": value, "actual": record.get(key)}
+        for key, value in expected.items()
+        if record.get(key) != value
+    }
+    if mismatches:
+        raise RuntimeError(
+            f"Stale or incompatible retrieval record for {prediction['question_id']}: "
+            f"{mismatches}"
+        )
+def build_phase2_retrieval_summary(
+    total_predictions: int,
+    records: Sequence[dict[str, Any]],
+    current_segment_wall_seconds: float,
+    cumulative_recorded_wall_seconds: float,
+    embedding_model: str,
+    tokenizer_name: str,
+) -> dict[str, Any]:
+    """Build JSON-safe valid-only and coverage-adjusted retrieval summaries."""
+    f1_values = [float(row["f1_joined_topk"]) for row in records]
+    valid_count = len(f1_values)
+    coverage = valid_count / total_predictions if total_predictions else 0.0
+    return {
+        "evaluated_examples": total_predictions,
+        "valid_prediction_retrievals": valid_count,
+        "invalid_predictions_without_retrieval": total_predictions - valid_count,
+        "retrieval_coverage": coverage,
+        "valid_only_mean_joined_retrieval_f1": (
+            float(np.mean(f1_values)) if f1_values else None
+        ),
+        "valid_only_median_joined_retrieval_f1": (
+            float(np.median(f1_values)) if f1_values else None
+        ),
+        "coverage_adjusted_full_set_mean_joined_retrieval_f1": (
+            float(sum(f1_values) / total_predictions) if total_predictions else None
+        ),
+        "full_set_note": (
+            "Invalid Qwen outputs receive no retrieval record and no default "
+            "granularity. Valid-only F1 summarizes retrieved valid predictions; "
+            "the coverage-adjusted full-set mean assigns zero contribution to "
+            "invalid predictions solely for a transparent complete-set summary."
+        ),
+        "top_k": 5,
+        "paper_restricted": True,
+        "embedding_model": embedding_model,
+        "tokenizer": tokenizer_name,
+        "metric": "f1_joined_topk",
+        "current_segment_wall_seconds": current_segment_wall_seconds,
+        "cumulative_durable_question_processing_seconds": (
+            cumulative_recorded_wall_seconds
+        ),
+    }
+
+
+def evaluate_phase2_retrieval(args: argparse.Namespace) -> None:
+    """Reuse the unchanged Phase 1 same-paper retrieval implementation locally."""
+    import qwen_phase1 as phase1
+
+    prediction_path = args.output_root / "validation" / "predictions.jsonl"
+    predictions = read_jsonl(prediction_path)
+    if len(predictions) != EXPECTED_COUNTS["validation"]:
+        raise RuntimeError(f"Expected 924 predictions, got {len(predictions)}")
+    prediction_ids = [row["question_id"] for row in predictions]
+    if len(set(prediction_ids)) != len(prediction_ids):
+        raise RuntimeError("Canonical predictions contain duplicate question IDs")
+    final_summary_path = args.output_root / "final_summary.json"
+    final_summary = json.loads(final_summary_path.read_text(encoding="utf-8"))
+    if final_summary.get("run_id") != args.run_id:
+        raise RuntimeError("Requested retrieval run ID differs from final summary")
+    run_dir = args.output_root / "runs" / args.run_id
+    best = json.loads((run_dir / "best_checkpoint.json").read_text(encoding="utf-8"))
+    checkpoint_id = best["checkpoint_id"]
+    if final_summary.get("selected_checkpoint_id") != checkpoint_id:
+        raise RuntimeError("Final summary and best checkpoint disagree")
+    for row in predictions:
+        if row.get("selected_checkpoint_id") != checkpoint_id:
+            raise RuntimeError("Canonical prediction checkpoint ID mismatch")
+    valid = [row for row in predictions if row["parsed_prediction"] is not None]
+    result_path = args.output_root / "retrieval" / "results.jsonl"
+    existing = (
+        read_jsonl(result_path)
+        if result_path.exists() and result_path.stat().st_size
+        else []
+    )
+    existing_ids = [row["question_id"] for row in existing]
+    if len(set(existing_ids)) != len(existing_ids):
+        raise RuntimeError("Retrieval artifact contains duplicate question IDs")
+    by_id = {row["question_id"]: row for row in existing}
+    valid_ids = {row["question_id"] for row in valid}
+    if not set(by_id).issubset(valid_ids):
+        raise RuntimeError("Retrieval file contains unknown or invalid predictions")
+    prediction_by_id = {row["question_id"]: row for row in valid}
+    for question_id, record in by_id.items():
+        validate_phase2_retrieval_record(
+            record,
+            prediction_by_id[question_id],
+            args.run_id,
+            checkpoint_id,
+            phase1.OPENAI_EMBEDDING_MODEL,
+            phase1.EMBEDDING_DIM,
+            phase1.TOKENIZER_NAME,
+        )
+        if "phase2_retrieval_wall_seconds" not in record:
+            raise RuntimeError(
+                "Retrieval record has no durable per-question runtime: "
+                f"{question_id}"
+            )
+    previous_summary_path = args.output_root / "retrieval" / "summary.json"
+    if len(by_id) == len(valid) and previous_summary_path.exists():
+        previous_summary = json.loads(
+            previous_summary_path.read_text(encoding="utf-8")
+        )
+        if previous_summary.get("run_id") != args.run_id:
+            raise RuntimeError("Completed retrieval summary belongs to another run")
+        print(json.dumps(previous_summary, indent=2))
+        return
+    started = time.perf_counter()
+    retrieval_run_id = f"{args.run_id}-retrieval-top5-paper"
+    client = phase1.qdrant_client() if len(by_id) < len(valid) else None
+    completed_this_segment = 0
+    for prediction in valid:
+        question_id = prediction["question_id"]
+        if question_id in by_id:
+            continue
+        question_started = time.perf_counter()
+        if client is None:
+            raise RuntimeError("Qdrant client was not initialized")
+        points = client.retrieve(
+            collection_name=phase1.PAPER_QUESTION_COLLECTION,
+            ids=[question_id],
+            with_payload=True,
+            with_vectors=True,
+        )
+        if len(points) != 1:
+            raise RuntimeError(f"Question point lookup failed: {question_id}")
+        point = points[0]
+        predicted_tokens = int(prediction["parsed_prediction"])
+        level = CLASS_TOKENS.index(predicted_tokens) + 1
+        records = list(
+            phase1.evaluate_question(
+                client=client,
+                question_point_id=question_id,
+                question_vector=point.vector,
+                document_id=prediction["document_id"],
+                question_text=prediction["question_text"],
+                split="validation",
+                top_k=5,
+                granularity_levels=[level],
+                store_retrieved_text=False,
+                chunk_sizes=list(CLASS_TOKENS),
+                embedding_model=phase1.OPENAI_EMBEDDING_MODEL,
+                embedding_dimension=phase1.EMBEDDING_DIM,
+                tokenizer_name=phase1.TOKENIZER_NAME,
+                evaluation_run_id=retrieval_run_id,
+            )
+        )
+        if len(records) != 1:
+            raise RuntimeError(f"Expected one retrieval result: {question_id}")
+        record = records[0]
+        record.update(
+            {
+                "method_name": "qwen-full-parameter-finetuned-router",
+                "phase2_run_id": args.run_id,
+                "predicted_granularity_tokens": predicted_tokens,
+                "predicted_granularity_level": level,
+                "qwen_raw_output": prediction["raw_qwen_output"],
+                "qwen_prediction_status": prediction["prediction_status"],
+                "evidence_length_oracle": prediction["oracle_label"],
+                "oracle_label_version": ORACLE_VERSION,
+                "selected_checkpoint_id": checkpoint_id,
+                "selected_checkpoint_path": prediction["selected_checkpoint_path"],
+                "top_k": 5,
+                "paper_restricted": True,
+                "phase2_retrieval_wall_seconds": (
+                    time.perf_counter() - question_started
+                ),
+            }
+        )
+        validate_phase2_retrieval_record(
+            record,
+            prediction,
+            args.run_id,
+            checkpoint_id,
+            phase1.OPENAI_EMBEDDING_MODEL,
+            phase1.EMBEDDING_DIM,
+            phase1.TOKENIZER_NAME,
+        )
+        append_jsonl(result_path, record)
+        by_id[question_id] = record
+        completed_this_segment += 1
+    ordered = [by_id[row["question_id"]] for row in valid]
+    atomic_jsonl(result_path, ordered)
+    segment_wall = time.perf_counter() - started
+    segment_path = args.output_root / "retrieval" / "runtime_segments.jsonl"
+    append_jsonl(
+        segment_path,
+        {
+            "run_id": args.run_id,
+            "evaluation_run_id": retrieval_run_id,
+            "new_records": completed_this_segment,
+            "records_after_segment": len(ordered),
+            "wall_seconds": segment_wall,
+            "completed_at": utc_now(),
+        },
+    )
+    segments = read_jsonl(segment_path)
+    if any(row.get("run_id") != args.run_id for row in segments):
+        raise RuntimeError("Retrieval runtime history contains another run ID")
+    cumulative_question_wall = float(
+        sum(float(row["phase2_retrieval_wall_seconds"]) for row in ordered)
+    )
+    summary = build_phase2_retrieval_summary(
+        len(predictions),
+        ordered,
+        segment_wall,
+        cumulative_question_wall,
+        phase1.OPENAI_EMBEDDING_MODEL,
+        phase1.TOKENIZER_NAME,
+    )
+    summary["run_id"] = args.run_id
+    summary["evaluation_run_id"] = retrieval_run_id
+    summary["runtime_segments"] = len(segments)
+    summary["completed_invocation_wall_seconds"] = float(
+        sum(float(row["wall_seconds"]) for row in segments)
+    )
+    summary["complete_uninterrupted_run_wall_seconds"] = (
+        segment_wall if len(existing) == 0 else None
+    )
+    summary["reported_retrieval_wall_seconds"] = (
+        summary["complete_uninterrupted_run_wall_seconds"]
+        if summary["complete_uninterrupted_run_wall_seconds"] is not None
+        else cumulative_question_wall
+    )
+    summary["reported_retrieval_wall_basis"] = (
+        "complete_uninterrupted_invocation"
+        if summary["complete_uninterrupted_run_wall_seconds"] is not None
+        else "durable_sum_of_per_question_processing_times_after_resume"
+    )
+    summary["runtime_note"] = (
+        "Each completed question stores its own fsynced processing duration. "
+        "Completed invocation walls are also retained; after an interrupted "
+        "resume, the durable per-question sum is the non-fabricated runtime basis."
+    )
+    atomic_json(args.output_root / "retrieval" / "summary.json", summary)
+    final_summary["status"] = "complete"
+    final_summary["retrieval"] = summary
+    final_summary["runtime"]["retrieval_wall_seconds"] = summary[
+        "reported_retrieval_wall_seconds"
+    ]
+    final_summary["runtime"][
+        "known_training_final_validation_and_retrieval_wall_seconds"
+    ] = (
+        float(
+            final_summary["runtime"][
+                "known_training_plus_final_validation_wall_seconds"
+            ]
+        )
+        + float(summary["reported_retrieval_wall_seconds"])
+    )
+    final_summary["artifacts"]["retrieval_results"] = str(result_path)
+    final_summary["artifacts"]["retrieval_summary"] = str(
+        args.output_root / "retrieval" / "summary.json"
+    )
+    final_summary["completed_at"] = utc_now()
+    atomic_json(final_summary_path, final_summary)
+    print(json.dumps(summary, indent=2))
+
+
+def audit_final_artifacts(args: argparse.Namespace) -> None:
+    """Cross-check the complete Phase 2 artifact tree without rerunning experiments."""
+    import qwen_phase1 as phase1
+
+    output_root = args.output_root
+    run_dir = output_root / "runs" / args.run_id
+    final = json.loads((output_root / "final_summary.json").read_text(encoding="utf-8"))
+    if final.get("status") != "complete" or final.get("run_id") != args.run_id:
+        raise RuntimeError("Final summary is incomplete or belongs to another run")
+    frozen = load_oracle_records("validation", args.phase1_root)
+    predictions = read_jsonl(output_root / "validation" / "predictions.jsonl")
+    question_ids = [row["question_id"] for row in predictions]
+    if len(predictions) != 924 or len(set(question_ids)) != 924:
+        raise RuntimeError("Canonical predictions are not 924 unique records")
+    if question_ids != [row["question_id"] for row in frozen]:
+        raise RuntimeError("Canonical predictions do not preserve validation order")
+    metrics = fixed_classification_metrics(predictions)
+    if metrics != final["classification"]:
+        raise RuntimeError("Final classification metrics do not recompute exactly")
+    classification = json.loads(
+        (output_root / "classification" / "metrics.json").read_text(encoding="utf-8")
+    )
+    if metrics != classification["classification_metrics"]:
+        raise RuntimeError("Classification presentation metrics disagree")
+    oracle_distribution = {
+        str(label): sum(int(row["oracle_label"]) == label for row in predictions)
+        for label in CLASS_TOKENS
+    }
+    predicted_distribution = {
+        str(label): sum(row["parsed_prediction"] == label for row in predictions)
+        for label in CLASS_TOKENS
+    }
+    if oracle_distribution != final["oracle_distribution"]:
+        raise RuntimeError("Oracle distribution mismatch")
+    if predicted_distribution != final["predicted_distribution"]:
+        raise RuntimeError("Predicted distribution mismatch")
+
+    raw_rows = read_jsonl(output_root / "validation" / "raw_outputs.jsonl")
+    parsed_rows = read_jsonl(output_root / "validation" / "parsed_predictions.jsonl")
+    invalid_path = output_root / "validation" / "invalid_outputs.jsonl"
+    invalid_rows = (
+        read_jsonl(invalid_path) if invalid_path.exists() and invalid_path.stat().st_size else []
+    )
+    if [row["question_id"] for row in raw_rows] != question_ids:
+        raise RuntimeError("Raw-output artifact identity mismatch")
+    if [row["question_id"] for row in parsed_rows] != question_ids:
+        raise RuntimeError("Parsed-output artifact identity mismatch")
+    expected_invalid = [row for row in predictions if row["parsed_prediction"] is None]
+    if [row["question_id"] for row in invalid_rows] != [
+        row["question_id"] for row in expected_invalid
+    ]:
+        raise RuntimeError("Invalid-output artifact mismatch")
+
+    retrieval_rows = read_jsonl(output_root / "retrieval" / "results.jsonl")
+    valid_predictions = [row for row in predictions if row["parsed_prediction"] is not None]
+    if [row["question_id"] for row in retrieval_rows] != [
+        row["question_id"] for row in valid_predictions
+    ]:
+        raise RuntimeError("Retrieval records do not exactly cover valid predictions")
+    best = json.loads((run_dir / "best_checkpoint.json").read_text(encoding="utf-8"))
+    for record, prediction in zip(retrieval_rows, valid_predictions):
+        validate_phase2_retrieval_record(
+            record,
+            prediction,
+            args.run_id,
+            best["checkpoint_id"],
+            phase1.OPENAI_EMBEDDING_MODEL,
+            phase1.EMBEDDING_DIM,
+            phase1.TOKENIZER_NAME,
+        )
+    f1_values = [float(row["f1_joined_topk"]) for row in retrieval_rows]
+    retrieval_summary = json.loads(
+        (output_root / "retrieval" / "summary.json").read_text(encoding="utf-8")
+    )
+    expected_retrieval_values = {
+        "retrieval_coverage": len(retrieval_rows) / len(predictions),
+        "valid_only_mean_joined_retrieval_f1": float(np.mean(f1_values)),
+        "valid_only_median_joined_retrieval_f1": float(np.median(f1_values)),
+        "coverage_adjusted_full_set_mean_joined_retrieval_f1": float(
+            sum(f1_values) / len(predictions)
+        ),
+    }
+    for key, expected in expected_retrieval_values.items():
+        if not math.isclose(
+            float(retrieval_summary[key]), expected, rel_tol=1e-12, abs_tol=1e-12
+        ):
+            raise RuntimeError(f"Retrieval summary mismatch: {key}")
+    if retrieval_summary != final["retrieval"]:
+        raise RuntimeError("Final summary and retrieval summary disagree")
+
+    training_rows = read_jsonl(run_dir / "training_history.jsonl")
+    validation_rows = read_jsonl(run_dir / "validation_history.jsonl")
+    if [int(row["global_step"]) for row in training_rows] != list(range(1, 214)):
+        raise RuntimeError("Training history is not the complete 1..213 sequence")
+    if [int(row["global_step"]) for row in validation_rows] != [71, 142, 213]:
+        raise RuntimeError("Validation history does not contain the three epochs")
+    checkpoint_manifest = json.loads(
+        (run_dir / "checkpoint_manifest.json").read_text(encoding="utf-8")
+    )
+    if select_best_evaluation(checkpoint_manifest)["checkpoint_id"] != best["checkpoint_id"]:
+        raise RuntimeError("Best checkpoint does not follow the declared rule")
+    tensorboard_audit = json.loads(
+        (run_dir / "tensorboard_scalar_inventory.json").read_text(encoding="utf-8")
+    )
+    if (
+        tensorboard_audit["required_scalar_value_mismatch_count"] != 0
+        or tensorboard_audit["required_scalar_count_mismatch_count"] != 0
+        or not tensorboard_audit["selected_checkpoint_agrees"]
+    ):
+        raise RuntimeError("TensorBoard audit is not clean")
+    checkpoint_verification = json.loads(
+        (run_dir / "checkpoint_verification.json").read_text(encoding="utf-8")
+    )
+    if not checkpoint_verification["all_generation_repeats_match"]:
+        raise RuntimeError("Checkpoint determinism verification failed")
+
+    checkpoint_archive_path = run_dir / "checkpoint_archive_verification.json"
+    checkpoint_archive = json.loads(
+        checkpoint_archive_path.read_text(encoding="utf-8")
+    )
+    checkpoint_root = Path(checkpoint_archive["local_checkpoint_path"])
+    checkpoint_hash_manifest = run_dir / "selected_checkpoint_sha256.txt"
+    checkpoint_file_count = 0
+    checkpoint_total_bytes = 0
+    for line in checkpoint_hash_manifest.read_text(encoding="utf-8").splitlines():
+        expected_hash, remote_path = line.split(maxsplit=1)
+        relative = remote_path.split(f"/{best['checkpoint_id']}/", 1)[1]
+        local_path = checkpoint_root / Path(relative)
+        if not local_path.is_file() or sha256_file(local_path) != expected_hash:
+            raise RuntimeError(f"Local checkpoint archive mismatch: {relative}")
+        checkpoint_file_count += 1
+        checkpoint_total_bytes += local_path.stat().st_size
+    if (
+        checkpoint_archive.get("status") != "passed"
+        or checkpoint_file_count != int(checkpoint_archive["file_count"])
+        or checkpoint_total_bytes != int(checkpoint_archive["total_bytes"])
+    ):
+        raise RuntimeError("Checkpoint archive verification metadata mismatch")
+
+    phase1_hashes = {
+        "final_summary.json": sha256_file(args.phase1_root / "final_summary.json"),
+        "configuration/fixed_prompt.json": sha256_file(
+            args.phase1_root / "configuration" / "fixed_prompt.json"
+        ),
+        "oracle/train_oracle.jsonl": sha256_file(
+            args.phase1_root / "oracle" / "train_oracle.jsonl"
+        ),
+        "oracle/validation_oracle.jsonl": sha256_file(
+            args.phase1_root / "oracle" / "validation_oracle.jsonl"
+        ),
+    }
+    expected_phase1_hashes = {
+        "final_summary.json": PHASE1_FINAL_SUMMARY_SHA256,
+        "configuration/fixed_prompt.json": FIXED_PROMPT_SHA256,
+        "oracle/train_oracle.jsonl": TRAIN_ORACLE_SHA256,
+        "oracle/validation_oracle.jsonl": VALIDATION_ORACLE_SHA256,
+    }
+    if phase1_hashes != expected_phase1_hashes:
+        raise RuntimeError("Frozen Phase 1 source hashes changed")
+    hashed_artifacts = [
+        output_root / "final_summary.json",
+        output_root / "validation" / "predictions.jsonl",
+        output_root / "classification" / "metrics.json",
+        output_root / "classification" / "confusion_matrix.csv",
+        output_root / "retrieval" / "results.jsonl",
+        output_root / "retrieval" / "summary.json",
+        run_dir / "training_config.json",
+        run_dir / "dataset_manifest.json",
+        run_dir / "best_checkpoint.json",
+        run_dir / "checkpoint_manifest.json",
+        run_dir / "tensorboard_scalar_inventory.json",
+        run_dir / "checkpoint_verification.json",
+        run_dir / "checkpoint_archive_verification.json",
+    ]
+    result = {
+        "status": "passed",
+        "run_id": args.run_id,
+        "checks": {
+            "predictions_unique_and_in_frozen_order": True,
+            "classification_recomputed_exactly": True,
+            "presentation_artifacts_reconcile": True,
+            "invalid_outputs_receive_no_default": True,
+            "retrieval_exactly_covers_valid_predictions": True,
+            "retrieval_summary_recomputed": True,
+            "training_steps_complete": True,
+            "three_validation_events_complete": True,
+            "checkpoint_selection_rule_reproduced": True,
+            "tensorboard_structured_logs_agree": True,
+            "checkpoint_generation_is_deterministic": True,
+            "selected_checkpoint_archive_sha256_verified": True,
+            "phase1_source_hashes_unchanged": True,
+        },
+        "counts": {
+            "predictions": len(predictions),
+            "valid_predictions": len(valid_predictions),
+            "invalid_predictions": len(expected_invalid),
+            "retrieval_records": len(retrieval_rows),
+            "training_steps": len(training_rows),
+            "validation_events": len(validation_rows),
+        },
+        "phase1_source_hashes": phase1_hashes,
+        "phase2_artifact_sha256": {
+            str(path): sha256_file(path) for path in hashed_artifacts
+        },
+        "verified_at": utc_now(),
+    }
+    atomic_json(output_root / "integrity_audit.json", result)
+    print(json.dumps(result, indent=2))
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--phase1-root", type=Path, default=PHASE1_ROOT)
@@ -850,6 +2161,12 @@ def build_parser() -> argparse.ArgumentParser:
     verification = subparsers.add_parser("verify-checkpoint")
     verification.add_argument("--run-id", required=True)
     verification.add_argument("--checkpoint", type=Path, required=True)
+    final = subparsers.add_parser("final-validation")
+    final.add_argument("--run-id", required=True)
+    retrieval = subparsers.add_parser("evaluate-retrieval")
+    retrieval.add_argument("--run-id", required=True)
+    final_audit = subparsers.add_parser("audit-final")
+    final_audit.add_argument("--run-id", required=True)
     for command in ("tiny-overfit", "smoke", "train"):
         child = subparsers.add_parser(command)
         child.add_argument("--run-id")
@@ -867,6 +2184,12 @@ def main() -> None:
         audit_tensorboard(args)
     elif args.command == "verify-checkpoint":
         verify_checkpoint(args)
+    elif args.command == "final-validation":
+        final_validation(args)
+    elif args.command == "evaluate-retrieval":
+        evaluate_phase2_retrieval(args)
+    elif args.command == "audit-final":
+        audit_final_artifacts(args)
     else:
         args.mode = args.command
         if args.mode == "tiny-overfit" and args.max_steps is None:

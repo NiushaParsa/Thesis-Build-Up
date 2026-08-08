@@ -8,3 +8,17 @@ tmp/huggingface_qwen_cache/
 tmp/matplotlib/
 json_output/
 checkpoint.json
+outputs/qwen_finetuned_router_evidence_length_oracle/runs/*/checkpoints/
+outputs/qwen_finetuned_router_evidence_length_oracle/tensorboard/
+outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/runs/*/checkpoints/
+outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/tensorboard/
+outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/runs/*/checkpoints/
+outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/tensorboard/
+outputs/qwen_phase2c_sequence_classifier_evidence_length_oracle/runs/*/checkpoints/
+outputs/qwen_phase2c_sequence_classifier_evidence_length_oracle/tensorboard/
+tmp/huggingface_qwen_base_cache/
+tmp/phase2c_chunks/
+tmp/phase2c-step-*.tar.zst
+tmp/phase2c_model_preflight.py
+tmp/qwen-phase2c-sequence-classifier.conf
+tmp/qwen-phase2c-sequence-classifier.sh

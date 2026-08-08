@@ -1,0 +1,45 @@
+{
+  "phase": "Phase 2B",
+  "variant": "alias-classbalanced",
+  "formulation_version": "qwen-phase2b-restricted-five-alias-next-token-v1",
+  "model_id": "Qwen/Qwen3.5-0.8B",
+  "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+  "instruction": "You are a router for a retrieval-augmented generation system. Based only on the question, select the chunk size most suitable for retrieving the evidence required to answer it. Return only its alias: 1=10, 2=20, 3=40, 4=80, 5=160.",
+  "instruction_sha256": "d4a59dcd26b01c5bd81981e43c5d69fc1c8db14e9160e0791412dbe6af7067ac",
+  "alias_to_chunk_size": {
+    "1": 10,
+    "2": 20,
+    "3": 40,
+    "4": 80,
+    "5": 160
+  },
+  "expected_alias_token_ids": {
+    "1": 16,
+    "2": 17,
+    "3": 18,
+    "4": 19,
+    "5": 20
+  },
+  "class_weights": {
+    "variant": "alias-classbalanced",
+    "scheme": "effective_number",
+    "beta": 0.999,
+    "source": "preserved_training_split_only",
+    "training_counts": {
+      "10": 55,
+      "20": 267,
+      "40": 586,
+      "80": 687,
+      "160": 650
+    },
+    "weights_normalized_to_arithmetic_class_mean_one": {
+      "10": 3.1872088653568436,
+      "20": 0.7279213406697836,
+      "40": 0.38467220811977887,
+      "80": 0.34329010532422555,
+      "160": 0.3569074805293684
+    },
+    "gradient_window_reduction": "sum(weight[target] * per_example_ce) / sum(weight[target])"
+  },
+  "created_at": "2026-08-03T16:38:00.289749+00:00"
+}

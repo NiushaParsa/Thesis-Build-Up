@@ -1,0 +1,122 @@
+{
+  "model_id": "Qwen/Qwen3.5-0.8B-Base",
+  "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+  "architecture": "AutoModelForSequenceClassification",
+  "training_method": "full_parameter_sequence_classification",
+  "formulation_version": "qwen-phase2c-base-sequence-classifier-v1",
+  "objective": "uniform_five_class_cross_entropy",
+  "problem_type": "single_label_classification",
+  "dtype": "torch.bfloat16",
+  "device": "cuda",
+  "max_sequence_length": 128,
+  "per_device_batch_size": 4,
+  "gradient_accumulation_steps": 8,
+  "effective_batch_size": 32,
+  "learning_rate": 2e-05,
+  "weight_decay": 0.01,
+  "scheduler": "cosine",
+  "warmup_ratio": 0.05,
+  "epochs": 3,
+  "gradient_clipping": 1.0,
+  "seed": 42,
+  "logging_steps": 1,
+  "evaluation_frequency": "end_of_epoch",
+  "checkpoint_frequency": "end_of_epoch",
+  "checkpoint_retention_policy": "retain_current_and_best_during_training_selected_only_at_completion",
+  "checkpoint_selection_metric": "validation_macro_f1",
+  "checkpoint_tie_break": "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step",
+  "early_stopping": "none_fixed_three_epochs",
+  "quantization": null,
+  "class_weights": "uniform",
+  "run_mode": "full",
+  "active_per_device_batch_size": 4,
+  "active_gradient_accumulation_steps": 8,
+  "active_effective_batch_size": 32,
+  "maximum_optimizer_steps": null,
+  "total_optimizer_steps": 213,
+  "warmup_steps": 11,
+  "run_id": "qwen-phase2c-base-sequence-classifier-full-parameter-20260804-seed42-v1",
+  "output_root": "/dev/shm/qwen_phase2c_sequence_classifier_evidence_length_oracle",
+  "repository_commit": "55af1bcbc4d7a089adaafd4da539581b2dbbed67",
+  "training_script_sha256": "6eeb155296b239463d5ba7c8c75dfed8dd59f8c5285cab1edf7cb6a553f9aefb",
+  "python_version": "3.10.7 (main, Oct  3 2022, 02:19:58) [Clang 14.0.3 ]",
+  "python_executable": "/workspace/thesis-granularity-router/.venv-qwen/bin/python",
+  "torch_version": "2.8.0+cu128",
+  "torch_cuda_version": "12.8",
+  "transformers_version": "5.15.0.dev0",
+  "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+  "tensorboard_version": "2.20.0",
+  "gpu": "NVIDIA A100-SXM4-40GB",
+  "instruction": "You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = very short context, 2 = short context, 3 = medium context, 4 = long context, 5 = very long context. Return only the number",
+  "instruction_sha256": "9e879535647c2bfcd3627d0d65f84c36a1bf442ed95bb5b07029c878ca990de7",
+  "pad_token_id": 248044,
+  "id2label": {
+    "0": "10",
+    "1": "20",
+    "2": "40",
+    "3": "80",
+    "4": "160"
+  },
+  "label2id": {
+    "10": 0,
+    "20": 1,
+    "40": 2,
+    "80": 3,
+    "160": 4
+  },
+  "initial_model_loading_audit": {
+    "configuration": {
+      "status": "passed",
+      "checks": {
+        "num_labels": true,
+        "problem_type": true,
+        "id2label": true,
+        "label2id": true,
+        "top_level_pad_token_id": true,
+        "text_config_pad_token_id": true,
+        "top_level_use_cache": true,
+        "text_config_use_cache": true
+      },
+      "num_labels": 5,
+      "id2label": {
+        "0": "10",
+        "1": "20",
+        "2": "40",
+        "3": "80",
+        "4": "160"
+      },
+      "label2id": {
+        "10": 0,
+        "20": 1,
+        "40": 2,
+        "80": 3,
+        "160": 4
+      },
+      "pad_token_id": 248044
+    },
+    "classifier_head": {
+      "status": "passed",
+      "initial_base_load": true,
+      "seed_set_before_model_load": 42,
+      "head_parameter_name": "score.weight",
+      "head_shape": [
+        5,
+        1024
+      ],
+      "head_bias": false,
+      "head_weight_dtype": "torch.bfloat16",
+      "head_weight_sha256_float32": "09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5",
+      "loading_info": {
+        "missing_keys": [
+          "score.weight"
+        ],
+        "unexpected_keys": [],
+        "mismatched_keys": [],
+        "error_msgs": []
+      }
+    }
+  },
+  "experiment_fingerprint": "6508ded1f9c25b451207f891f90fa5c9a7a4c09da7ea7125555bfa0ec7faca90",
+  "resume_contract_sha256": "09fdebe2660fbed57d93ea712ab9f3918e139011bf637d6652231a3d36a11473",
+  "created_at": "2026-08-04T15:46:53.908614+00:00"
+}

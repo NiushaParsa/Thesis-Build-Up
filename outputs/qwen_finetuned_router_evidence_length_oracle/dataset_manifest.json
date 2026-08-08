@@ -1,0 +1,65 @@
+{
+  "train_examples": 2245,
+  "validation_examples": 924,
+  "train_documents": 845,
+  "validation_documents": 277,
+  "train_distribution": {
+    "10": 55,
+    "20": 267,
+    "40": 586,
+    "80": 687,
+    "160": 650
+  },
+  "validation_distribution": {
+    "10": 13,
+    "20": 81,
+    "40": 178,
+    "80": 232,
+    "160": 420
+  },
+  "train_oracle_sha256": "64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88",
+  "validation_oracle_sha256": "ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d",
+  "verified_at": "2026-08-02T16:27:14.228963+00:00",
+  "formatted_lengths": {
+    "minimum": 89,
+    "maximum": 115,
+    "mean": 95.40979955456571,
+    "target_token_counts": [
+      4,
+      5
+    ]
+  },
+  "label_target_token_ids": {
+    "10": [
+      16,
+      15,
+      248046,
+      198
+    ],
+    "20": [
+      17,
+      15,
+      248046,
+      198
+    ],
+    "40": [
+      19,
+      15,
+      248046,
+      198
+    ],
+    "80": [
+      23,
+      15,
+      248046,
+      198
+    ],
+    "160": [
+      16,
+      21,
+      15,
+      248046,
+      198
+    ]
+  }
+}

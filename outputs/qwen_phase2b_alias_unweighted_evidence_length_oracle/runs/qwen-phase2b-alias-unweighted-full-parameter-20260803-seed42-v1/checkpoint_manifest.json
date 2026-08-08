@@ -1,0 +1,315 @@
+[
+  {
+    "checkpoint": "outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/runs/qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1/checkpoints/step-000071",
+    "checkpoint_id": "step-000071",
+    "global_step": 71,
+    "epoch": 1,
+    "validation_loss": 1.3775848428924362,
+    "validation_unweighted_ce": 1.3775848428924362,
+    "validation_objective_weighted_ce": 1.3775848428924362,
+    "classification_metrics": {
+      "accuracy": 0.2510822510822511,
+      "macro_f1": 0.08027681660899653,
+      "weighted_f1": 0.10078041911951946,
+      "balanced_accuracy": 0.2,
+      "top_2_accuracy": 0.44372294372294374,
+      "top_2_accuracy_status": "available_from_comparable_restricted_five_class_logits",
+      "per_class": {
+        "10": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 13
+        },
+        "20": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 81
+        },
+        "40": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 178
+        },
+        "80": {
+          "precision": 0.2510822510822511,
+          "recall": 1.0,
+          "f1": 0.4013840830449827,
+          "support": 232
+        },
+        "160": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 420
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          13,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          81,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          178,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          232,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          420,
+          0
+        ]
+      ],
+      "evaluated_examples": 924,
+      "valid_predictions": 924,
+      "invalid_predictions": 0
+    },
+    "predicted_distribution": {
+      "10": 0,
+      "20": 0,
+      "40": 0,
+      "80": 924,
+      "160": 0
+    },
+    "predictions": "outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/runs/qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1/validation/predictions_step-000071.jsonl",
+    "validation_wall_seconds": 36.127269204705954,
+    "variant": "alias-unweighted",
+    "experiment_fingerprint": "961786801daa066b40cd2ad9325cb48b08a45942dacb7516470891aa715bc61d",
+    "checkpoints_pruned_before_save": [],
+    "checkpoint_retained": false,
+    "checkpoints_pruned_after_evaluation": []
+  },
+  {
+    "checkpoint": "outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/runs/qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1/checkpoints/step-000142",
+    "checkpoint_id": "step-000142",
+    "global_step": 142,
+    "epoch": 2,
+    "validation_loss": 1.3699120345053735,
+    "validation_unweighted_ce": 1.3699120345053735,
+    "validation_objective_weighted_ce": 1.3699120345053735,
+    "classification_metrics": {
+      "accuracy": 0.3008658008658009,
+      "macro_f1": 0.19043978783245397,
+      "weighted_f1": 0.2890888439338361,
+      "balanced_accuracy": 0.2243431855500821,
+      "top_2_accuracy": 0.5584415584415584,
+      "top_2_accuracy_status": "available_from_comparable_restricted_five_class_logits",
+      "per_class": {
+        "10": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 13
+        },
+        "20": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 81
+        },
+        "40": {
+          "precision": 0.23796791443850268,
+          "recall": 0.5,
+          "f1": 0.322463768115942,
+          "support": 178
+        },
+        "80": {
+          "precision": 0.23482849604221637,
+          "recall": 0.38362068965517243,
+          "f1": 0.29132569558101473,
+          "support": 232
+        },
+        "160": {
+          "precision": 0.5847953216374269,
+          "recall": 0.23809523809523808,
+          "f1": 0.338409475465313,
+          "support": 420
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          9,
+          4,
+          0
+        ],
+        [
+          0,
+          0,
+          34,
+          39,
+          8
+        ],
+        [
+          0,
+          0,
+          89,
+          69,
+          20
+        ],
+        [
+          0,
+          0,
+          100,
+          89,
+          43
+        ],
+        [
+          0,
+          0,
+          142,
+          178,
+          100
+        ]
+      ],
+      "evaluated_examples": 924,
+      "valid_predictions": 924,
+      "invalid_predictions": 0
+    },
+    "predicted_distribution": {
+      "10": 0,
+      "20": 0,
+      "40": 374,
+      "80": 379,
+      "160": 171
+    },
+    "predictions": "outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/runs/qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1/validation/predictions_step-000142.jsonl",
+    "validation_wall_seconds": 36.21613594703376,
+    "variant": "alias-unweighted",
+    "experiment_fingerprint": "961786801daa066b40cd2ad9325cb48b08a45942dacb7516470891aa715bc61d",
+    "checkpoints_pruned_before_save": [],
+    "checkpoint_retained": false,
+    "checkpoints_pruned_after_evaluation": [
+      "step-000071"
+    ]
+  },
+  {
+    "checkpoint": "outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/runs/qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1/checkpoints/step-000213",
+    "checkpoint_id": "step-000213",
+    "global_step": 213,
+    "epoch": 3,
+    "validation_loss": 1.3402932242397623,
+    "validation_unweighted_ce": 1.3402932242397623,
+    "validation_objective_weighted_ce": 1.3402932242397623,
+    "classification_metrics": {
+      "accuracy": 0.35064935064935066,
+      "macro_f1": 0.20922603632601472,
+      "weighted_f1": 0.3406050804511769,
+      "balanced_accuracy": 0.2383201416948027,
+      "top_2_accuracy": 0.6071428571428571,
+      "top_2_accuracy_status": "available_from_comparable_restricted_five_class_logits",
+      "per_class": {
+        "10": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 13
+        },
+        "20": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 81
+        },
+        "40": {
+          "precision": 0.234192037470726,
+          "recall": 0.5617977528089888,
+          "f1": 0.33057851239669417,
+          "support": 178
+        },
+        "80": {
+          "precision": 0.26455026455026454,
+          "recall": 0.21551724137931033,
+          "f1": 0.2375296912114014,
+          "support": 232
+        },
+        "160": {
+          "precision": 0.564935064935065,
+          "recall": 0.4142857142857143,
+          "f1": 0.47802197802197804,
+          "support": 420
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          10,
+          2,
+          1
+        ],
+        [
+          0,
+          0,
+          48,
+          13,
+          20
+        ],
+        [
+          0,
+          0,
+          100,
+          35,
+          43
+        ],
+        [
+          0,
+          0,
+          112,
+          50,
+          70
+        ],
+        [
+          0,
+          0,
+          157,
+          89,
+          174
+        ]
+      ],
+      "evaluated_examples": 924,
+      "valid_predictions": 924,
+      "invalid_predictions": 0
+    },
+    "predicted_distribution": {
+      "10": 0,
+      "20": 0,
+      "40": 427,
+      "80": 189,
+      "160": 308
+    },
+    "predictions": "outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/runs/qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1/validation/predictions_step-000213.jsonl",
+    "validation_wall_seconds": 36.16520829498768,
+    "variant": "alias-unweighted",
+    "experiment_fingerprint": "961786801daa066b40cd2ad9325cb48b08a45942dacb7516470891aa715bc61d",
+    "checkpoints_pruned_before_save": [],
+    "checkpoint_retained": true,
+    "checkpoints_pruned_after_evaluation": [
+      "step-000142"
+    ]
+  }
+]

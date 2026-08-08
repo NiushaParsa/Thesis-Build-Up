@@ -1,0 +1,243 @@
+{
+  "status": "complete",
+  "phase": "Phase 2B restricted-alias full-parameter fine-tuning",
+  "variant": "alias-classbalanced",
+  "formulation_version": "qwen-phase2b-restricted-five-alias-next-token-v1",
+  "run_id": "qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1",
+  "model_id": "Qwen/Qwen3.5-0.8B",
+  "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+  "evaluated_examples": 924,
+  "selected_checkpoint": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/runs/qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1/checkpoints/step-000142",
+  "selected_checkpoint_id": "step-000142",
+  "classification": {
+    "accuracy": 0.37012987012987014,
+    "macro_f1": 0.16836616836616836,
+    "weighted_f1": 0.3142183142183142,
+    "balanced_accuracy": 0.20607553366174058,
+    "top_2_accuracy": 0.7056277056277056,
+    "top_2_accuracy_status": "available_from_comparable_restricted_five_class_logits",
+    "per_class": {
+      "10": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13
+      },
+      "20": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 81
+      },
+      "40": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 178
+      },
+      "80": {
+        "precision": 0.25806451612903225,
+        "recall": 0.4827586206896552,
+        "f1": 0.3363363363363363,
+        "support": 232
+      },
+      "160": {
+        "precision": 0.46938775510204084,
+        "recall": 0.5476190476190477,
+        "f1": 0.5054945054945055,
+        "support": 420
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        0,
+        9,
+        4
+      ],
+      [
+        0,
+        0,
+        0,
+        39,
+        42
+      ],
+      [
+        0,
+        0,
+        0,
+        84,
+        94
+      ],
+      [
+        0,
+        0,
+        0,
+        112,
+        120
+      ],
+      [
+        0,
+        0,
+        0,
+        190,
+        230
+      ]
+    ],
+    "evaluated_examples": 924,
+    "valid_predictions": 924,
+    "invalid_predictions": 0
+  },
+  "oracle_distribution": {
+    "10": 13,
+    "20": 81,
+    "40": 178,
+    "80": 232,
+    "160": 420
+  },
+  "predicted_distribution": {
+    "10": 0,
+    "20": 0,
+    "40": 0,
+    "80": 434,
+    "160": 490
+  },
+  "valid_outputs": 924,
+  "valid_output_rate": 1.0,
+  "invalid_outputs": 0,
+  "invalid_output_percentage": 0.0,
+  "majority_class": 160,
+  "majority_baseline_accuracy": 0.45454545454545453,
+  "majority_baseline_macro_f1": 0.125,
+  "alias_to_chunk_size": {
+    "1": 10,
+    "2": 20,
+    "3": 40,
+    "4": 80,
+    "5": 160
+  },
+  "alias_token_ids": {
+    "1": 16,
+    "2": 17,
+    "3": 18,
+    "4": 19,
+    "5": 20
+  },
+  "class_weights": {
+    "variant": "alias-classbalanced",
+    "scheme": "effective_number",
+    "beta": 0.999,
+    "source": "preserved_training_split_only",
+    "training_counts": {
+      "10": 55,
+      "20": 267,
+      "40": 586,
+      "80": 687,
+      "160": 650
+    },
+    "weights_normalized_to_arithmetic_class_mean_one": {
+      "10": 3.1872088653568436,
+      "20": 0.7279213406697836,
+      "40": 0.38467220811977887,
+      "80": 0.34329010532422555,
+      "160": 0.3569074805293684
+    },
+    "gradient_window_reduction": "sum(weight[target] * per_example_ce) / sum(weight[target])"
+  },
+  "training": {
+    "global_steps": 213,
+    "parameter_updates": 213,
+    "total_parameters": 852985920,
+    "trainable_parameters": 852985920,
+    "initial_loss": 1.816834687228543,
+    "final_loss": 1.602007440099642,
+    "validation_unweighted_ce": 1.4620294988929452,
+    "validation_objective_weighted_ce": 1.550350315119168,
+    "elapsed_seconds": 1306.7509042322636,
+    "experiment_fingerprint": "91021dd5de4bb5186ce98ac873dcfae9200f721a62f5a3163f7958cceb240fe6"
+  },
+  "runtime": {
+    "source": "post_training_selected_checkpoint_reload",
+    "new_inference_performed": true,
+    "inference_method": "restricted_five_alias_next_token_argmax",
+    "model_load_seconds": 3.260306715965271,
+    "isolated_inference_wall_seconds": 39.01004763878882,
+    "selected_epoch_validation_wall_seconds": 35.897498374804854,
+    "selected_epoch_exact_score_match": true,
+    "selected_epoch_outputs_compared": 924,
+    "mean_inference_seconds": 0.04196543970197697,
+    "median_inference_seconds": 0.04170184303075075,
+    "total_allocated_batch_forward_seconds": 38.77606628462672,
+    "inference_timing_basis": "synchronized_batch_forward_wall_divided_evenly_per_batch",
+    "unweighted_validation_ce": 1.4620294988929452,
+    "objective_weighted_validation_ce": 1.550350315119168,
+    "peak_gpu_allocated_gib": 2.2182140350341797,
+    "peak_gpu_reserved_gib": 3.6640625,
+    "rss_gib": 1.7090835571289062,
+    "selected_checkpoint": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/runs/qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1/checkpoints/step-000142",
+    "selected_checkpoint_id": "step-000142",
+    "evaluated_examples": 924,
+    "completed_at": "2026-08-03T17:31:48.517832+00:00",
+    "retrieval_wall_seconds": 377.0999227000284,
+    "known_training_plus_final_validation_wall_seconds": 1349.0212585870177,
+    "known_training_final_validation_and_retrieval_wall_seconds": 1726.121181287046
+  },
+  "retrieval": {
+    "status": "complete",
+    "run_id": "qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1",
+    "variant": "alias-classbalanced",
+    "method_name": "qwen-phase2b-alias-classbalanced-full-parameter-router",
+    "formulation_version": "qwen-phase2b-restricted-five-alias-next-token-v1",
+    "experiment_fingerprint": "91021dd5de4bb5186ce98ac873dcfae9200f721a62f5a3163f7958cceb240fe6",
+    "evaluation_run_id": "qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1-retrieval-top5-paper",
+    "selected_checkpoint_id": "step-000142",
+    "evaluated_examples": 924,
+    "valid_prediction_retrievals": 924,
+    "invalid_predictions_without_retrieval": 0,
+    "retrieval_coverage": 1.0,
+    "valid_only_mean_joined_retrieval_f1": 0.24962774025974027,
+    "valid_only_median_joined_retrieval_f1": 0.223194,
+    "coverage_adjusted_full_set_mean_joined_retrieval_f1": 0.24962774025974016,
+    "full_set_note": "Only canonical mapped Phase 2B predictions are retrieved. Invalid outputs would receive no default granularity and no retrieval record.",
+    "top_k": 5,
+    "paper_restricted": true,
+    "embedding_model": "text-embedding-3-small",
+    "embedding_dimension": 1536,
+    "tokenizer": "gpt2",
+    "metric": "f1_joined_topk",
+    "evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+    "schema_version": 2,
+    "metric_version": "qasper-token-prf-v2",
+    "normalization_version": "lowercase-remove-punctuation-collapse-whitespace-v1",
+    "runtime_segments": 1,
+    "current_segment_wall_seconds": 377.0999227000284,
+    "completed_invocation_wall_seconds": 377.0999227000284,
+    "cumulative_durable_question_processing_seconds": 363.11020989948884,
+    "complete_uninterrupted_run_wall_seconds": 377.0999227000284,
+    "reported_retrieval_wall_seconds": 377.0999227000284,
+    "reported_retrieval_wall_basis": "complete_uninterrupted_invocation",
+    "runtime_note": "Every completed question stores an fsynced processing duration. After a resume, the durable per-question sum is reported instead of fabricating an uninterrupted wall time.",
+    "completed_at": "2026-08-03T17:50:23.479183+00:00"
+  },
+  "artifacts": {
+    "training_config": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/runs/qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1/training_config.json",
+    "dataset_manifest": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/runs/qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1/dataset_manifest.json",
+    "best_checkpoint": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/runs/qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1/best_checkpoint.json",
+    "canonical_predictions": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/validation/predictions.jsonl",
+    "raw_outputs": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/validation/raw_outputs.jsonl",
+    "parsed_predictions": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/validation/parsed_predictions.jsonl",
+    "invalid_outputs": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/validation/invalid_outputs.jsonl",
+    "classification_metrics": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/classification/metrics.json",
+    "confusion_matrix": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/classification/confusion_matrix.csv",
+    "predicted_vs_oracle_histogram": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/classification/predicted_vs_oracle.svg",
+    "validation_runtime": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/validation/runtime_summary.json",
+    "phase1_train_oracle": "/workspace/thesis-granularity-router/outputs/qwen_pretrained_zero_shot_router_evidence_length_oracle/oracle/train_oracle.jsonl",
+    "phase1_validation_oracle": "/workspace/thesis-granularity-router/outputs/qwen_pretrained_zero_shot_router_evidence_length_oracle/oracle/validation_oracle.jsonl",
+    "retrieval_results": "outputs\\qwen_phase2b_alias_classbalanced_evidence_length_oracle\\retrieval\\results.jsonl",
+    "retrieval_summary": "outputs\\qwen_phase2b_alias_classbalanced_evidence_length_oracle\\retrieval\\summary.json",
+    "retrieval_runtime_segments": "outputs\\qwen_phase2b_alias_classbalanced_evidence_length_oracle\\retrieval\\runtime_segments.jsonl"
+  },
+  "created_at": "2026-08-03T17:31:48.958722+00:00",
+  "completed_at": "2026-08-03T18:04:44.488902+00:00"
+}

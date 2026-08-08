@@ -1,0 +1,23 @@
+{
+  "source": "post_training_selected_checkpoint_reload",
+  "new_inference_performed": true,
+  "inference_method": "restricted_five_alias_next_token_argmax",
+  "model_load_seconds": 3.260306715965271,
+  "isolated_inference_wall_seconds": 39.01004763878882,
+  "selected_epoch_validation_wall_seconds": 35.897498374804854,
+  "selected_epoch_exact_score_match": true,
+  "selected_epoch_outputs_compared": 924,
+  "mean_inference_seconds": 0.04196543970197697,
+  "median_inference_seconds": 0.04170184303075075,
+  "total_allocated_batch_forward_seconds": 38.77606628462672,
+  "inference_timing_basis": "synchronized_batch_forward_wall_divided_evenly_per_batch",
+  "unweighted_validation_ce": 1.4620294988929452,
+  "objective_weighted_validation_ce": 1.550350315119168,
+  "peak_gpu_allocated_gib": 2.2182140350341797,
+  "peak_gpu_reserved_gib": 3.6640625,
+  "rss_gib": 1.7090835571289062,
+  "selected_checkpoint": "/workspace/thesis-granularity-router/outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/runs/qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1/checkpoints/step-000142",
+  "selected_checkpoint_id": "step-000142",
+  "evaluated_examples": 924,
+  "completed_at": "2026-08-03T17:31:48.517832+00:00"
+}

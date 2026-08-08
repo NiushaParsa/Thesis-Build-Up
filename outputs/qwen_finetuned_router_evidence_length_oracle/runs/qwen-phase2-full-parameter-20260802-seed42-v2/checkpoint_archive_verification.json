@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "run_id": "qwen-phase2-full-parameter-20260802-seed42-v2",
+  "selected_checkpoint_id": "step-000213",
+  "local_checkpoint_path": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/checkpoints/step-000213",
+  "sha256_manifest": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/selected_checkpoint_sha256.txt",
+  "file_count": 11,
+  "total_bytes": 4735895186,
+  "total_gib": 4.4106460977345705,
+  "all_files_present": true,
+  "all_sha256_values_match_remote_manifest": true,
+  "model_sha256": "7d23db1fde0c621623a7d4030073e8858854eba9a4b2d3d7bccda8ca730e2c45",
+  "optimizer_sha256": "c1e56c0be75551b74d13dfbe524fce45284bf09da8374739fbb4f64f80b58d86",
+  "checkpoint_tree_is_git_ignored": true,
+  "verified_at": "2026-08-02T18:09:37.8774699Z"
+}

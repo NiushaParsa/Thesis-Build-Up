@@ -28,7 +28,8 @@ fine-tuning. No fine-tuning was performed, no optimizer was created, and no
 gradients or backward passes were used. No LoRA, QLoRA, adapters, prompt
 tuning, or classification-head training occurred. The number of parameter
 updates was exactly zero. This completed frozen zero-shot run is the Phase 1
-baseline; supervised fine-tuning is reserved for Phase 2.
+baseline; the subsequently completed supervised fine-tuning is reported in
+the separate Phase 2 section below.
 
 ### 2. New Oracle definition
 
@@ -70,7 +71,8 @@ chunks, retrieval scores, metadata, or handcrafted features.
 
 The original legacy `.venv` remained unchanged and preserves reproducibility
 of the previous Logistic Regression, MLP, old-Oracle, and retrieval
-experiments. `.venv-qwen` is reserved for Qwen Phase 1 and later Phase 2.
+experiments. `.venv-qwen` is reserved for Qwen Phase 1 and the now-completed
+Phase 2.
 
 ### 5. Oracle distribution
 
@@ -187,9 +189,924 @@ Unless an absolute path is shown, artifact paths above are relative to
 
 ### 13. Next step
 
-Phase 2 will fine-tune the same `Qwen/Qwen3.5-0.8B` model using the 2,245
-preserved train examples and the new evidence-length Oracle labels. It will
-retain the same five-class supervised classification task, evaluate on the
-same 924 validation examples, and preserve the same downstream retrieval and
-metric setup. Phase 2 will remain separate from and will not overwrite the
-Phase 1 baseline.
+Phase 2 was subsequently completed with the same
+`Qwen/Qwen3.5-0.8B` model, 2,245 preserved train examples, new
+evidence-length-Oracle labels, and 924-example validation split. Its artifacts
+remain separate and do not overwrite this frozen Phase 1 baseline. The
+verified result is documented below.
+
+## Qwen3.5-0.8B Phase 2 — Full-Parameter Supervised Fine-Tuning
+
+### 1. Objective and training boundary
+
+Phase 2 evaluates supervised full-parameter fine-tuning of the exact Phase 1
+model, `Qwen/Qwen3.5-0.8B`, revision
+`2fc06364715b967f1860aea9cf38778875588b17`. All 852,985,920 model parameters
+were trainable. The run used gradients, backward passes, an AdamW optimizer,
+and exactly 213 optimizer/parameter-update steps across three epochs.
+
+This was not LoRA, QLoRA, adapter training, prompt tuning, or
+classification-head training. No separate classification head was added, no
+quantization was used, and the pretrained Phase 1 checkpoint and artifacts
+were not overwritten. Training optimized the model's generated assistant
+target for one class from 10, 20, 40, 80, and 160. The fixed instruction and
+question tokens were masked from the loss; only assistant target tokens
+contributed.
+
+### 2. Frozen Oracle, dataset, and input
+
+Phase 2 uses the exact evidence-length Oracle introduced and frozen in Phase
+1. It counts GPT-2 tokens in the stripped, exact-deduplicated, deterministically
+ordered complete ground-truth evidence; selects the closest class from 10, 20,
+40, 80, and 160; resolves exact midpoint ties toward the smaller class; maps
+lengths below 10 to 10; and maps lengths above 160 to 160. This Oracle is
+independent of retrieval F1, embedding quality, cosine similarity, retrieved
+chunks, and router performance.
+
+The preserved data and Oracle hashes are:
+
+| Split | Questions | Papers | 10 | 20 | 40 | 80 | 160 | Oracle SHA-256 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| Train | 2,245 | 845 | 55 | 267 | 586 | 687 | 650 | `64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88` |
+| Validation | 924 | 277 | 13 | 81 | 178 | 232 | 420 | `ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d` |
+
+Class 160 represents 420/924 = 45.45% of validation, so the new Oracle is
+strongly imbalanced. Qwen still receives only the unchanged fixed routing
+instruction and original question text. It receives no evidence, evidence
+length, answer, paper text, embedding, retrieved chunk, retrieval score,
+metadata, or handcrafted feature. Logistic Regression and MLP instead consume
+the 1,536-dimensional question embedding; this input distinction must remain
+explicit. No QASPER test example was loaded or evaluated; the 924-example
+validation split was used for epoch-wise checkpoint selection and final
+validation reporting.
+
+### 3. Model, environment, and training configuration
+
+| Item | Recorded value |
+|---|---|
+| Run ID | `qwen-phase2-full-parameter-20260802-seed42-v2` |
+| Model | `Qwen/Qwen3.5-0.8B` |
+| Model revision | `2fc06364715b967f1860aea9cf38778875588b17` |
+| Environment | `.venv-qwen` |
+| Python | 3.10.7 |
+| Python executable | `/workspace/thesis-granularity-router/.venv-qwen/bin/python` |
+| Transformers | `5.15.0.dev0` |
+| Transformers commit | `2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7` |
+| PyTorch | `2.8.0+cu128` |
+| CUDA | 12.8 |
+| GPU/device | one `NVIDIA A100-SXM4-40GB` / `cuda` |
+| Dtype | `torch.bfloat16` |
+| Quantization | none |
+| Epochs | 3 |
+| Per-device batch size | 4 |
+| Gradient accumulation | 8 |
+| Effective batch size | 32 |
+| Maximum sequence length | 128 |
+| Learning rate | 2e-5 |
+| Weight decay | 0.01 |
+| Scheduler/warmup | cosine / 5% |
+| Gradient clipping | 1.0 |
+| Seed | 42 |
+| Decoding | greedy deterministic generation, `do_sample=false`, `max_new_tokens=8` |
+| CUDA determinism | `CUBLAS_WORKSPACE_CONFIG=:4096:8`; strict deterministic algorithms |
+| Evaluation/checkpointing | end of every epoch |
+| Selection metric | validation macro-F1 |
+| Fixed-prompt SHA-256 | `656a0b01d61532176e75334e48aca3250cba4a46b4f845bf39383bd27b98550c` |
+| Training-script SHA-256 | `bb1a1a591ef60b933cd394d12b7087da1345dc03ded48d8c7739348b35392fd3` |
+| Training-configuration SHA-256 | `1503c73e89c6f49c8fa10784993314bb77951fff00fea186312985bd50c51dc4` |
+| Repository commit recorded at launch | `55af1bcbc4d7a089adaafd4da539581b2dbbed67` |
+
+The run was deterministic and unquantized. The original protected Python
+3.9.12 `.venv` remained unchanged and continues to preserve the previous
+Logistic Regression, MLP, old-Oracle, and retrieval experiments. The local
+Phase 1 CPU environment is also distinct from the remote Phase 2 CUDA build.
+
+### 4. Epoch validation and checkpoint selection
+
+| Epoch/checkpoint | Validation loss | Accuracy | Macro-F1 | Weighted F1 | Balanced accuracy | Predicted 10/20/40/80/160 |
+|---|---:|---:|---:|---:|---:|---|
+| 1 / `step-000071` | 0.304930741717289 | 0.45454545454545453 | 0.125 | 0.2840909090909091 | 0.2 | 0/0/0/0/924 |
+| 2 / `step-000142` | 0.30652774386591725 | 0.4556277056277056 | 0.12698176971774003 | 0.28686332944508014 | 0.20086206896551725 | 0/0/0/3/921 |
+| 3 / `step-000213` | 0.3081164950932259 | 0.4318181818181818 | 0.16502267760462996 | 0.32805741427623947 | 0.20697865353037764 | 0/0/0/149/775 |
+
+`step-000213` was selected because it has the highest validation macro-F1,
+following the predeclared rule. The recorded tie-break order was accuracy,
+weighted F1, balanced accuracy, lower validation loss, and then earlier step;
+no tie-break was required. The selected checkpoint is archived locally with 11
+files totaling 4,735,895,186 bytes (4.411 GiB), and every archived SHA-256
+matches `selected_checkpoint_sha256.txt`. The model tensor SHA-256 is
+`7d23db1fde0c621623a7d4030073e8858854eba9a4b2d3d7bccda8ca730e2c45`.
+
+### 5. Final classification result
+
+| Metric | Phase 2 value |
+|---|---:|
+| Accuracy | 0.4318181818181818 |
+| Macro-F1 | 0.16502267760462996 |
+| Weighted F1 | 0.32805741427623947 |
+| Balanced accuracy | 0.20697865353037764 |
+| Valid outputs | 924/924 |
+| Invalid outputs | 0 |
+| Invalid-output percentage | 0.0% |
+| Majority class | 160 |
+| Majority-class baseline accuracy | 0.45454545454545453 |
+| Majority-class baseline macro-F1 | 0.125 |
+
+Top-2 accuracy is unavailable because deterministic generated text does not
+provide valid comparable scores for all five classes.
+
+Per-class metrics are:
+
+| Class | Precision | Recall | F1 | Support |
+|---:|---:|---:|---:|---:|
+| 10 | 0.0 | 0.0 | 0.0 | 13 |
+| 20 | 0.0 | 0.0 | 0.0 | 81 |
+| 40 | 0.0 | 0.0 | 0.0 | 178 |
+| 80 | 0.2953020134228188 | 0.1896551724137931 | 0.23097112860892388 | 232 |
+| 160 | 0.45806451612903226 | 0.8452380952380952 | 0.5941422594142259 | 420 |
+
+The final confusion matrix is ordered by true rows and predicted columns
+`10, 20, 40, 80, 160`:
+
+| True \\ predicted | 10 | 20 | 40 | 80 | 160 |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 0 | 0 | 0 | 1 | 12 |
+| 20 | 0 | 0 | 0 | 16 | 65 |
+| 40 | 0 | 0 | 0 | 23 | 155 |
+| 80 | 0 | 0 | 0 | 44 | 188 |
+| 160 | 0 | 0 | 0 | 65 | 355 |
+
+The Oracle distribution is 10: 13, 20: 81, 40: 178, 80: 232, and 160: 420.
+The Phase 2 prediction distribution is 10: 0, 20: 0, 40: 0, 80: 149, and
+160: 775. Fine-tuning moved the Phase 1 collapse away from class 10, but the
+selected model still collapsed to the two largest classes, selecting 160 for
+83.87% of questions and never selecting 10, 20, or 40. It is below the
+majority baseline on accuracy but above it on macro-F1. This result does not
+show balanced five-class learning.
+
+### 6. End-to-end retrieval result
+
+| Retrieval metric | Value |
+|---|---:|
+| Retrieval coverage | 924/924 = 100% |
+| Valid-only mean joined retrieval F1 | 0.22658488852813854 |
+| Valid-only median joined retrieval F1 | 0.19615549999999998 |
+| Coverage-adjusted full-set mean joined retrieval F1 | 0.22658488852813866 |
+| Top-k | 5 |
+| Paper-restricted retrieval | true |
+| Embedding model | `text-embedding-3-small` |
+| Retrieval wall time | 178.12831589998677 seconds |
+
+The evaluation used the unchanged local Qdrant collections, same source-paper
+filter, same predicted granularity, same `top_k=5`, same embeddings and cosine
+ranking, same chunk order and concatenation, and same GPT-2 joined token-level
+F1. Because every prediction is valid, valid-only coverage is 100% and the
+coverage-adjusted full-set mean differs only by floating-point accumulation.
+No invalid prediction was mapped to a default class.
+
+Classification accuracy, macro-F1, weighted F1, and balanced accuracy measure
+prediction of the evidence-length-Oracle label. Joined retrieval F1 measures
+token overlap after downstream retrieval. It is a different metric and does
+not follow monotonically from classification accuracy.
+
+### 7. Same-Oracle Phase 1 comparison and legacy warning
+
+Phase 1 and Phase 2 use the same preserved splits, fixed prompt,
+evidence-length Oracle, model identity, parser, and retrieval setup, so their
+results may be compared with those conditions stated:
+
+| Metric | Phase 1 pretrained | Phase 2 fine-tuned |
+|---|---:|---:|
+| Accuracy | 0.04004329004329004 | 0.4318181818181818 |
+| Macro-F1 | 0.049045932422555796 | 0.16502267760462996 |
+| Weighted F1 | 0.032612933907418644 | 0.32805741427623947 |
+| Balanced accuracy | 0.23369399361908724 | 0.20697865353037764 |
+| Mean joined retrieval F1 | 0.23910868506493507 | 0.22658488852813854 |
+
+Fine-tuning substantially increases accuracy, macro-F1, and weighted F1 over
+the zero-shot baseline, but balanced accuracy decreases and mean joined
+retrieval F1 also decreases. Phase 2 remains below the new-Oracle
+majority-class accuracy baseline. The earlier Logistic Regression and MLP
+classification results used the old retrieval-F1 Oracle and are not directly
+comparable to either Qwen classification result. A fair cross-model comparison
+requires retraining and evaluating all routers on these same evidence-length
+labels and preserved splits.
+
+### 8. Runtime and resource use
+
+| Measurement | Recorded value |
+|---|---:|
+| Training wall time, including epoch validation and checkpointing | 2,107.3131887838244 seconds |
+| Initial/final recorded training loss | 0.4739701375365257 / 0.4026994347572327 |
+| Selected epoch validation wall time | 321.21750357560813 seconds |
+| Selected-checkpoint model load | 2.2354275435209274 seconds |
+| Reloaded isolated generation wall time | 296.8330853600055 seconds |
+| Final validation load plus inference | 299.0685129035264 seconds |
+| Mean inference time | 0.32010594106710705 seconds/question |
+| Median inference time | 0.3152373321354389 seconds/question |
+| Retrieval wall time | 178.12831589998677 seconds |
+| Known training + final validation + retrieval wall time | 2,584.5100175873376 seconds |
+| Peak allocated training GPU memory | 10.660949230194092 GiB |
+| Peak reserved training GPU memory | 11.943359375 GiB |
+| Maximum recorded process RSS during training | 1.9669723510742188 GiB (sampled maximum, not an unobserved true peak) |
+
+### 9. Verification and artifacts
+
+The TensorBoard inventory contains all required training/resource scalars at
+213 optimizer steps and all validation/per-class/distribution scalars at three
+epoch boundaries. It reports zero structured-loss mismatches, zero required
+scalar-value mismatches, zero scalar-count mismatches, and agreement on
+`step-000213` selection. Checkpoint verification confirms optimizer,
+scheduler, and random-state presence and exact repeat generation for five
+probes. The final integrity audit status is `passed`; it independently verifies
+frozen prediction order, metric recomputation, invalid-output handling,
+retrieval coverage and summary, complete steps/events, checkpoint selection,
+TensorBoard agreement, deterministic generation, and unchanged Phase 1 source
+hashes, as well as exact SHA-256 verification of the locally archived selected
+checkpoint.
+
+The focused test suites also passed: 19 Phase 2 tests, and 54 tests in the
+combined Phase 1 plus Phase 2 focused run.
+
+Authoritative artifacts are:
+
+- Phase 2 concise results: `docs/QWEN_PHASE2_RESULTS.md`.
+- Standalone report:
+  `reports/qwen_finetuned_router_evidence_length_oracle/experiment_report.md`.
+- Final summary and integrity audit:
+  `outputs/qwen_finetuned_router_evidence_length_oracle/final_summary.json` and
+  `outputs/qwen_finetuned_router_evidence_length_oracle/integrity_audit.json`.
+- Frozen dataset manifest: `dataset_manifest.json` under the Phase 2 output
+  root, plus the Phase 1 Oracle records under
+  `outputs/qwen_pretrained_zero_shot_router_evidence_length_oracle/oracle/`.
+- Canonical predictions, raw outputs, parsed outputs, invalid-output records,
+  and validation runtime: `validation/predictions.jsonl`,
+  `validation/raw_outputs.jsonl`, `validation/parsed_predictions.jsonl`,
+  `validation/invalid_outputs.jsonl`, and `validation/runtime_summary.json`.
+- Classification metrics, confusion matrix, and histogram:
+  `classification/metrics.json`, `classification/confusion_matrix.csv`, and
+  `classification/predicted_vs_oracle.svg`.
+- Retrieval records, runtime segments, and summary: `retrieval/results.jsonl`,
+  `retrieval/runtime_segments.jsonl`, and `retrieval/summary.json`.
+- Run configuration, training/validation histories, checkpoint manifest,
+  selected-checkpoint metadata, TensorBoard scalar audit, checkpoint
+  verification, and checkpoint hashes under
+  `runs/qwen-phase2-full-parameter-20260802-seed42-v2/`.
+- Environment locks, hardware snapshots, exact training/postprocessing script
+  snapshots, and hashes under `environment/`.
+- TensorBoard events under
+  `tensorboard/qwen-phase2-full-parameter-20260802-seed42-v2/`.
+
+Unless stated otherwise, Phase 2 artifact paths above are relative to
+`outputs/qwen_finetuned_router_evidence_length_oracle/`. Large checkpoint and
+TensorBoard files are preserved locally but intentionally Git-ignored.
+
+### 10. Exact reproduction commands
+
+On a compatible CUDA host, from the project root:
+
+```bash
+.venv-qwen/bin/python qwen_phase2.py inspect-data
+.venv-qwen/bin/python qwen_phase2.py train --run-id qwen-phase2-full-parameter-20260802-seed42-v2
+.venv-qwen/bin/python qwen_phase2.py audit-tensorboard --run-id qwen-phase2-full-parameter-20260802-seed42-v2
+.venv-qwen/bin/python qwen_phase2.py verify-checkpoint --run-id qwen-phase2-full-parameter-20260802-seed42-v2 --checkpoint outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/checkpoints/step-000213
+.venv-qwen/bin/python qwen_phase2.py final-validation --run-id qwen-phase2-full-parameter-20260802-seed42-v2
+```
+
+Against the unchanged local Qdrant service:
+
+```powershell
+.\.venv-qwen\Scripts\python.exe qwen_phase2.py evaluate-retrieval --run-id qwen-phase2-full-parameter-20260802-seed42-v2
+.\.venv-qwen\Scripts\python.exe qwen_phase2.py audit-final --run-id qwen-phase2-full-parameter-20260802-seed42-v2
+```
+
+Phase 2 is now a frozen supervised baseline. It should not be overwritten by
+future runs. The next scientifically fair comparison is to train other router
+families on the same new Oracle labels and preserved splits, or to run a
+separately named Qwen experiment addressing the observed class collapse while
+retaining Phase 1 and Phase 2 unchanged.
+
+## Qwen3.5-0.8B Phase 2B — Restricted-Alias Full-Parameter Experiments
+
+### 1. Objective and experimental boundary
+
+Phase 2B evaluates whether a restricted five-alias formulation improves the
+Qwen router and whether one predeclared class-balanced loss improves upon its
+unweighted counterpart. Both variants fine-tune the same
+`Qwen/Qwen3.5-0.8B` revision
+`2fc06364715b967f1860aea9cf38778875588b17`. All 852,985,920 model parameters
+were trainable; each run used gradients, backward passes, AdamW, and 213
+optimizer/parameter updates. Neither run used LoRA, QLoRA, adapters, prompt
+tuning, a separate classification head, quantization, resampling, or added
+input features. Phase 1 and Phase 2 remain frozen and were not overwritten.
+
+The aliases are `1→10`, `2→20`, `3→40`, `4→80`, and `5→160`, with verified
+token IDs 16 through 20. Training minimizes restricted five-logit
+cross-entropy at the first assistant answer position. Final classification is
+deterministic argmax over those same five directly comparable logits. It is
+not unrestricted generation and does not use the Phase 1/2 free-text parser;
+top-2 accuracy is consequently available from the same restricted scores.
+
+The exact instruction is:
+
+> You are a router for a retrieval-augmented generation system. Based only on the question, select the chunk size most suitable for retrieving the evidence required to answer it. Return only its alias: 1=10, 2=20, 3=40, 4=80, 5=160.
+
+Its SHA-256 is
+`d4a59dcd26b01c5bd81981e43c5d69fc1c8db14e9160e0791412dbe6af7067ac`.
+Because this output-schema prompt and the decision rule differ from Phase 2,
+Phase 2B is a controlled same-data/same-Oracle method comparison rather than
+an identical-prompt replication.
+
+### 2. Frozen Oracle, data, and leakage boundary
+
+The evidence-length Oracle is unchanged. It counts GPT-2 tokens in complete
+stripped, exact-deduplicated, deterministically ordered ground-truth evidence;
+selects the closest candidate from 10, 20, 40, 80, and 160; resolves exact
+midpoint ties toward the smaller class; and clips values below 10 or above 160
+to the corresponding endpoint. It is independent of retrieval F1, embedding
+quality, cosine similarity, retrieved chunks, and router performance.
+
+| Split | Questions | Papers | 10 | 20 | 40 | 80 | 160 | Oracle SHA-256 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| Train | 2,245 | 845 | 55 | 267 | 586 | 687 | 650 | `64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88` |
+| Validation | 924 | 277 | 13 | 81 | 178 | 232 | 420 | `ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d` |
+
+Class 160 is 420/924 = 45.45% of validation, while class 10 has only 13
+examples. Both Phase 2B variants receive only their fixed instruction and the
+original question text. They receive no evidence, evidence length, answer,
+paper text, embeddings, retrieved chunks, retrieval scores, metadata, or
+handcrafted features. Formatted prompt lengths are 89--115 tokens, mean
+95.12026726057907, under the maximum sequence length of 128. No QASPER test
+example was loaded or evaluated.
+
+### 3. Shared model, environment, and training configuration
+
+| Item | Recorded value |
+|---|---|
+| Model | `Qwen/Qwen3.5-0.8B` |
+| Model revision | `2fc06364715b967f1860aea9cf38778875588b17` |
+| Formulation | `qwen-phase2b-restricted-five-alias-next-token-v1` |
+| Parameters trainable/total | 852,985,920 / 852,985,920 |
+| Environment | `.venv-qwen` |
+| Python | 3.10.7 |
+| Python executable | `/workspace/thesis-granularity-router/.venv-qwen/bin/python` |
+| Transformers | `5.15.0.dev0` |
+| Transformers commit | `2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7` |
+| PyTorch/CUDA | `2.8.0+cu128` / 12.8 |
+| GPU/device | one `NVIDIA A100-SXM4-40GB` / `cuda` |
+| Dtype/quantization | `torch.bfloat16` / none |
+| Epochs/optimizer steps | 3 / 213, with 71 steps per epoch |
+| Per-device/accumulation/effective batch | 4 / 8 / 32 |
+| Optimizer | AdamW |
+| Learning rate/weight decay | 2e-5 / 0.01 |
+| Scheduler/warmup | cosine / 5% |
+| Gradient clipping | 1.0 |
+| Seed | 42 |
+| Evaluation/checkpointing | full validation at each epoch boundary |
+| Checkpoint selection | macro-F1, then accuracy, weighted F1, balanced accuracy, lower unweighted CE, earlier step |
+| Repository commit at launch | `55af1bcbc4d7a089adaafd4da539581b2dbbed67` |
+| Training-script SHA-256 | `60572d8c3054e7ef76055b2c40cf65c2999ef18000930f5a6967fd2ae673041c` |
+
+The protected Python 3.9.12 `.venv` remained unchanged and continues to
+preserve the prior Logistic Regression, MLP, old-Oracle, and retrieval
+experiments. Phase 2B reused the isolated remote CUDA `.venv-qwen`; it did not
+modify system Python or require a different dependency inventory from Phase 2.
+
+### 4. Variant definitions and weights
+
+Phase 2B-A, run
+`qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1`, assigns
+weight 1.0 to every class. Phase 2B-B, run
+`qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1`, uses
+effective-number weights with `beta=0.999`, computed only from the preserved
+training split and normalized to arithmetic class mean one:
+
+| Class | 10 | 20 | 40 | 80 | 160 |
+|---:|---:|---:|---:|---:|---:|
+| Phase 2B-A weight | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
+| Phase 2B-B weight | 3.1872088653568436 | 0.7279213406697836 | 0.38467220811977887 | 0.34329010532422555 | 0.3569074805293684 |
+
+Both use the gradient-window reduction
+`sum(weight[target] * per_example_ce) / sum(weight[target])`. The B run does
+not resample, relabel, or otherwise alter the examples.
+
+### 5. Epoch validation and selected checkpoints
+
+Phase 2B-A validation history:
+
+| Epoch/checkpoint | Unweighted CE | Accuracy | Macro-F1 | Weighted F1 | Balanced accuracy | Top-2 | Predicted 10/20/40/80/160 |
+|---|---:|---:|---:|---:|---:|---:|---|
+| 1 / `step-000071` | 1.3775848428924362 | 0.2510822510822511 | 0.08027681660899653 | 0.10078041911951946 | 0.2 | 0.44372294372294374 | 0/0/0/924/0 |
+| 2 / `step-000142` | 1.3699120345053735 | 0.3008658008658009 | 0.19043978783245397 | 0.2890888439338361 | 0.2243431855500821 | 0.5584415584415584 | 0/0/374/379/171 |
+| 3 / `step-000213` | 1.3402932242397623 | 0.35064935064935066 | **0.20922603632601472** | 0.3406050804511769 | 0.2383201416948027 | 0.6071428571428571 | 0/0/427/189/308 |
+
+`step-000213` was selected without a tie because macro-F1 increased at each
+epoch.
+
+Phase 2B-B validation history:
+
+| Epoch/checkpoint | Unweighted CE | Weighted CE | Accuracy | Macro-F1 | Weighted F1 | Balanced accuracy | Top-2 | Predicted 10/20/40/80/160 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| 1 / `step-000071` | 1.5536545303476836 | 1.5932705140456938 | 0.19264069264069264 | 0.0646098003629764 | 0.06223238346650324 | 0.2 | 0.4945887445887446 | 0/0/924/0/0 |
+| 2 / `step-000142` | 1.4620294988929452 | 1.550350315119168 | 0.37012987012987014 | **0.16836616836616836** | 0.3142183142183142 | 0.20607553366174058 | 0.7056277056277056 | 0/0/0/434/490 |
+| 3 / `step-000213` | 1.4841528165908087 | 1.5570664912477334 | 0.2683982683982684 | 0.11060887911611213 | 0.1660641330693655 | 0.20119628789136734 | 0.7088744588744589 | 0/0/7/851/66 |
+
+`step-000142` was selected by the highest macro-F1. Epoch 3 has a slightly
+higher top-2 score, but top-2 was not the checkpoint-selection metric.
+
+### 6. Final classification results
+
+| Metric | Phase 2B-A alias-unweighted | Phase 2B-B alias-classbalanced |
+|---|---:|---:|
+| Accuracy | 0.35064935064935066 | 0.37012987012987014 |
+| Macro-F1 | 0.20922603632601472 | 0.16836616836616836 |
+| Weighted F1 | 0.3406050804511769 | 0.3142183142183142 |
+| Balanced accuracy | 0.2383201416948027 | 0.20607553366174058 |
+| Top-2 accuracy | 0.6071428571428571 | 0.7056277056277056 |
+| Valid outputs | 924/924 | 924/924 |
+| Invalid outputs | 0 | 0 |
+| Oracle distribution, 10/20/40/80/160 | 13/81/178/232/420 | 13/81/178/232/420 |
+| Predicted distribution, 10/20/40/80/160 | 0/0/427/189/308 | 0/0/0/434/490 |
+
+The majority class is 160; its accuracy baseline is
+0.45454545454545453 and its macro-F1 baseline is 0.125. Neither Phase 2B
+variant exceeds majority accuracy, although both exceed majority macro-F1.
+
+Per-class metrics:
+
+| Class | Support | 2B-A precision | 2B-A recall | 2B-A F1 | 2B-B precision | 2B-B recall | 2B-B F1 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 10 | 13 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 20 | 81 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 40 | 178 | 0.234192037470726 | 0.5617977528089888 | 0.33057851239669417 | 0.0 | 0.0 | 0.0 |
+| 80 | 232 | 0.26455026455026454 | 0.21551724137931033 | 0.2375296912114014 | 0.25806451612903225 | 0.4827586206896552 | 0.3363363363363363 |
+| 160 | 420 | 0.564935064935065 | 0.4142857142857143 | 0.47802197802197804 | 0.46938775510204084 | 0.5476190476190477 | 0.5054945054945055 |
+
+Phase 2B-A confusion matrix, with Oracle rows and predicted columns ordered
+10, 20, 40, 80, 160:
+
+| Oracle \ predicted | 10 | 20 | 40 | 80 | 160 |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 0 | 0 | 10 | 2 | 1 |
+| 20 | 0 | 0 | 48 | 13 | 20 |
+| 40 | 0 | 0 | 100 | 35 | 43 |
+| 80 | 0 | 0 | 112 | 50 | 70 |
+| 160 | 0 | 0 | 157 | 89 | 174 |
+
+Phase 2B-B confusion matrix:
+
+| Oracle \ predicted | 10 | 20 | 40 | 80 | 160 |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 0 | 0 | 0 | 9 | 4 |
+| 20 | 0 | 0 | 0 | 39 | 42 |
+| 40 | 0 | 0 | 0 | 84 | 94 |
+| 80 | 0 | 0 | 0 | 112 | 120 |
+| 160 | 0 | 0 | 0 | 190 | 230 |
+
+Phase 2B-A recovers a three-class solution but still completely misses 10 and
+20. Phase 2B-B returns to a two-class 80/160 solution. The class-balanced run
+is worse than the unweighted run on the primary macro-F1, weighted F1,
+balanced accuracy, and mean joined retrieval F1. This is a negative result for
+the tested effective-number weighting configuration, not evidence that every
+class-balancing approach must fail.
+
+### 7. End-to-end retrieval results
+
+Aliases were mapped back to canonical chunk sizes before unchanged local
+Qdrant retrieval. Both variants use source-paper filtering, predicted
+granularity, `top_k=5`, existing `text-embedding-3-small` 1,536-dimensional
+vectors, cosine ranking, unchanged chunk order/concatenation, GPT-2 evidence
+tokenization, and `f1_joined_topk` version `qasper-token-prf-v2`.
+
+| Retrieval metric | Phase 2B-A | Phase 2B-B |
+|---|---:|---:|
+| Coverage | 924/924 = 100% | 924/924 = 100% |
+| Invalid predictions without retrieval | 0 | 0 |
+| Valid-only mean joined retrieval F1 | 0.28646775432900434 | 0.24962774025974027 |
+| Valid-only median joined retrieval F1 | 0.2748425 | 0.223194 |
+| Coverage-adjusted full-set mean | 0.2864677543290044 | 0.24962774025974016 |
+| Retrieval wall time | 178.27286399999866 seconds | 377.0999227000284 seconds |
+
+Classification accuracy, macro-F1, weighted F1, balanced accuracy, and top-2
+measure prediction of the Oracle class. Joined retrieval F1 measures evidence
+token overlap after downstream retrieval and is a different outcome. The
+Phase 2B-B retrieval ran while its selected-checkpoint archive was being
+transferred. The exact saved retrieval wall times are reported, but their
+difference must not be interpreted as a model- or method-speed effect.
+
+### 8. Runtime and resources
+
+| Measurement | Phase 2B-A | Phase 2B-B |
+|---|---:|---:|
+| Training wall time | 1308.664808139205 seconds | 1306.7509042322636 seconds |
+| Initial/final recorded training loss | 1.835081309080124 / 1.541044330596924 | 1.816834687228543 / 1.602007440099642 |
+| Selected-checkpoint model load | 2.6078288350254297 seconds | 3.260306715965271 seconds |
+| Isolated final inference | 35.81447528861463 seconds | 39.01004763878882 seconds |
+| Mean inference/question | 0.0385481188279371 seconds | 0.04196543970197697 seconds |
+| Median inference/question | 0.03886844031512737 seconds | 0.04170184303075075 seconds |
+| Peak allocated training GPU memory | 10.058899402618408 GiB | 10.053670883178711 GiB |
+| Peak reserved training GPU memory | 11.99609375 GiB | 11.99609375 GiB |
+| Training RSS | 1.9831161499023438 GiB | 1.9857444763183594 GiB |
+| Known training + selected-checkpoint final validation + retrieval | 1525.3599762628437 seconds | 1726.121181287046 seconds |
+
+Training and final-validation measurements were isolated as saved. The known
+combined Phase 2B-B duration includes the overlapping local retrieval/archive
+activity and is provenance, not a clean end-to-end method-speed benchmark.
+
+### 9. Four-way interpretation and comparability limits
+
+| Metric | Phase 1 zero-shot | Phase 2 numeric SFT | Phase 2B-A unweighted | Phase 2B-B balanced |
+|---|---:|---:|---:|---:|
+| Accuracy | 0.04004329004329004 | **0.4318181818181818** | 0.35064935064935066 | 0.37012987012987014 |
+| Macro-F1 | 0.049045932422555796 | 0.16502267760462996 | **0.20922603632601472** | 0.16836616836616836 |
+| Weighted F1 | 0.032612933907418644 | 0.32805741427623947 | **0.3406050804511769** | 0.3142183142183142 |
+| Balanced accuracy | 0.23369399361908724 | 0.20697865353037764 | **0.2383201416948027** | 0.20607553366174058 |
+| Top-2 accuracy | unavailable | unavailable | 0.6071428571428571 | 0.7056277056277056 |
+| Mean joined retrieval F1 | 0.23910868506493507 | 0.22658488852813854 | **0.28646775432900434** | 0.24962774025974027 |
+
+All four Qwen runs use the same 924 validation questions, evidence-length
+Oracle, chunk classes, and downstream retrieval protocol. Phase 2 has the
+highest accuracy; Phase 2B-A has the highest macro-F1, weighted F1, balanced
+accuracy, and mean joined retrieval F1. Phase 2B-B has the highest available
+top-2, but top-2 is unavailable for the generated-text Phase 1 and Phase 2
+runs and therefore is not a complete four-way comparison.
+
+Phase 2B changes the prompt output schema, target encoding, and inference
+decision rule, so Phase 2-to-2B differences cannot be attributed solely to
+alias symbols. Phase 2B-A/B are the closest controlled pair because model,
+data, seed, schedule, alias formulation, and evaluation are fixed while the
+loss weighting changes. Nevertheless, both are one-seed results. The same
+validation split was used for checkpoint selection and final reporting, and
+there is no held-out test result or run-to-run variance estimate.
+
+The previous Logistic Regression and MLP classification results used the old
+retrieval-F1 Oracle. They are not directly comparable with any Qwen result in
+this table. A fair cross-family comparison requires retraining and evaluating
+all routers on the same evidence-length labels and preserved splits.
+
+### 10. Artifacts and exact reproduction
+
+The concise joint report is `docs/QWEN_PHASE2B_RESULTS.md`. Standalone reports
+are:
+
+- `reports/qwen_phase2b_alias_unweighted_evidence_length_oracle/experiment_report.md`;
+- `reports/qwen_phase2b_alias_classbalanced_evidence_length_oracle/experiment_report.md`.
+
+Authoritative roots are
+`outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/` and
+`outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/`. Each
+contains `final_summary.json`; configuration and preflight manifests; run
+configuration, dataset manifest, formatted-example inspection, training and
+validation histories, selected-checkpoint metadata, and checkpoint manifest;
+canonical predictions, raw outputs, parsed predictions, invalid-output records,
+and runtime; classification metrics, confusion matrix, and histogram; and
+retrieval records, runtime segments, and summary. The selected checkpoint and
+TensorBoard event are preserved under their run-specific paths. The
+authoritative four-way comparison is
+`outputs/qwen_phase2b_comparison_evidence_length_oracle/four_way_comparison.json`.
+
+Remote CUDA commands, from the project root:
+
+```bash
+.venv-qwen/bin/python qwen_phase2b.py inspect --variant alias-unweighted
+.venv-qwen/bin/python qwen_phase2b.py inspect --variant alias-classbalanced
+.venv-qwen/bin/python qwen_phase2b.py train --variant alias-unweighted --mode full --run-id qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1
+.venv-qwen/bin/python qwen_phase2b.py train --variant alias-classbalanced --mode full --run-id qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1
+.venv-qwen/bin/python qwen_phase2b.py final-validation --variant alias-unweighted --run-id qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1
+.venv-qwen/bin/python qwen_phase2b.py final-validation --variant alias-classbalanced --run-id qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1
+```
+
+Against the unchanged local Qdrant service:
+
+```powershell
+.\.venv-qwen\Scripts\python.exe qwen_phase2b_posttraining.py evaluate-retrieval --variant alias-unweighted --run-id qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1
+.\.venv-qwen\Scripts\python.exe qwen_phase2b_posttraining.py evaluate-retrieval --variant alias-classbalanced --run-id qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1
+.\.venv-qwen\Scripts\python.exe qwen_phase2b_posttraining.py compare --output outputs\qwen_phase2b_comparison_evidence_length_oracle\four_way_comparison.json
+```
+
+### 11. Manual post-transfer integrity gates
+
+No standalone Phase 2B hash-inventory file was saved, and no nonexistent QA
+artifact is cited. A manual `rsync` checksum dry-run compared every remote
+training, classification, validation, TensorBoard, and checkpoint file while
+excluding `final_summary.json`, which was legitimately extended locally by
+retrieval evaluation. Phase 2B-A had no content differences. Phase 2B-B first
+showed only stale local copies of `configuration/experiment.json` and
+`configuration/preflight_manifest.json`; they differed only in generated
+timestamps, were replaced from the GPU source, and a targeted checksum rerun
+returned no differences.
+
+The selected Phase 2B-A checkpoint has 11 files totaling 4,735,895,574 bytes;
+the selected Phase 2B-B checkpoint has 11 files totaling 4,735,895,530 bytes.
+Completed-summary replay through the retrieval evaluator revalidated all 924
+records for each run and returned `complete`.
+
+Qdrant counts were identical before and after: `PaperChunk` 1,701,822;
+`PaperEvidence` 9,522; `PaperQuestion` 4,526; `RouterDataset` 3,170;
+`RetrievalEvaluation` 18,622; `Stage4VerifyRetrievalEval` 10;
+`Stage4VerifyRouterDataset` 2; and `Stage5MixedEvaluation` 2. The frozen
+Phase 1 final-summary, Phase 2 final-summary/integrity-audit, and Phase 2/2B
+script hashes also remained unchanged. Their checked SHA-256 values are:
+
+- Phase 1 `final_summary.json`:
+  `d421d57342331b2d6418d9fe3a10a0886a5fa4f24bbf146fadb7e41a050500c1`;
+- Phase 2 `final_summary.json`:
+  `73f9ffb773aedcc47ba7ebe3850d28e372038ae795e3f6cb69f888bfcfb87d04`;
+- Phase 2 `integrity_audit.json`:
+  `1acd3336161f1508a65b7118b138267b51489593ed3ac96064c4192db4c63ff8`;
+- `qwen_phase2.py`:
+  `c9a6f2a277bd841d6bf0ede9e948b18e91e1a8f5a298f7d704d0b4279c99ed39`;
+- `qwen_phase2b.py`:
+  `60572d8c3054e7ef76055b2c40cf65c2999ef18000930f5a6967fd2ae673041c`.
+
+### 12. Conclusion and next step
+
+Phase 2B-A is the strongest saved Qwen run on macro-F1, weighted F1, balanced
+accuracy, and downstream mean joined retrieval F1, but it remains below the
+majority baseline on accuracy and never predicts the two smallest classes.
+Phase 2B-B does not improve the primary metric and is retained as an important
+negative result. Neither outcome establishes test generalization.
+
+Phase 1, Phase 2, Phase 2B-A, and Phase 2B-B are now frozen baselines. The next
+scientifically stronger step is a predeclared multi-seed experiment with an
+untouched test split, or a same-new-Oracle comparison with Logistic Regression
+and MLP, while keeping every existing artifact tree unchanged.
+
+## Qwen3.5-0.8B-Base Phase 2C — Five-Logit Sequence Classification
+
+### 1. Supervisor motivation and objective
+
+Phase 2C evaluates the supervisor-motivated direct-classification alternative
+to the preceding generative and next-token router formulations. The intended
+change is to use a Base checkpoint, attach a conventional five-class sequence
+classification head, and express the choices as semantic context-length
+categories in a revised instruction. This avoids using generated text,
+assistant target tokens, or a parser as the classification interface.
+
+The exact model is `Qwen/Qwen3.5-0.8B-Base`, revision
+`dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68`. The exact instruction is:
+
+> You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = very short context, 2 = short context, 3 = medium context, 4 = long context, 5 = very long context. Return only the number
+
+The instruction SHA-256 is
+`9e879535647c2bfcd3627d0d65f84c36a1bf442ed95bb5b07029c878ca990de7`.
+The input template is `{instruction}\n\nQuestion: {original_question_text}`.
+
+### 2. Formulation and leakage boundary
+
+Phase 2C uses `AutoModelForSequenceClassification` with five output logits.
+Class IDs 0, 1, 2, 3, and 4 map to chunk sizes 10, 20, 40, 80, and 160. The
+bias-free classifier parameter is `score.weight` with shape 5×1024. Training
+uses uniform, unweighted, single-label five-class cross-entropy; inference is
+deterministic argmax over the five comparable head logits. Top-2 accuracy is
+therefore available from the same logits.
+
+There is no unrestricted generation, restricted next-token generation, chat
+template, assistant answer target, decoding procedure, output parser, parser
+fallback, or default chunk size. The only semantic inputs are the fixed prompt
+and original question text. The model receives no evidence, evidence length,
+answer, paper text, retrieved chunk, retrieval score, metadata, question
+embedding, or handcrafted feature.
+
+The train sequence-length range is 86--112 tokens, mean
+92.13363028953229. Validation is 87--115, mean 91.59740259740259. No example
+exceeds the maximum sequence length of 128, and no input is silently truncated.
+
+### 3. Frozen dataset and evidence-length Oracle
+
+Phase 2C preserves the same Phase 1/2/2B evidence-length Oracle and official
+questions:
+
+| Split | Questions | Papers | 10 | 20 | 40 | 80 | 160 | Oracle SHA-256 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| Train | 2,245 | 845 | 55 | 267 | 586 | 687 | 650 | `64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88` |
+| Validation | 924 | 277 | 13 | 81 | 178 | 232 | 420 | `ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d` |
+
+The Oracle counts GPT-2 tokens in complete stripped, exact-deduplicated,
+deterministically ordered ground-truth evidence; chooses the closest class;
+uses the smaller class for midpoint ties; and clips below 10 and above 160.
+It is independent of retrieval F1, embeddings, cosine similarity, retrieved
+chunks, and router performance. Class 160 remains 420/924 = 45.45% of
+validation. No QASPER test example was loaded or evaluated.
+
+### 4. Model, environment, and optimization
+
+| Item | Recorded value |
+|---|---|
+| Run ID | `qwen-phase2c-base-sequence-classifier-full-parameter-20260804-seed42-v1` |
+| Formulation | `qwen-phase2c-base-sequence-classifier-v1` |
+| Model/revision | `Qwen/Qwen3.5-0.8B-Base` / `dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68` |
+| Architecture | `AutoModelForSequenceClassification`, five logits |
+| Parameters marked trainable/total | 852,991,040 / 852,991,040 |
+| Python executable | `/workspace/thesis-granularity-router/.venv-qwen/bin/python` |
+| Python | 3.10.7 |
+| Transformers | `5.15.0.dev0` |
+| Transformers commit | `2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7` |
+| PyTorch/CUDA | `2.8.0+cu128` / 12.8 |
+| GPU/device | one `NVIDIA A100-SXM4-40GB` / `cuda` |
+| Dtype/quantization | `torch.bfloat16` / none |
+| Objective | uniform unweighted five-class cross-entropy |
+| Epochs/updates | 3 / 213 |
+| Per-device/accumulation/effective batch | 4 / 8 / 32 |
+| Optimizer | AdamW |
+| Learning rate/weight decay | 2e-5 / 0.01 |
+| Scheduler/warmup | cosine / 5% = 11 steps |
+| Gradient clipping | 1.0 |
+| Seed | 42 |
+| Evaluation/checkpointing | full validation at every epoch boundary |
+| Selection rule | highest macro-F1, then accuracy, weighted F1, balanced accuracy, lower validation loss, earlier step |
+| Experiment fingerprint | `6508ded1f9c25b451207f891f90fa5c9a7a4c09da7ea7125555bfa0ec7faca90` |
+| Training-script SHA-256 | `6eeb155296b239463d5ba7c8c75dfed8dd59f8c5285cab1edf7cb6a553f9aefb` |
+| Repository commit at launch | `55af1bcbc4d7a089adaafd4da539581b2dbbed67` |
+
+All parameters were placed in the optimizer and marked trainable, but the
+gradient audit distinguishes actual graph participation. The classifier head
+and language backbone received gradients. The text-only input path did not
+activate the composite model's vision tower: 752,398,144 parameters across
+321 tensors had gradients, while 100,592,896 parameters across 153 vision
+tensors did not. Therefore this run must not be described as updating the
+vision tower; it is full-parameter configuration with text-path gradients in
+the language backbone and head.
+
+The protected Python 3.9 `.venv`, system Python, and earlier Qwen artifact
+trees remained separate and unchanged.
+
+### 5. Epoch validation and checkpoint selection
+
+| Epoch/checkpoint | Validation CE | Accuracy | Macro-F1 | Weighted F1 | Balanced accuracy | Top-2 | Predicted 10/20/40/80/160 |
+|---|---:|---:|---:|---:|---:|---:|---|
+| 1 / `step-000071` | 1.3593969378636512 | 0.43614718614718617 | 0.18808510033373074 | 0.3464346842238434 | 0.22002135398622552 | 0.6753246753246753 | 0/72/18/100/734 |
+| 2 / `step-000142` | 1.4560290551804878 | 0.2727272727272727 | 0.17146113530710744 | 0.22858705955012748 | 0.2204381769640713 | 0.551948051948052 | 0/4/264/578/78 |
+| 3 / `step-000213` | 1.367579244690024 | 0.34523809523809523 | **0.21763191244497584** | 0.3435657773957275 | 0.22993634120458348 | 0.6428571428571429 | 0/20/224/374/306 |
+
+Epoch 3 `step-000213` is selected because it has the highest validation
+macro-F1. Epoch 1 has higher accuracy and top-2 accuracy, but neither is the
+primary checkpoint-selection metric. Reloaded checkpoint logits exactly match
+all 924 selected-epoch outputs.
+
+### 6. Final classification result
+
+| Metric | Phase 2C value |
+|---|---:|
+| Accuracy | 0.34523809523809523 |
+| Macro-F1 | 0.21763191244497584 |
+| Weighted F1 | 0.3435657773957275 |
+| Balanced accuracy | 0.22993634120458348 |
+| Top-2 accuracy | 0.6428571428571429 |
+| Valid outputs | 924/924 = 100% |
+| Invalid outputs | 0 |
+| Majority class | 160 |
+| Majority accuracy baseline | 0.45454545454545453 |
+| Majority macro-F1 baseline | 0.125 |
+
+Phase 2C is below the majority baseline on accuracy but above it on macro-F1.
+Its prediction distribution is 10: 0, 20: 20, 40: 224, 80: 374, and 160:
+306, compared with Oracle support 13/81/178/232/420.
+
+Per-class metrics are:
+
+| Class | Precision | Recall | F1 | Support |
+|---:|---:|---:|---:|---:|
+| 10 | 0.0 | 0.0 | 0.0 | 13 |
+| 20 | 0.05 | 0.012345679012345678 | 0.019801980198019802 | 81 |
+| 40 | 0.29017857142857145 | 0.3651685393258427 | 0.3233830845771144 | 178 |
+| 80 | 0.23529411764705882 | 0.3793103448275862 | 0.29042904290429045 | 232 |
+| 160 | 0.5392156862745098 | 0.39285714285714285 | 0.45454545454545453 | 420 |
+
+Class 10 has zero recall and is never predicted. Class 20 remains very weak:
+recall is 1/81, precision is 1/20, and F1 is 0.019801980198019802. The model
+therefore does not solve the minority-class problem despite distributing its
+remaining predictions across 20, 40, 80, and 160.
+
+The confusion matrix uses Oracle rows and predicted columns ordered 10, 20,
+40, 80, 160:
+
+| Oracle \ predicted | 10 | 20 | 40 | 80 | 160 |
+|---:|---:|---:|---:|---:|---:|
+| 10 | 0 | 0 | 5 | 7 | 1 |
+| 20 | 0 | 1 | 19 | 39 | 22 |
+| 40 | 0 | 4 | 65 | 66 | 43 |
+| 80 | 0 | 5 | 64 | 88 | 75 |
+| 160 | 0 | 10 | 71 | 174 | 165 |
+
+### 7. Unchanged downstream retrieval
+
+| Retrieval metric | Value |
+|---|---:|
+| Coverage | 924/924 = 100% |
+| Invalid predictions without retrieval | 0 |
+| Valid-only mean joined retrieval F1 | 0.27914719588744585 |
+| Valid-only median joined retrieval F1 | 0.2607245 |
+| Coverage-adjusted full-set mean | 0.2791471958874462 |
+| Top-k | 5 |
+| Paper restricted | true |
+| Embedding model/dimension | `text-embedding-3-small` / 1,536 |
+| Retrieval wall time | 134.9306207000045 seconds |
+
+The classifier's class ID is mapped to the canonical chunk size before
+unchanged local Qdrant retrieval. The evaluation retains source-paper
+filtering, cosine ranking, existing collections and embeddings, chunk ordering
+and concatenation, GPT-2 evidence tokenization, and joined token-level F1
+version `qasper-token-prf-v2`. Classification metrics measure Oracle-label
+prediction; joined retrieval F1 measures downstream evidence-token overlap.
+
+### 8. Runtime and memory
+
+| Measurement | Recorded value |
+|---|---:|
+| Training wall time | 1276.56244828552 seconds |
+| Initial/final recorded step loss | 1.6514464020729065 / 1.5576722860336303 |
+| Training peak allocated/reserved GPU memory | 8.96875286102295 / 9.517578125 GiB |
+| Training RSS | 1.96734619140625 GiB |
+| Selected-checkpoint load | 2.5492455568164587 seconds |
+| Isolated final inference | 33.99719780869782 seconds |
+| Mean inference/question | 0.036642024783393394 seconds |
+| Median inference/question | 0.03524067858234048 seconds |
+| Final-validation peak allocated/reserved GPU memory | 1.715855598449707 / 1.77734375 GiB |
+| Final-validation RSS | 1.6998367309570312 GiB |
+| Training + selected-checkpoint load/inference | 1313.1088916510344 seconds |
+| Training + final validation + retrieval | 1448.0395123510389 seconds |
+
+The initial and final losses are individual optimizer-window measurements,
+not epoch-average losses. The final window contains five examples, so their
+difference alone should not be interpreted as the overall loss trend.
+
+### 9. Five-way comparison and interpretation
+
+| Metric | Phase 1 zero-shot | Phase 2 numeric | Phase 2B-A | Phase 2B-B | Phase 2C classifier |
+|---|---:|---:|---:|---:|---:|
+| Accuracy | 0.04004329004329004 | **0.4318181818181818** | 0.35064935064935066 | 0.37012987012987014 | 0.34523809523809523 |
+| Macro-F1 | 0.049045932422555796 | 0.16502267760462996 | 0.20922603632601472 | 0.16836616836616836 | **0.21763191244497584** |
+| Weighted F1 | 0.032612933907418644 | 0.32805741427623947 | 0.3406050804511769 | 0.3142183142183142 | **0.3435657773957275** |
+| Balanced accuracy | 0.23369399361908724 | 0.20697865353037764 | **0.2383201416948027** | 0.20607553366174058 | 0.22993634120458348 |
+| Top-2 | unavailable | unavailable | 0.6071428571428571 | **0.7056277056277056** | 0.6428571428571429 |
+| Mean joined retrieval F1 | 0.23910868506493507 | 0.22658488852813854 | **0.28646775432900434** | 0.24962774025974027 | 0.27914719588744585 |
+
+Phase 2C has the best saved Qwen validation macro-F1 so far,
+0.21763191244497584, and the highest weighted F1. Numeric-target Phase 2
+retains the best accuracy at 0.4318181818181818. Phase 2B-A retains the best
+balanced accuracy and downstream mean joined retrieval F1,
+0.28646775432900434, while Phase 2C retrieval is 0.27914719588744585.
+
+All five Qwen rows use the same validation questions, evidence-length Oracle,
+five canonical classes, and downstream retrieval setup, so they are
+benchmark-comparable with these conditions stated. Phase 2C nevertheless
+changes three major factors simultaneously: checkpoint family (Base instead
+of the chat/instruct checkpoint), classifier formulation (a sequence head
+instead of generated or next-token targets), and prompt. It is therefore not
+a clean causal architecture ablation, and its gains cannot be assigned to any
+one change.
+
+This is one seed, and the validation split is used both for checkpoint
+selection and reported comparison. No test result or run-to-run variance is
+available. The earlier Logistic Regression and MLP classification results use
+the old retrieval-F1 Oracle and are not directly comparable. A stronger next
+step is a controlled one-factor comparison and multiple seeds, followed by a
+held-out test evaluation under a predeclared selection protocol.
+
+### 10. Artifacts and reproduction
+
+Authoritative files are:
+
+- `docs/QWEN_PHASE2C_RESULTS.md`;
+- `reports/qwen_phase2c_sequence_classifier_evidence_length_oracle/experiment_report.md`;
+- `outputs/qwen_phase2c_sequence_classifier_evidence_length_oracle/final_summary.json`;
+- `outputs/qwen_phase2c_sequence_classifier_evidence_length_oracle/integrity/selected_checkpoint_transfer_verification.json`;
+- `outputs/qwen_phase2c_comparison_evidence_length_oracle/five_way_comparison.json`.
+
+The saved run metadata retains its original `/dev/shm/...` CUDA-host paths for
+provenance. The selected checkpoint is also retained locally under the
+corresponding repository-relative output tree, and the integrity record
+confirms matching remote/local archive and extracted-file SHA-256 values.
+
+The Phase 2C output root also contains the experiment/preflight configuration;
+run configuration, dataset manifest, formatted-example inspection,
+gradient-coverage audit, histories, checkpoint manifest, and selected
+checkpoint metadata; canonical predictions, raw/parsed/invalid records and
+runtime; classification metrics, matrix, and histogram; and retrieval records,
+runtime segments, and summary.
+
+Remote CUDA commands:
+
+```bash
+.venv-qwen/bin/python qwen_phase2c_sequence_classifier.py --output-root /dev/shm/qwen_phase2c_sequence_classifier_evidence_length_oracle inspect
+.venv-qwen/bin/python qwen_phase2c_sequence_classifier.py --output-root /dev/shm/qwen_phase2c_sequence_classifier_evidence_length_oracle train --mode full --run-id qwen-phase2c-base-sequence-classifier-full-parameter-20260804-seed42-v1
+.venv-qwen/bin/python qwen_phase2c_sequence_classifier.py --output-root /dev/shm/qwen_phase2c_sequence_classifier_evidence_length_oracle final-validation --run-id qwen-phase2c-base-sequence-classifier-full-parameter-20260804-seed42-v1
+```
+
+Local unchanged-Qdrant commands:
+
+```powershell
+.\.venv-qwen\Scripts\python.exe qwen_phase2c_posttraining.py evaluate-retrieval --run-id qwen-phase2c-base-sequence-classifier-full-parameter-20260804-seed42-v1
+.\.venv-qwen\Scripts\python.exe qwen_phase2c_posttraining.py compare --output outputs\qwen_phase2c_comparison_evidence_length_oracle\five_way_comparison.json
+```
+
+### 11. Conclusion and next step
+
+Phase 2C establishes a new frozen Base-model sequence-classifier baseline. Its
+macro-F1 is the strongest saved Qwen result, but minority behavior remains
+poor and Phase 2B-A remains stronger on downstream retrieval. The result does
+not isolate why performance changed and does not establish statistical
+robustness. Preserve all five Qwen runs; next use controlled one-factor
+follow-ups, multiple seeds, and a predeclared untouched-test evaluation rather
+than attributing the observed gain to the classifier head alone.

@@ -1,0 +1,106 @@
+{
+  "status": "passed",
+  "phase": "Phase 2C",
+  "formulation_version": "qwen-phase2c-base-sequence-classifier-v1",
+  "model_id": "Qwen/Qwen3.5-0.8B-Base",
+  "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+  "data": {
+    "train_examples": 2245,
+    "validation_examples": 924,
+    "train_documents": 845,
+    "validation_documents": 277,
+    "train_distribution": {
+      "10": 55,
+      "20": 267,
+      "40": 586,
+      "80": 687,
+      "160": 650
+    },
+    "validation_distribution": {
+      "10": 13,
+      "20": 81,
+      "40": 178,
+      "80": 232,
+      "160": 420
+    },
+    "train_oracle_sha256": "64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88",
+    "validation_oracle_sha256": "ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d",
+    "verified_at": "2026-08-04T15:43:09.795124+00:00"
+  },
+  "instruction": "You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = very short context, 2 = short context, 3 = medium context, 4 = long context, 5 = very long context. Return only the number",
+  "instruction_sha256": "9e879535647c2bfcd3627d0d65f84c36a1bf442ed95bb5b07029c878ca990de7",
+  "model_inputs": [
+    "fixed_supervisor_instruction",
+    "original_question_text"
+  ],
+  "excluded_inputs": [
+    "evidence",
+    "evidence_length",
+    "answer",
+    "paper_text",
+    "retrieved_chunks",
+    "retrieval_scores",
+    "metadata",
+    "handcrafted_features",
+    "chat_template",
+    "assistant_target_tokens"
+  ],
+  "tokenizer": {
+    "class": "Qwen2Tokenizer",
+    "pad_token": "<|endoftext|>",
+    "pad_token_id": 248044,
+    "padding_side": "right",
+    "add_special_tokens": true,
+    "truncation": false
+  },
+  "configuration_audit": {
+    "status": "passed",
+    "checks": {
+      "num_labels": true,
+      "problem_type": true,
+      "id2label": true,
+      "label2id": true,
+      "top_level_pad_token_id": true,
+      "text_config_pad_token_id": true,
+      "top_level_use_cache": true,
+      "text_config_use_cache": true
+    },
+    "num_labels": 5,
+    "id2label": {
+      "0": "10",
+      "1": "20",
+      "2": "40",
+      "3": "80",
+      "4": "160"
+    },
+    "label2id": {
+      "10": 0,
+      "20": 1,
+      "40": 2,
+      "80": 3,
+      "160": 4
+    },
+    "pad_token_id": 248044
+  },
+  "sequence_lengths": {
+    "train": {
+      "minimum": 86,
+      "maximum": 112,
+      "mean": 92.13363028953229,
+      "over_maximum": 0
+    },
+    "validation": {
+      "minimum": 87,
+      "maximum": 115,
+      "mean": 91.59740259740259,
+      "over_maximum": 0
+    }
+  },
+  "pooling_safety": {
+    "unpadded_inputs_containing_pad_token_id": 0,
+    "right_padding": true,
+    "nested_text_config_pad_token_id_explicit": true
+  },
+  "experiment_fingerprint": "6508ded1f9c25b451207f891f90fa5c9a7a4c09da7ea7125555bfa0ec7faca90",
+  "verified_at": "2026-08-04T15:43:11.615625+00:00"
+}

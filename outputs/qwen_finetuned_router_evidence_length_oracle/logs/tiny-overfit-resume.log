@@ -1,0 +1,32 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s]Loading weights:  99%|█████████▉| 468/473 [00:00<00:00, 4667.44it/s]Loading weights: 100%|██████████| 473/473 [00:00<00:00, 4672.80it/s]
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s]Loading weights:  74%|███████▍  | 351/473 [00:00<00:00, 3479.74it/s]Loading weights: 100%|██████████| 473/473 [00:00<00:00, 3441.53it/s]
+Traceback (most recent call last):
+  File "/workspace/thesis-granularity-router/qwen_phase2.py", line 767, in <module>
+    main()
+  File "/workspace/thesis-granularity-router/qwen_phase2.py", line 763, in main
+    run_training(args)
+  File "/workspace/thesis-granularity-router/qwen_phase2.py", line 622, in run_training
+    optimizer.step()
+  File "/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/torch/optim/lr_scheduler.py", line 133, in wrapper
+    return func.__get__(opt, opt.__class__)(*args, **kwargs)
+  File "/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/torch/optim/optimizer.py", line 516, in wrapper
+    out = func(*args, **kwargs)
+  File "/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/torch/optim/optimizer.py", line 81, in _use_grad
+    ret = func(*args, **kwargs)
+  File "/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/torch/optim/adam.py", line 247, in step
+    adam(
+  File "/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/torch/optim/optimizer.py", line 149, in maybe_fallback
+    return func(*args, **kwargs)
+  File "/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/torch/optim/adam.py", line 949, in adam
+    func(
+  File "/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/torch/optim/adam.py", line 611, in _multi_tensor_adam
+    grouped_tensors = Optimizer._group_tensors_by_device_and_dtype(
+  File "/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/torch/optim/optimizer.py", line 545, in _group_tensors_by_device_and_dtype
+    return _group_tensors_by_device_and_dtype(tensorlistlist, with_indices)  # type: ignore[return-value, arg-type]
+  File "/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+  File "/workspace/thesis-granularity-router/.venv-qwen/lib/python3.10/site-packages/torch/utils/_foreach_utils.py", line 47, in _group_tensors_by_device_and_dtype
+    return torch._C._group_tensors_by_device_and_dtype(tensorlistlist, with_indices)
+RuntimeError: Tensors of the same index must be on the same device and the same dtype except `step` tensors that can be CPU and float32/64 notwithstanding

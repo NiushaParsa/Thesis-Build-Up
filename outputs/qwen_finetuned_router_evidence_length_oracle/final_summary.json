@@ -1,0 +1,257 @@
+{
+  "status": "complete",
+  "phase": "Phase 2 full-parameter supervised fine-tuning",
+  "run_id": "qwen-phase2-full-parameter-20260802-seed42-v2",
+  "model_id": "Qwen/Qwen3.5-0.8B",
+  "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+  "training_method": "full_parameter_sft",
+  "evaluated_examples": 924,
+  "selected_checkpoint": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/checkpoints/step-000213",
+  "selected_checkpoint_id": "step-000213",
+  "checkpoint_selection": {
+    "metric": "validation_macro_f1",
+    "tie_break": "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step",
+    "validation_loss": 0.3081164950932259
+  },
+  "classification": {
+    "accuracy": 0.4318181818181818,
+    "macro_f1": 0.16502267760462996,
+    "weighted_f1": 0.32805741427623947,
+    "balanced_accuracy": 0.20697865353037764,
+    "top_2_accuracy": null,
+    "top_2_accuracy_status": "unavailable_no_comparable_class_scores",
+    "per_class": {
+      "10": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13
+      },
+      "20": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 81
+      },
+      "40": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 178
+      },
+      "80": {
+        "precision": 0.2953020134228188,
+        "recall": 0.1896551724137931,
+        "f1": 0.23097112860892388,
+        "support": 232
+      },
+      "160": {
+        "precision": 0.45806451612903226,
+        "recall": 0.8452380952380952,
+        "f1": 0.5941422594142259,
+        "support": 420
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        0,
+        1,
+        12
+      ],
+      [
+        0,
+        0,
+        0,
+        16,
+        65
+      ],
+      [
+        0,
+        0,
+        0,
+        23,
+        155
+      ],
+      [
+        0,
+        0,
+        0,
+        44,
+        188
+      ],
+      [
+        0,
+        0,
+        0,
+        65,
+        355
+      ]
+    ],
+    "evaluated_examples": 924,
+    "valid_predictions": 924,
+    "invalid_predictions": 0
+  },
+  "oracle_distribution": {
+    "10": 13,
+    "20": 81,
+    "40": 178,
+    "80": 232,
+    "160": 420
+  },
+  "predicted_distribution": {
+    "10": 0,
+    "20": 0,
+    "40": 0,
+    "80": 149,
+    "160": 775
+  },
+  "valid_outputs": 924,
+  "valid_output_rate": 1.0,
+  "invalid_outputs": 0,
+  "invalid_output_percentage": 0.0,
+  "majority_class": 160,
+  "majority_baseline_accuracy": 0.45454545454545453,
+  "majority_baseline_macro_f1": 0.125,
+  "phase1_comparison": {
+    "description": "Same preserved split and same evidence-length Oracle; pretrained zero-shot Phase 1 baseline, not an old retrieval-F1-Oracle result.",
+    "source": "outputs/qwen_pretrained_zero_shot_router_evidence_length_oracle/final_summary.json",
+    "accuracy": 0.04004329004329004,
+    "macro_f1": 0.049045932422555796,
+    "weighted_f1": 0.032612933907418644,
+    "balanced_accuracy": 0.23369399361908724,
+    "mean_joined_retrieval_f1": 0.23910868506493507
+  },
+  "data": {
+    "train_examples": 2245,
+    "validation_examples": 924,
+    "train_distribution": {
+      "10": 55,
+      "20": 267,
+      "40": 586,
+      "80": 687,
+      "160": 650
+    },
+    "validation_distribution": {
+      "10": 13,
+      "20": 81,
+      "40": 178,
+      "80": 232,
+      "160": 420
+    },
+    "train_oracle_sha256": "64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88",
+    "validation_oracle_sha256": "ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d"
+  },
+  "environment": {
+    "environment_name": ".venv-qwen",
+    "python_version": "3.10.7 (main, Oct  3 2022, 02:19:58) [Clang 14.0.3 ]",
+    "python_executable": "/workspace/thesis-granularity-router/.venv-qwen/bin/python",
+    "torch_version": "2.8.0+cu128",
+    "torch_cuda_version": "12.8",
+    "transformers_version": "5.15.0.dev0",
+    "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+    "tensorboard_version": "2.20.0",
+    "gpu": "NVIDIA A100-SXM4-40GB",
+    "device": "cuda",
+    "dtype": "torch.bfloat16",
+    "quantization": null
+  },
+  "training": {
+    "global_steps": 213,
+    "parameter_updates": 213,
+    "total_parameters": 852985920,
+    "trainable_parameters": 852985920,
+    "initial_loss": 0.4739701375365257,
+    "final_loss": 0.4026994347572327,
+    "validation_events": 3,
+    "peak_gpu_allocated_gib": 10.660949230194092,
+    "peak_gpu_reserved_gib": 11.943359375,
+    "final_rss_gib": 1.9669723510742188,
+    "maximum_recorded_process_rss_gib": 1.9669723510742188,
+    "configuration_path": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/training_config.json",
+    "configuration_sha256": "1503c73e89c6f49c8fa10784993314bb77951fff00fea186312985bd50c51dc4",
+    "dataset_manifest_path": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/dataset_manifest.json",
+    "training_script_sha256": "bb1a1a591ef60b933cd394d12b7087da1345dc03ded48d8c7739348b35392fd3",
+    "repository_commit": "55af1bcbc4d7a089adaafd4da539581b2dbbed67",
+    "trainable_percentage": 100.0
+  },
+  "runtime": {
+    "training_wall_seconds": 2107.3131887838244,
+    "training_wall_includes_epoch_validation_and_checkpointing": true,
+    "selected_validation": {
+      "source": "post_training_selected_checkpoint_reload",
+      "new_inference_performed": true,
+      "model_load_seconds": 2.2354275435209274,
+      "isolated_generation_wall_seconds": 296.8330853600055,
+      "selected_epoch_validation_wall_seconds": 321.21750357560813,
+      "selected_epoch_validation_wall_includes": "validation loss pass, deterministic generation, parsing, and metrics",
+      "selected_epoch_exact_output_match": true,
+      "selected_epoch_outputs_compared": 924,
+      "mean_inference_seconds": 0.32010594106710705,
+      "median_inference_seconds": 0.3152373321354389,
+      "total_recorded_generate_call_seconds": 295.7778895460069,
+      "peak_gpu_allocated_gib": 1.6835732460021973,
+      "peak_gpu_reserved_gib": 1.765625,
+      "rss_gib": 1.6948738098144531,
+      "selected_checkpoint": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/checkpoints/step-000213",
+      "selected_checkpoint_id": "step-000213",
+      "evaluated_examples": 924,
+      "completed_at": "2026-08-02T17:51:11.680111+00:00"
+    },
+    "final_validation_load_plus_inference_wall_seconds": 299.0685129035264,
+    "known_training_plus_final_validation_wall_seconds": 2406.381701687351,
+    "retrieval_wall_seconds": 178.12831589998677,
+    "known_training_final_validation_and_retrieval_wall_seconds": 2584.5100175873376
+  },
+  "retrieval": {
+    "evaluated_examples": 924,
+    "valid_prediction_retrievals": 924,
+    "invalid_predictions_without_retrieval": 0,
+    "retrieval_coverage": 1.0,
+    "valid_only_mean_joined_retrieval_f1": 0.22658488852813854,
+    "valid_only_median_joined_retrieval_f1": 0.19615549999999998,
+    "coverage_adjusted_full_set_mean_joined_retrieval_f1": 0.22658488852813866,
+    "full_set_note": "Invalid Qwen outputs receive no retrieval record and no default granularity. Valid-only F1 summarizes retrieved valid predictions; the coverage-adjusted full-set mean assigns zero contribution to invalid predictions solely for a transparent complete-set summary.",
+    "top_k": 5,
+    "paper_restricted": true,
+    "embedding_model": "text-embedding-3-small",
+    "tokenizer": "gpt2",
+    "metric": "f1_joined_topk",
+    "current_segment_wall_seconds": 178.12831589998677,
+    "cumulative_durable_question_processing_seconds": 168.32030229995144,
+    "run_id": "qwen-phase2-full-parameter-20260802-seed42-v2",
+    "evaluation_run_id": "qwen-phase2-full-parameter-20260802-seed42-v2-retrieval-top5-paper",
+    "runtime_segments": 1,
+    "completed_invocation_wall_seconds": 178.12831589998677,
+    "complete_uninterrupted_run_wall_seconds": 178.12831589998677,
+    "reported_retrieval_wall_seconds": 178.12831589998677,
+    "reported_retrieval_wall_basis": "complete_uninterrupted_invocation",
+    "runtime_note": "Each completed question stores its own fsynced processing duration. Completed invocation walls are also retained; after an interrupted resume, the durable per-question sum is the non-fabricated runtime basis."
+  },
+  "artifacts": {
+    "training_config": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/training_config.json",
+    "dataset_manifest": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/dataset_manifest.json",
+    "best_checkpoint": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/best_checkpoint.json",
+    "selected_epoch_predictions": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/validation/predictions_step-000213.jsonl",
+    "canonical_predictions": "outputs/qwen_finetuned_router_evidence_length_oracle/validation/predictions.jsonl",
+    "raw_outputs": "outputs/qwen_finetuned_router_evidence_length_oracle/validation/raw_outputs.jsonl",
+    "parsed_predictions": "outputs/qwen_finetuned_router_evidence_length_oracle/validation/parsed_predictions.jsonl",
+    "invalid_outputs": "outputs/qwen_finetuned_router_evidence_length_oracle/validation/invalid_outputs.jsonl",
+    "validation_runtime": "outputs/qwen_finetuned_router_evidence_length_oracle/validation/runtime_summary.json",
+    "classification_metrics": "outputs/qwen_finetuned_router_evidence_length_oracle/classification/metrics.json",
+    "confusion_matrix": "outputs/qwen_finetuned_router_evidence_length_oracle/classification/confusion_matrix.csv",
+    "predicted_vs_oracle_histogram": "outputs/qwen_finetuned_router_evidence_length_oracle/classification/predicted_vs_oracle.svg",
+    "fixed_prompt": "outputs/qwen_pretrained_zero_shot_router_evidence_length_oracle/configuration/fixed_prompt.json",
+    "fixed_prompt_sha256": "656a0b01d61532176e75334e48aca3250cba4a46b4f845bf39383bd27b98550c",
+    "retrieval_results": "outputs\\qwen_finetuned_router_evidence_length_oracle\\retrieval\\results.jsonl",
+    "retrieval_summary": "outputs\\qwen_finetuned_router_evidence_length_oracle\\retrieval\\summary.json",
+    "tensorboard_audit": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/tensorboard_scalar_inventory.json",
+    "checkpoint_verification": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/checkpoint_verification.json",
+    "checkpoint_sha256_manifest": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/selected_checkpoint_sha256.txt",
+    "checkpoint_archive_verification": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/checkpoint_archive_verification.json",
+    "integrity_audit": "outputs/qwen_finetuned_router_evidence_length_oracle/integrity_audit.json"
+  },
+  "created_at": "2026-08-02T17:51:12.905924+00:00",
+  "completed_at": "2026-08-02T17:57:58.827590+00:00"
+}

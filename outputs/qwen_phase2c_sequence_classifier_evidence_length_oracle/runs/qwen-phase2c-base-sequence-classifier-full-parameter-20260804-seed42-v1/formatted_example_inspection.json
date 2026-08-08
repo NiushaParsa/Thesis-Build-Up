@@ -1,0 +1,23 @@
+{
+  "train_first": {
+    "question_id": "002ba9e2-0f40-540f-92ef-7183de2eeefc",
+    "document_id": "2003.05995",
+    "question_text": "What is meant by semiguided dialogue, what part of dialogue is guided?",
+    "oracle_label": 160,
+    "target_class_id": 4,
+    "input_text": "You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = very short context, 2 = short context, 3 = medium context, 4 = long context, 5 = very long context. Return only the number\n\nQuestion: What is meant by semiguided dialogue, what part of dialogue is guided?",
+    "input_text_sha256": "9fb0a593e19cc7e94f7339bf492c74e589c64a5e19ecc360c7495b25363c9cf1",
+    "sequence_token_count": 99
+  },
+  "validation_first": {
+    "question_id": "00155363-f44e-59aa-ab5d-5ad25f806dd9",
+    "document_id": "1909.06200",
+    "question_text": "What experiments are conducted?",
+    "oracle_label": 160,
+    "target_class_id": 4,
+    "input_text": "You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = very short context, 2 = short context, 3 = medium context, 4 = long context, 5 = very long context. Return only the number\n\nQuestion: What experiments are conducted?",
+    "input_text_sha256": "e2d877bee9267d567af599def6f19f8bacddd43177b0447c906b4f1e2ba7919b",
+    "sequence_token_count": 87
+  },
+  "input_ids_are_excluded_from_inspection_only": true
+}

@@ -1,0 +1,48 @@
+{
+  "checkpoint": "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-tiny-overfit-seed42-v1/checkpoints/step-000100",
+  "checkpoint_sha256": {
+    "model.safetensors": "b67a0d62109b8b996c8818ba01bfd60f66510aaa410a9090bddbb531b67fab62"
+  },
+  "optimizer_state_present": true,
+  "scheduler_state_present": true,
+  "random_state_present": true,
+  "all_generation_repeats_match": true,
+  "examples": [
+    {
+      "question_id": "cf538221-1571-5556-a41e-f6a0f2a2fca2",
+      "raw_output": "10",
+      "parsed_prediction": 10,
+      "prediction_status": "valid",
+      "deterministic_repeat_match": true
+    },
+    {
+      "question_id": "05e70d25-084d-520e-b959-48f275290f0e",
+      "raw_output": "160\n baseline",
+      "parsed_prediction": 160,
+      "prediction_status": "valid",
+      "deterministic_repeat_match": true
+    },
+    {
+      "question_id": "ad2f721f-db0e-5839-926a-46fbd535599c",
+      "raw_output": "160",
+      "parsed_prediction": 160,
+      "prediction_status": "valid",
+      "deterministic_repeat_match": true
+    },
+    {
+      "question_id": "56adb968-05b3-572b-a27d-32dd603663cc",
+      "raw_output": "40\n40",
+      "parsed_prediction": 40,
+      "prediction_status": "valid",
+      "deterministic_repeat_match": true
+    },
+    {
+      "question_id": "2c56c81b-00cc-523d-9d45-b72e9f35bed9",
+      "raw_output": "10",
+      "parsed_prediction": 10,
+      "prediction_status": "valid",
+      "deterministic_repeat_match": true
+    }
+  ],
+  "verified_at": "2026-08-02T16:41:28.854243+00:00"
+}

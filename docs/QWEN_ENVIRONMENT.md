@@ -12,14 +12,14 @@ Python 3.12.6 at
 `C:\Users\behno\AppData\Local\Programs\Python\Python312\python.exe`.
 Python 3.11 was not installed. Following the requested fallback rule,
 `.venv-qwen` was created with Python 3.10.7. It is reserved for pretrained
-Qwen Phase 1 and the later fine-tuned Qwen Phase 2; it is not used to rerun
-the earlier baselines.
+Qwen Phase 1 and the completed fine-tuned Qwen Phase 2, Phase 2B, and Phase 2C
+experiments; it is not used to rerun the earlier baselines.
 
 The Qwen executable is
 `C:\Users\behno\Repos\Thesis Build Up\.venv-qwen\Scripts\python.exe`.
 The system Python environment was not modified.
 
-## Reproducible creation
+## Phase 1 local CPU environment
 
 ```powershell
 C:\Users\behno\AppData\Local\Programs\Python\Python310\python.exe -m venv .venv-qwen
@@ -42,7 +42,7 @@ newer supporting packages including Hugging Face Hub 1.26.0, grpcio 1.83.0,
 protobuf 7.35.1, pydantic 2.13.4, regex 2026.7.19, pywin32 312, and fsspec
 2026.4.0. Exact transitive versions are authoritative in the lock file.
 
-## Verified checks
+### Verified Phase 1 checks
 
 Dependency imports, read-only Qdrant connectivity, processor/model loading,
 and deterministic one-prompt generation all passed. The existing Qdrant
@@ -50,10 +50,10 @@ service at `127.0.0.1:6334` and its collections are reused without schema or
 index changes. No collection is created, deleted, rebuilt, re-indexed, or
 repointed.
 
-The exact post-trained model is `Qwen/Qwen3.5-0.8B`, revision
+The exact pretrained model is `Qwen/Qwen3.5-0.8B`, revision
 `2fc06364715b967f1860aea9cf38778875588b17`. The Base model is not used.
 Model snapshots live under the git-ignored
-`tmp/huggingface_qwen_cache` directory. Inference is CPU-only,
+`tmp/huggingface_qwen_cache` directory. Phase 1 inference is CPU-only,
 `torch.bfloat16`, unquantized, deterministic, frozen, and performed under
 `torch.inference_mode()`.
 
@@ -64,7 +64,241 @@ Hugging Face Hub from the smoke-run transitive version 1.25.1 to compatible
 1.26.0. The exact model revision, Transformers commit, tokenizer, prompt,
 parser, dtype, device, and decoding configuration did not change.
 
-## Required records
+## Phase 2 remote CUDA environment
+
+Phase 2 used a separate `.venv-qwen` inside the remote project at
+`/workspace/thesis-granularity-router/.venv-qwen`. Its executable was
+`/workspace/thesis-granularity-router/.venv-qwen/bin/python`, and its exact
+Python version was
+`3.10.7 (main, Oct  3 2022, 02:19:58) [Clang 14.0.3 ]`.
+This environment did not replace or modify either the protected local legacy
+`.venv` or the local Phase 1 `.venv-qwen`.
+
+The remote run used:
+
+- `Qwen/Qwen3.5-0.8B`, revision
+  `2fc06364715b967f1860aea9cf38778875588b17`;
+- Transformers `5.15.0.dev0`, installed from commit
+  `2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7`;
+- PyTorch `2.8.0+cu128`, torchvision `0.23.0+cu128`, and CUDA 12.8;
+- TensorBoard `2.20.0`;
+- one `NVIDIA A100-SXM4-40GB` on device `cuda`;
+- `torch.bfloat16` with no quantization.
+
+`requirements-qwen-phase2.txt` extends the minimal Qwen dependency manifest
+with TensorBoard only. The exact resolved remote inventory is frozen in
+`outputs/qwen_finetuned_router_evidence_length_oracle/environment/phase2_package_lock_after.txt`.
+An equivalent clean remote environment is created without touching a system
+Python installation by:
+
+```bash
+uv venv --python 3.10.7 .venv-qwen
+uv pip install --python .venv-qwen/bin/python torch==2.8.0 torchvision==0.23.0 --index-url https://download.pytorch.org/whl/cu128
+uv pip install --python .venv-qwen/bin/python -r requirements-qwen-phase2.txt
+```
+
+Phase 2 performed full-parameter supervised fine-tuning. All 852,985,920
+parameters were trainable; no LoRA, QLoRA, adapters, prompt tuning, separate
+classification head, or quantization was used. The model received only the
+same fixed routing instruction and original question text. Evidence, evidence
+length, answers, paper text, embeddings, retrieved chunks, scores, metadata,
+and handcrafted features were absent. Training loss was restricted to the
+assistant target tokens. The run executed 213 optimizer steps across three
+epochs with deterministic CUDA settings. Generation used the frozen parser,
+greedy `do_sample=false` decoding, and `max_new_tokens=8`.
+
+The run configuration was batch size 4, gradient accumulation 8 (effective
+batch size 32), maximum sequence length 128, learning rate 2e-5, weight decay
+0.01, cosine scheduling, 5% warmup, gradient clipping at 1.0, and seed 42.
+Strict CUDA determinism used `CUBLAS_WORKSPACE_CONFIG=:4096:8` and PyTorch
+deterministic algorithms.
+Full validation and checkpointing occurred at each epoch. The selected
+checkpoint was `step-000213`, chosen by validation macro-F1. Its model tensor
+SHA-256 is
+`7d23db1fde0c621623a7d4030073e8858854eba9a4b2d3d7bccda8ca730e2c45`;
+optimizer, scheduler, and random-state files are also present. Five recorded
+checkpoint generation probes repeated exactly. The selected checkpoint was
+copied back and verified locally: 11 files, 4,735,895,186 bytes (4.411 GiB),
+with every SHA-256 matching `selected_checkpoint_sha256.txt`.
+
+Training, including three validation passes and checkpoint writes, took
+2,107.3131887838244 seconds. Peak allocated/reserved GPU memory was
+10.660949230194092/11.943359375 GiB. Reloaded final validation reported
+1.6835732460021973 GiB peak allocated GPU memory and
+1.6948738098144531 GiB RSS. The TensorBoard audit reconciled 213 structured
+training steps and three validation events with zero loss, scalar-value, or
+scalar-count mismatches and independently reproduced the selected checkpoint.
+
+Qdrant was not moved to the remote trainer and no remote collection was
+created. After the selected-checkpoint predictions were copied back, the
+unchanged local Qdrant service at `127.0.0.1:6334` was used for Phase 2
+same-paper top-five retrieval. No collection, port, storage path, schema,
+record, or index was created, deleted, rebuilt, or changed.
+
+The recorded execution sequence is:
+
+```bash
+.venv-qwen/bin/python qwen_phase2.py inspect-data
+.venv-qwen/bin/python qwen_phase2.py train --run-id qwen-phase2-full-parameter-20260802-seed42-v2
+.venv-qwen/bin/python qwen_phase2.py audit-tensorboard --run-id qwen-phase2-full-parameter-20260802-seed42-v2
+.venv-qwen/bin/python qwen_phase2.py verify-checkpoint --run-id qwen-phase2-full-parameter-20260802-seed42-v2 --checkpoint outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/checkpoints/step-000213
+.venv-qwen/bin/python qwen_phase2.py final-validation --run-id qwen-phase2-full-parameter-20260802-seed42-v2
+```
+
+The local retrieval and final integrity audit are reproduced with:
+
+```powershell
+.\.venv-qwen\Scripts\python.exe qwen_phase2.py evaluate-retrieval --run-id qwen-phase2-full-parameter-20260802-seed42-v2
+.\.venv-qwen\Scripts\python.exe qwen_phase2.py audit-final --run-id qwen-phase2-full-parameter-20260802-seed42-v2
+```
+
+## Phase 2B remote CUDA environment
+
+Phase 2B reused the isolated remote `.venv-qwen` described above; it did not
+modify the protected local legacy `.venv`, the local Phase 1 environment, the
+system Python installation, or the pinned Phase 2 dependency set. Both Phase
+2B variants record Python 3.10.7 at
+`/workspace/thesis-granularity-router/.venv-qwen/bin/python`, Transformers
+`5.15.0.dev0` at commit
+`2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7`, PyTorch `2.8.0+cu128`, CUDA
+12.8, TensorBoard 2.20.0, and one `NVIDIA A100-SXM4-40GB`. Training and final
+validation used CUDA with `torch.bfloat16`, no quantization, seed 42, and
+strict deterministic settings.
+
+The model remains `Qwen/Qwen3.5-0.8B`, revision
+`2fc06364715b967f1860aea9cf38778875588b17`; all 852,985,920 parameters were
+trainable. The Phase 2B formulation uses five verified single-token aliases
+and deterministic restricted-logit classification, so it does not depend on a
+new runtime package, unrestricted generation, or the legacy parser. Both
+variants used maximum sequence length 128, per-device batch 4, gradient
+accumulation 8, effective batch 32, AdamW at `2e-5`, weight decay 0.01,
+cosine scheduling with 5% warmup, gradient clipping 1.0, three epochs, and 213
+optimizer updates. Phase 2B-B's effective-number class weighting changes the
+loss computation only; it does not change the environment.
+
+The two immutable run identities are:
+
+- `qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1`, under
+  `outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/`;
+- `qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1`, under
+  `outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/`.
+
+Remote inspection, training, and final validation are reproduced with:
+
+```bash
+.venv-qwen/bin/python qwen_phase2b.py inspect --variant alias-unweighted
+.venv-qwen/bin/python qwen_phase2b.py inspect --variant alias-classbalanced
+.venv-qwen/bin/python qwen_phase2b.py train --variant alias-unweighted --mode full --run-id qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1
+.venv-qwen/bin/python qwen_phase2b.py train --variant alias-classbalanced --mode full --run-id qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1
+.venv-qwen/bin/python qwen_phase2b.py final-validation --variant alias-unweighted --run-id qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1
+.venv-qwen/bin/python qwen_phase2b.py final-validation --variant alias-classbalanced --run-id qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1
+```
+
+As in Phase 2, Qdrant was not installed or moved onto the trainer. Canonical
+predictions were evaluated later against the unchanged local Qdrant service
+at `127.0.0.1:6334`; no collection, schema, record, index, port, or storage
+path was changed. The local commands are:
+
+```powershell
+.\.venv-qwen\Scripts\python.exe qwen_phase2b_posttraining.py evaluate-retrieval --variant alias-unweighted --run-id qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1
+.\.venv-qwen\Scripts\python.exe qwen_phase2b_posttraining.py evaluate-retrieval --variant alias-classbalanced --run-id qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1
+.\.venv-qwen\Scripts\python.exe qwen_phase2b_posttraining.py compare --output outputs\qwen_phase2b_comparison_evidence_length_oracle\four_way_comparison.json
+```
+
+The saved retrieval wall times are 178.27286399999866 seconds for Phase 2B-A
+and 377.0999227000284 seconds for Phase 2B-B. The Phase 2B-B local retrieval
+overlapped transfer of its selected-checkpoint archive. These exact values are
+retained for provenance, but their difference is not a model- or
+environment-speed comparison. Saved training and final-validation timings are
+isolated measurements.
+
+Manual post-transfer QA used `rsync` checksum dry-runs over every copied
+training, classification, validation, TensorBoard, and checkpoint file,
+excluding the locally retrieval-extended `final_summary.json`. Phase 2B-A had
+no differences. Phase 2B-B had two stale local preflight copies
+(`configuration/experiment.json` and `configuration/preflight_manifest.json`)
+whose semantic contents were unchanged and only generated timestamps differed;
+they were replaced from the GPU source, and the targeted checksum rerun found
+no differences. The selected A/B checkpoints contain 11 files totaling
+4,735,895,574/4,735,895,530 bytes. No standalone Phase 2B hash-inventory file
+was saved.
+
+Completed-summary replay revalidated all 924 retrieval records in each run.
+Qdrant counts were unchanged before and after: `PaperChunk` 1,701,822,
+`PaperEvidence` 9,522, `PaperQuestion` 4,526, `RouterDataset` 3,170,
+`RetrievalEvaluation` 18,622, `Stage4VerifyRetrievalEval` 10,
+`Stage4VerifyRouterDataset` 2, and `Stage5MixedEvaluation` 2.
+
+## Phase 2C remote CUDA environment
+
+Phase 2C used the same isolated remote executable,
+`/workspace/thesis-granularity-router/.venv-qwen/bin/python`, with exact Python
+version `3.10.7 (main, Oct  3 2022, 02:19:58) [Clang 14.0.3 ]`. Its recorded
+software and hardware environment is:
+
+- Transformers `5.15.0.dev0`, commit
+  `2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7`;
+- PyTorch `2.8.0+cu128`, CUDA 12.8, TensorBoard `2.20.0`;
+- one `NVIDIA A100-SXM4-40GB` on `cuda`;
+- `torch.bfloat16`, no quantization;
+- strict deterministic execution with seed 42.
+
+The model identity deliberately changes to `Qwen/Qwen3.5-0.8B-Base`, revision
+`dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68`. It is loaded with
+`AutoModelForSequenceClassification`, `num_labels=5`, a bias-free 5×1024
+`score.weight` classifier head, right padding, and pad token ID 248044. The
+five logits map directly to 10, 20, 40, 80, and 160. Phase 2C performs no
+generation and uses no chat template or parser.
+
+The only input is the fixed supervisor instruction plus the original question
+text, formatted as `{instruction}\n\nQuestion: {original_question_text}`. Train
+sequence lengths are 86--112 tokens; validation lengths are 87--115, so no
+example exceeds the fixed maximum length of 128. No evidence, answer, paper
+text, retrieved chunks, retrieval scores, embedding, metadata, or handcrafted
+feature enters the model.
+
+All 852,991,040 parameters were marked trainable. Uniform five-class
+cross-entropy, AdamW, batch size 4, gradient accumulation 8, effective batch
+32, learning rate 2e-5, weight decay 0.01, cosine scheduling, 5% warmup (11
+steps), clipping 1.0, three fixed epochs, and 213 optimizer updates were used.
+The gradient-coverage audit passed: the language backbone and classifier head
+received gradients. Because this was a text-only path through a composite
+model, the vision tower did not receive gradients; 752,398,144 parameters had
+gradients and 100,592,896 did not. This distinction is recorded rather than
+claiming that image-path parameters were updated.
+
+Training elapsed time was 1276.56244828552 seconds, with peak allocated/reserved
+GPU memory 8.96875286102295/9.517578125 GiB and recorded RSS
+1.96734619140625 GiB. Selected-checkpoint reload took 2.5492455568164587
+seconds and isolated validation inference took 33.99719780869782 seconds.
+Final-validation peak allocated/reserved memory was
+1.715855598449707/1.77734375 GiB with RSS 1.6998367309570312 GiB. Local
+retrieval took 134.9306207000045 seconds; the known training, final-validation,
+and retrieval duration is 1448.0395123510389 seconds.
+
+The recorded CUDA sequence, using the RAM-backed training root, is:
+
+```bash
+.venv-qwen/bin/python qwen_phase2c_sequence_classifier.py --output-root /dev/shm/qwen_phase2c_sequence_classifier_evidence_length_oracle inspect
+.venv-qwen/bin/python qwen_phase2c_sequence_classifier.py --output-root /dev/shm/qwen_phase2c_sequence_classifier_evidence_length_oracle train --mode full --run-id qwen-phase2c-base-sequence-classifier-full-parameter-20260804-seed42-v1
+.venv-qwen/bin/python qwen_phase2c_sequence_classifier.py --output-root /dev/shm/qwen_phase2c_sequence_classifier_evidence_length_oracle final-validation --run-id qwen-phase2c-base-sequence-classifier-full-parameter-20260804-seed42-v1
+```
+
+Canonical predictions were copied back and evaluated through the unchanged
+local Qdrant service at `127.0.0.1:6334`. No Qdrant collection, record, schema,
+index, port, or storage path was created, deleted, rebuilt, or changed. Local
+commands are:
+
+```powershell
+.\.venv-qwen\Scripts\python.exe qwen_phase2c_posttraining.py evaluate-retrieval --run-id qwen-phase2c-base-sequence-classifier-full-parameter-20260804-seed42-v1
+.\.venv-qwen\Scripts\python.exe qwen_phase2c_posttraining.py compare --output outputs\qwen_phase2c_comparison_evidence_length_oracle\five_way_comparison.json
+```
+
+The original protected local Python 3.9 `.venv`, the local Phase 1 CPU
+environment, system Python, and all earlier experiment artifacts remained
+separate and unchanged.
+
+## Phase 1 records
 
 - Direct dependencies: `requirements-qwen.txt`
 - Exact resolved packages:
@@ -79,3 +313,67 @@ parser, dtype, device, and decoding configuration did not change.
   `outputs/qwen_pretrained_zero_shot_router_evidence_length_oracle/smoke/summary.json`
 - Experiment report:
   `reports/qwen_pretrained_zero_shot_router_evidence_length_oracle/experiment_report.md`
+
+## Phase 2 records
+
+- Direct dependencies: `requirements-qwen-phase2.txt`.
+- Exact environment lock before/after execution:
+  `outputs/qwen_finetuned_router_evidence_length_oracle/environment/phase2_package_lock.txt`
+  and `phase2_package_lock_after.txt`.
+- Hardware and CUDA snapshots:
+  `outputs/qwen_finetuned_router_evidence_length_oracle/environment/vast_hardware_before_phase2.json`,
+  `nvidia_smi_before_phase2.txt`, and `nvidia_smi_after_training.txt`.
+- Training script snapshots and hashes:
+  `outputs/qwen_finetuned_router_evidence_length_oracle/environment/qwen_phase2_training_launch.py`,
+  `qwen_phase2_posttraining.py`, and `phase2_script_hashes.txt`.
+- Final summary and integrity audit:
+  `outputs/qwen_finetuned_router_evidence_length_oracle/final_summary.json` and
+  `integrity_audit.json`.
+- Exact run configuration, histories, checkpoint metadata, TensorBoard audit,
+  and checkpoint verification:
+  `outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/`.
+- Phase 2 reports: `docs/QWEN_PHASE2_RESULTS.md` and
+  `reports/qwen_finetuned_router_evidence_length_oracle/experiment_report.md`.
+
+## Phase 2B records
+
+For each Phase 2B root, the authoritative environment and configuration
+records are `configuration/experiment.json`,
+`configuration/preflight_manifest.json`, the selected run's
+`training_config.json`, `dataset_manifest.json`,
+`formatted_example_inspection.json`, histories, checkpoint manifest, and
+`summary.json`. The final summaries are:
+
+- `outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/final_summary.json`;
+- `outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/final_summary.json`.
+
+Each root also contains canonical validation predictions and runtime,
+classification metrics/matrix/histogram, and retrieval records/runtime/summary.
+The selected checkpoint and TensorBoard events are under the run-specific
+`checkpoints/` and `tensorboard/` paths; large model files may remain
+Git-ignored while retained locally. The machine-readable four-way comparison
+is
+`outputs/qwen_phase2b_comparison_evidence_length_oracle/four_way_comparison.json`.
+Human-readable records are `docs/QWEN_PHASE2B_RESULTS.md` and the two reports
+under `reports/qwen_phase2b_alias_unweighted_evidence_length_oracle/` and
+`reports/qwen_phase2b_alias_classbalanced_evidence_length_oracle/`.
+
+## Phase 2C records
+
+- Experiment and preflight configuration:
+  `outputs/qwen_phase2c_sequence_classifier_evidence_length_oracle/configuration/experiment.json`
+  and `configuration/preflight_manifest.json`.
+- Final summary:
+  `outputs/qwen_phase2c_sequence_classifier_evidence_length_oracle/final_summary.json`.
+- Run configuration, dataset manifest, formatted-example inspection,
+  gradient-coverage audit, histories, checkpoint manifest, and selected
+  checkpoint metadata under
+  `outputs/qwen_phase2c_sequence_classifier_evidence_length_oracle/runs/qwen-phase2c-base-sequence-classifier-full-parameter-20260804-seed42-v1/`.
+- Canonical predictions/raw outputs/parsed predictions/invalid records/runtime
+  under `validation/`; metrics, confusion matrix, and histogram under
+  `classification/`; retrieval records, segments, and summary under
+  `retrieval/`.
+- Five-way machine-readable comparison:
+  `outputs/qwen_phase2c_comparison_evidence_length_oracle/five_way_comparison.json`.
+- Human-readable reports: `docs/QWEN_PHASE2C_RESULTS.md` and
+  `reports/qwen_phase2c_sequence_classifier_evidence_length_oracle/experiment_report.md`.

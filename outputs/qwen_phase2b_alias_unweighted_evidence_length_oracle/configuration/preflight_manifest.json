@@ -1,0 +1,180 @@
+{
+  "status": "passed",
+  "variant": "alias-unweighted",
+  "formulation_version": "qwen-phase2b-restricted-five-alias-next-token-v1",
+  "data": {
+    "train_examples": 2245,
+    "validation_examples": 924,
+    "train_documents": 845,
+    "validation_documents": 277,
+    "train_distribution": {
+      "10": 55,
+      "20": 267,
+      "40": 586,
+      "80": 687,
+      "160": 650
+    },
+    "validation_distribution": {
+      "10": 13,
+      "20": 81,
+      "40": 178,
+      "80": 232,
+      "160": 420
+    },
+    "train_oracle_sha256": "64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88",
+    "validation_oracle_sha256": "ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d",
+    "verified_at": "2026-08-03T16:37:33.075374+00:00"
+  },
+  "instruction": "You are a router for a retrieval-augmented generation system. Based only on the question, select the chunk size most suitable for retrieving the evidence required to answer it. Return only its alias: 1=10, 2=20, 3=40, 4=80, 5=160.",
+  "instruction_sha256": "d4a59dcd26b01c5bd81981e43c5d69fc1c8db14e9160e0791412dbe6af7067ac",
+  "alias_tokenization": {
+    "status": "passed",
+    "model_id": "Qwen/Qwen3.5-0.8B",
+    "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "alias_to_chunk_size": {
+      "1": 10,
+      "2": 20,
+      "3": 40,
+      "4": 80,
+      "5": 160
+    },
+    "standalone_alias_token_ids": {
+      "1": [
+        16
+      ],
+      "2": [
+        17
+      ],
+      "3": [
+        18
+      ],
+      "4": [
+        19
+      ],
+      "5": [
+        20
+      ]
+    },
+    "expected_alias_token_ids": {
+      "1": 16,
+      "2": 17,
+      "3": 18,
+      "4": 19,
+      "5": 20
+    },
+    "chat_template_checks": [
+      {
+        "question_sha256": "8c0740282a97660f1ef8345b92470e44037f1f53dde90963b2d61d72182ee7c3",
+        "prompt_token_count": 102,
+        "assistant_template_suffix_token_ids": [
+          248046,
+          198
+        ],
+        "extensions": {
+          "1": [
+            16,
+            248046,
+            198
+          ],
+          "2": [
+            17,
+            248046,
+            198
+          ],
+          "3": [
+            18,
+            248046,
+            198
+          ],
+          "4": [
+            19,
+            248046,
+            198
+          ],
+          "5": [
+            20,
+            248046,
+            198
+          ]
+        }
+      },
+      {
+        "question_sha256": "c4e09735c3b4a6d37058b1e4d7911a690b09347da59c8f4b58455b1cbb6f8620",
+        "prompt_token_count": 94,
+        "assistant_template_suffix_token_ids": [
+          248046,
+          198
+        ],
+        "extensions": {
+          "1": [
+            16,
+            248046,
+            198
+          ],
+          "2": [
+            17,
+            248046,
+            198
+          ],
+          "3": [
+            18,
+            248046,
+            198
+          ],
+          "4": [
+            19,
+            248046,
+            198
+          ],
+          "5": [
+            20,
+            248046,
+            198
+          ]
+        }
+      }
+    ],
+    "verified_at": "2026-08-03T16:37:40.841502+00:00"
+  },
+  "class_weights": {
+    "variant": "alias-unweighted",
+    "scheme": "uniform",
+    "beta": null,
+    "source": "preserved_training_split_only",
+    "training_counts": {
+      "10": 55,
+      "20": 267,
+      "40": 586,
+      "80": 687,
+      "160": 650
+    },
+    "weights_normalized_to_arithmetic_class_mean_one": {
+      "10": 1.0,
+      "20": 1.0,
+      "40": 1.0,
+      "80": 1.0,
+      "160": 1.0
+    },
+    "gradient_window_reduction": "sum(weight[target] * per_example_ce) / sum(weight[target])"
+  },
+  "prompt_lengths": {
+    "minimum": 89,
+    "maximum": 115,
+    "mean": 95.12026726057907
+  },
+  "model_inputs": [
+    "fixed_phase2b_instruction",
+    "original_question_text"
+  ],
+  "excluded_inputs": [
+    "evidence",
+    "evidence_length",
+    "answer",
+    "paper_text",
+    "retrieved_chunks",
+    "retrieval_scores",
+    "metadata",
+    "handcrafted_features"
+  ],
+  "verified_at": "2026-08-03T16:37:42.166337+00:00"
+}
