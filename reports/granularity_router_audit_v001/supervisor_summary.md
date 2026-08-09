@@ -1416,10 +1416,267 @@ Local unchanged-Qdrant and comparison commands:
 
 ### 12. Factual conclusion
 
-The exact-token prompt is the strongest saved Qwen formulation on macro-F1,
-weighted F1, and balanced accuracy, but not on accuracy, top-2 accuracy, or
-downstream joined retrieval F1. Its clean Phase 2C comparison supports a modest
+At Phase 2D completion, the exact-token prompt was the strongest saved Qwen
+formulation on macro-F1, weighted F1, and balanced accuracy, but not on
+accuracy, top-2 accuracy, or downstream joined retrieval F1. Its clean Phase
+2C comparison supports a modest
 single-seed classification benefit and a slight retrieval cost. Class 10
 remains completely unpredicted and class 20 remains weak, so Phase 2D should be
 preserved as a controlled prompt baseline rather than described as a solution
 to the imbalance problem.
+
+## Qwen3.5-0.8B-Base Phase 2E — Predeclared Learning-Rate Grid and Five-Epoch Development Selection
+
+### 1. Objective and controlled design
+
+Phase 2E tests whether a lower learning rate and five-epoch schedule improve
+the Phase 2D sequence-classification router. It consists of three independent
+runs at `5e-6`, `1e-5`, and `2e-5`. Every run starts freshly from
+`Qwen/Qwen3.5-0.8B-Base`; no Phase 2D or Phase 2E trained checkpoint initializes
+another trial. The only within-Phase-2E difference is learning rate.
+
+All other settings are frozen: model revision
+`dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68`, the Phase 2D exact-token prompt,
+the same tokenizer, preserved train/validation examples and Oracle files,
+question-only input, five-logit `AutoModelForSequenceClassification` head,
+uniform cross-entropy, full-parameter configuration, seed 42, maximum length
+128, microbatch 4, gradient accumulation 8, effective batch 32, weight decay
+0.01, cosine schedule, warmup ratio 0.05, gradient clipping 1.0, BF16 CUDA,
+and no quantization. Each trial runs five epochs/355 optimizer updates, with 18
+warmup steps and validation at steps 71, 142, 213, 284, and 355.
+
+The fixed instruction remains:
+
+> You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = 10 tokens, 2 = 20 tokens, 3 = 40 tokens, 4 = 80 tokens, 5 = 160 tokens. Return only the number
+
+Its SHA-256 is
+`b3237368922abe709e2bd2d756fb9f25d39e7f5670e5c4cb15daaa3a2d1cf2e5`.
+The input is the instruction, a blank line, and the original question text.
+No evidence, evidence length, answer, paper text, retrieved chunks or scores,
+metadata, handcrafted feature, chat template, or assistant target is supplied.
+
+### 2. Data, Oracle, model, and environment
+
+- preserved training examples/papers: 2,245/845;
+- preserved validation examples/papers: 924/277;
+- train Oracle distribution for 10/20/40/80/160:
+  55/267/586/687/650;
+- validation Oracle distribution: 13/81/178/232/420;
+- train Oracle SHA-256:
+  `64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88`;
+- validation Oracle SHA-256:
+  `ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d`;
+- Python 3.10.7 in `.venv-qwen`;
+- Transformers `5.15.0.dev0`, commit
+  `2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7`;
+- PyTorch `2.8.0+cu128`, CUDA 12.8;
+- one `NVIDIA A100-SXM4-40GB`;
+- initial classifier head SHA-256, identical in all trials:
+  `09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5`.
+
+The original legacy `.venv` was not modified. All 852,991,040 parameters were
+marked trainable. Gradient audits show the language backbone and classifier
+head receive gradients. The unused vision tower is absent from the text-only
+computation graph and therefore has no observed gradients; this is not a claim
+that its parameters updated.
+
+### 3. Predeclared selection and all 15 development checkpoints
+
+The global selector orders candidates by higher macro-F1, accuracy, weighted
+F1, and balanced accuracy; lower validation cross-entropy; earlier optimizer
+step; and lower numeric learning rate only on an exact final tie. It considered
+exactly 15 candidates and locked the winner before any retrieval.
+
+| LR | Epoch | Step | CE | Accuracy | Macro-F1 | Weighted F1 | Balanced acc. | Top-2 |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 5e-6 | 1 | 71 | 1.4160810518058347 | 0.30844155844155846 | 0.19524927027126598 | 0.29896932960463235 | 0.2272939545327509 | 0.6017316017316018 |
+| 5e-6 | 2 | 142 | 1.4814272373269646 | 0.2619047619047619 | 0.15051563951039187 | 0.1790667704247578 | 0.21846274532313537 | 0.538961038961039 |
+| 5e-6 | 3 | 213 | 1.4225975060875797 | 0.2857142857142857 | 0.18413217050572556 | 0.2729541950135127 | 0.22010663326561558 | 0.5714285714285714 |
+| **5e-6** | **4** | **284** | **1.3759860497016412** | **0.3484848484848485** | **0.22777929657889012** | **0.3473258648868964** | **0.24232226137689133** | **0.6190476190476191** |
+| 5e-6 | 5 | 355 | 1.3720230444685204 | 0.3484848484848485 | 0.22559313887729796 | 0.3484691654624007 | 0.23795324604507093 | 0.6309523809523809 |
+| 1e-5 | 1 | 71 | 1.3604521274050594 | 0.39285714285714285 | 0.17892937509863063 | 0.3207834319072489 | 0.22323678939912955 | 0.6298701298701299 |
+| 1e-5 | 2 | 142 | 1.3957898890301264 | 0.29978354978354976 | 0.16337588291006747 | 0.24666410097710725 | 0.21723795242263538 | 0.6515151515151515 |
+| 1e-5 | 3 | 213 | 1.3921086592075629 | 0.33874458874458874 | 0.2121913036477682 | 0.33449363556478245 | 0.23582110347834226 | 0.6341991341991342 |
+| 1e-5 | 4 | 284 | 1.458046925016296 | 0.3235930735930736 | 0.21540884371375907 | 0.32864368966292395 | 0.22681571407388273 | 0.6038961038961039 |
+| 1e-5 | 5 | 355 | 1.4509322921951096 | 0.32792207792207795 | 0.21263800582609677 | 0.33163386759668284 | 0.22428790776717938 | 0.6071428571428571 |
+| 2e-5 | 1 | 71 | 1.3393364873799412 | 0.4090909090909091 | 0.1672499143468602 | 0.3096967677990664 | 0.22668312119429257 | 0.6536796536796536 |
+| 2e-5 | 2 | 142 | 1.355628962124581 | 0.32575757575757575 | 0.1728867102330036 | 0.2910400848572852 | 0.21147432020866092 | 0.7023809523809523 |
+| 2e-5 | 3 | 213 | 1.5105030201214216 | 0.3463203463203463 | 0.21680431699734548 | 0.3387164676151271 | 0.24251581390803914 | 0.5909090909090909 |
+| 2e-5 | 4 | 284 | 2.136673576388008 | 0.31277056277056275 | 0.2232188383733722 | 0.3222002147927793 | 0.23209435113606625 | 0.5584415584415584 |
+| 2e-5 | 5 | 355 | 2.2110366181377725 | 0.3170995670995671 | 0.2252323080025679 | 0.3281524813999655 | 0.23285430021449655 | 0.5562770562770563 |
+
+The locked global winner is `5e-6`, epoch 4, `step-000284`. A clean reload
+reproduced all 924 saved scores and predictions exactly. Retrieval was not
+used in selection.
+
+### 4. Winner classification results
+
+| Metric | Result |
+|---|---:|
+| Accuracy | 0.3484848484848485 (322/924) |
+| Macro-F1 | 0.22777929657889012 |
+| Weighted F1 | 0.3473258648868964 |
+| Balanced accuracy | 0.24232226137689133 |
+| Top-2 accuracy | 0.6190476190476191 (572/924) |
+| Uniform validation cross-entropy | 1.3759860497016412 |
+| Valid/invalid | 924/0 |
+
+The predicted distribution for 10/20/40/80/160 is 0/15/275/366/268.
+
+| Class | Precision | Recall | F1 | Support |
+|---:|---:|---:|---:|---:|
+| 10 | 0.0 | 0.0 | 0.0 | 13 |
+| 20 | 0.2 | 0.037037037037037035 | 0.0625 | 81 |
+| 40 | 0.2581818181818182 | 0.398876404494382 | 0.31346578366445915 | 178 |
+| 80 | 0.26229508196721313 | 0.41379310344827586 | 0.3210702341137124 | 232 |
+| 160 | 0.5671641791044776 | 0.3619047619047619 | 0.4418604651162791 | 420 |
+
+The confusion matrix uses Oracle rows and predicted columns in class order
+10/20/40/80/160:
+
+```text
+[[  0,   0,   8,   5,   0],
+ [  0,   3,  23,  39,  16],
+ [  0,   3,  71,  65,  39],
+ [  0,   3,  72,  96,  61],
+ [  0,   6, 101, 161, 152]]
+```
+
+The class-160 majority baseline has accuracy 0.45454545454545453 and
+macro-F1 0.125. Phase 2E is 0.10606060606060602 lower in accuracy and
+0.10277929657889012 higher in macro-F1. It never predicts class 10 and remains
+weak on class 20. The high class-160 support, 420/924 or 45.45%, remains a
+central interpretation constraint.
+
+### 5. Unchanged winner-only retrieval
+
+After the classification lock, only the winner was evaluated with unchanged
+same-paper retrieval: predicted granularity, `top_k=5`, stored
+`text-embedding-3-small` 1,536-dimensional vectors, cosine ordering, existing
+Qdrant collections, original chunk order and concatenation, GPT-2 tokens, and
+joined F1 `qasper-token-prf-v2`. No collection was created, deleted, rebuilt,
+or re-indexed. The evaluation-configuration hash is
+`9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8`.
+
+| Retrieval item | Result |
+|---|---:|
+| Coverage | 924/924 = 1.0 |
+| Mean joined retrieval F1 | 0.2793735097402597 |
+| Median joined retrieval F1 | 0.267412 |
+| Coverage-adjusted full-set mean | 0.27937350974026 |
+| Wall time | 282.3799051999813 seconds |
+| Durable question-processing time | 271.5550483992556 seconds |
+
+All 924 record-level results were independently recomputed: the mean and
+median match the summary, question IDs are unique, all calls use `top_k=5` and
+paper restriction, and all classifier statuses are valid five-logit argmax.
+Classification metrics measure Oracle-label agreement; joined retrieval F1
+measures evidence-token overlap after downstream retrieval. They are not the
+same metric.
+
+### 6. Contextual Phase 2D comparison
+
+| Metric | Phase 2D | Phase 2E | Phase 2E - Phase 2D |
+|---|---:|---:|---:|
+| Accuracy | 0.36904761904761907 | 0.3484848484848485 | -0.02056277056277056 |
+| Macro-F1 | 0.22994524079282935 | 0.22777929657889012 | -0.0021659442139392304 |
+| Weighted F1 | 0.3644656337102369 | 0.3473258648868964 | -0.017139768823340507 |
+| Balanced accuracy | 0.2391812745015638 | 0.24232226137689133 | +0.003140986875327545 |
+| Top-2 accuracy | 0.6341991341991342 | 0.6190476190476191 | -0.015151515151515138 |
+| Mean joined retrieval F1 | 0.2767166677489178 | 0.2793735097402597 | +0.00265684199134192 |
+| Median joined retrieval F1 | 0.2558975 | 0.267412 | +0.0115145 |
+
+Phase 2E does not improve the primary macro-F1 over Phase 2D. Its downstream
+retrieval overlap is slightly higher. This comparison is descriptive, not a
+causal or significance claim. Phase 2E is not Phase 2D plus two epochs: the
+cosine horizon/warmup change from 213/11 to 355/18, so even the `2e-5`
+trajectory differs from Phase 2D from its first update.
+
+### 7. Runtime, resources, and integrity
+
+- `5e-6`/`1e-5`/`2e-5` recorded training times:
+  2044.1943467836827/2022.7333836276084/2067.4948720689863 seconds;
+- summed recorded grid training: 6134.422602480277 seconds;
+- winner model load: 2.47247052565217 seconds;
+- isolated winner inference: 33.506004774942994 seconds;
+- mean/median inference per question:
+  0.03612477649043584/0.035192497074604034 seconds;
+- retrieval: 282.3799051999813 seconds;
+- known grid training + winner load/inference + retrieval:
+  6452.78098298085 seconds, about 1 hour 47 minutes 33 seconds;
+- training peak allocated/reserved GPU memory per trial:
+  9.0316162109375/9.62109375 GiB;
+- winner-reload peak allocated/reserved GPU memory:
+  1.7161517143249512/1.77734375 GiB;
+- winner-reload RSS: 1.6993751525878906 GiB.
+
+Every trial preflight passed, and every completed-run audit passed 15/15
+checks. All three selected checkpoints were transferred with content-addressed
+manifests: `5e-6` step 284 archive SHA
+`d9ad9a71a678ae646df1e1b1dac23d6317b21f8be3ed82834111c57cfb43aa02`;
+`1e-5` step 284 SHA
+`b96825d2fe23908416bd7ea4ced4e7e89beba7ebe9a30c37f1d57fce2c3ee18f`;
+and `2e-5` step 355 SHA
+`f76fab941057ad6e10db20cff85ca9a86f7b67a28e67f32363d7b1d28108b349`.
+At transfer time, the manifest bundle matched 13/13, metadata matched 64/64,
+and all three 9-file checkpoints matched. Retrieval then intentionally rewrote
+only the winning trial and global selected-final summaries to attach the
+completed retrieval block. The final post-retrieval audit verifies 62
+unchanged metadata entries plus exactly those two authorized updates, all
+27/27 checkpoint files, 924 unique recomputed retrieval records, and zero
+forbidden payloads. It is saved as
+`integrity/final_post_retrieval_audit.json` with SHA-256
+`5fe8ba1990fd4c59158eacf7570b9e4a9bb46facd38c55c5ea3ff90aae57f779`.
+Remote originals remain retained.
+
+### 8. Interpretation and limitations
+
+The lower `5e-6` rate is the Phase 2E winner, but the gain within the grid is
+small: its epoch-4 macro-F1 exceeds its epoch-5 runner-up by
+0.0021861577015921674. Phase 2E did not solve minority behavior, did not beat
+Phase 2D on the primary metric, and should be preserved as a negative/neutral
+hyperparameter-tuning result rather than an improvement claim.
+
+The official 924-example validation split has selected among 15 Phase 2E
+checkpoints and has also been repeatedly inspected in prior phases. It is now
+a development/model-selection set, not an unbiased final generalization
+estimate. Selection optimism is expected. Only seed 42 was run, so no variance,
+confidence interval, statistical significance, or QASPER test claim is
+available. The three learning rates are not three random-seed replicates.
+Earlier Logistic Regression and MLP classifiers use the old retrieval-F1
+Oracle, so their classification results are not directly comparable.
+
+### 9. Artifacts and reproduction
+
+Primary records are:
+
+- `docs/QWEN_PHASE2E_RESULTS.md`;
+- `reports/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/experiment_report.md`;
+- `outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/configuration/grid_experiment.json`;
+- `outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/comparison/selected_trial.json`;
+- `outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/comparison/lr_grid_metrics.csv`;
+- `outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/comparison/selected_final_summary.json`;
+- the three `trials/<variant>/runs/<run-id>/` trees and their
+  `phase2e_completed_run_audit.json` files;
+- winner `classification/`, `validation/`, and `retrieval/` directories;
+- `integrity/selected_checkpoints_transfer_verification.json` and
+  `integrity/transfer_manifests/`;
+- `integrity/final_post_retrieval_audit.json`.
+
+The global authority is `comparison/selected_final_summary.json`; there is no
+root-level `final_summary.json`. The winner trial has its own
+`trials/lr5e-6/final_summary.json`.
+
+Classification lock and retrieval reproduction on the verified local study:
+
+```powershell
+.\.venv-qwen\Scripts\python.exe qwen_phase2e_posttraining.py --study-root outputs\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle audit-selected
+.\.venv-qwen\Scripts\python.exe qwen_phase2e_posttraining.py --study-root outputs\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle retrieve-selected
+.\.venv-qwen\Scripts\python.exe qwen_phase2e_posttraining.py --study-root outputs\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle audit-final
+```
+
+The exact remote grid sequence and recovery command are documented in
+`docs/QWEN_PHASE2E_RESULTS.md`. The Phase 2E source is a content-addressed
+snapshot based on repository commit
+`12c7b1a22f552f83d54a752f87f6687c98b52944`; that base commit does not itself
+contain the new Phase 2E files.

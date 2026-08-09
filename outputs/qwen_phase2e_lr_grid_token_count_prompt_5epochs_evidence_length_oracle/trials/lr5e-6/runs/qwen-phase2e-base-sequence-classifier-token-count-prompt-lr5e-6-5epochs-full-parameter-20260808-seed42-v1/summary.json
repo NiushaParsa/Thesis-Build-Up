@@ -1,0 +1,159 @@
+{
+  "status": "complete",
+  "phase": "Phase 2E",
+  "mode": "full",
+  "run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1",
+  "global_step": 355,
+  "initial_loss": 1.5487420707941055,
+  "final_loss": 1.0789286613464355,
+  "validation_loss": 1.3759860497016412,
+  "validation_metrics": {
+    "accuracy": 0.3484848484848485,
+    "macro_f1": 0.22777929657889012,
+    "weighted_f1": 0.3473258648868964,
+    "balanced_accuracy": 0.24232226137689133,
+    "top_2_accuracy": 0.6190476190476191,
+    "top_2_accuracy_status": "available_from_comparable_five_class_head_logits",
+    "per_class": {
+      "10": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13
+      },
+      "20": {
+        "precision": 0.2,
+        "recall": 0.037037037037037035,
+        "f1": 0.0625,
+        "support": 81
+      },
+      "40": {
+        "precision": 0.2581818181818182,
+        "recall": 0.398876404494382,
+        "f1": 0.31346578366445915,
+        "support": 178
+      },
+      "80": {
+        "precision": 0.26229508196721313,
+        "recall": 0.41379310344827586,
+        "f1": 0.3210702341137124,
+        "support": 232
+      },
+      "160": {
+        "precision": 0.5671641791044776,
+        "recall": 0.3619047619047619,
+        "f1": 0.4418604651162791,
+        "support": 420
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        8,
+        5,
+        0
+      ],
+      [
+        0,
+        3,
+        23,
+        39,
+        16
+      ],
+      [
+        0,
+        3,
+        71,
+        65,
+        39
+      ],
+      [
+        0,
+        3,
+        72,
+        96,
+        61
+      ],
+      [
+        0,
+        6,
+        101,
+        161,
+        152
+      ]
+    ],
+    "evaluated_examples": 924,
+    "valid_predictions": 924,
+    "invalid_predictions": 0
+  },
+  "validation_events": 5,
+  "selected_checkpoint": "/dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr5e-6/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1/checkpoints/step-000284",
+  "selected_checkpoint_id": "step-000284",
+  "selection_reason": "validation_macro_f1",
+  "elapsed_seconds": 2044.1943467836827,
+  "peak_gpu_allocated_gib": 9.0316162109375,
+  "peak_gpu_reserved_gib": 9.62109375,
+  "rss_gib": 2.0423965454101562,
+  "total_parameters": 852991040,
+  "trainable_parameters": 852991040,
+  "gradient_audit": {
+    "status": "passed",
+    "classifier_head_received_gradient": true,
+    "language_backbone_received_gradient": true,
+    "parameters_with_gradient": 752398144,
+    "parameters_without_gradient": 100592896,
+    "tensors_with_gradient": 321,
+    "tensors_without_gradient": 153,
+    "without_gradient_note": "The composite qwen3_5 model contains a vision tower; text-only inputs may intentionally leave vision parameters without gradients.",
+    "sample_names_with_gradient": [
+      "model.language_model.embed_tokens.weight",
+      "model.language_model.layers.0.linear_attn.dt_bias",
+      "model.language_model.layers.0.linear_attn.A_log",
+      "model.language_model.layers.0.linear_attn.conv1d.weight",
+      "model.language_model.layers.0.linear_attn.norm.weight",
+      "model.language_model.layers.0.linear_attn.out_proj.weight",
+      "model.language_model.layers.0.linear_attn.in_proj_qkv.weight",
+      "model.language_model.layers.0.linear_attn.in_proj_z.weight",
+      "model.language_model.layers.0.linear_attn.in_proj_b.weight",
+      "model.language_model.layers.0.linear_attn.in_proj_a.weight"
+    ],
+    "sample_names_without_gradient": [
+      "model.visual.patch_embed.proj.weight",
+      "model.visual.patch_embed.proj.bias",
+      "model.visual.pos_embed.weight",
+      "model.visual.blocks.0.norm1.weight",
+      "model.visual.blocks.0.norm1.bias",
+      "model.visual.blocks.0.norm2.weight",
+      "model.visual.blocks.0.norm2.bias",
+      "model.visual.blocks.0.attn.qkv.weight",
+      "model.visual.blocks.0.attn.qkv.bias",
+      "model.visual.blocks.0.attn.proj.weight"
+    ]
+  },
+  "experiment_fingerprint": "d57c1356578b402ddbf7b77fc64de5c7167a70908c45a05235b8ccb9f7e38adf",
+  "checkpoints_pruned_at_completion": [
+    "step-000355"
+  ],
+  "tensorboard_directory": "/dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr5e-6/tensorboard/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1",
+  "created_at": "2026-08-08T19:18:00.842245+00:00",
+  "phase2e_metadata": {
+    "phase": "Phase 2E",
+    "study_id": "qwen-phase2e-lr-grid-token-count-prompt-5epochs-seed42-v1",
+    "grid_fingerprint": "dc80671e8635cb2e479c7e231662eedb1be0920e28497d8f8e8b016703ff2b2b",
+    "variant": "lr5e-6",
+    "learning_rate": 5e-06,
+    "epochs": 5,
+    "phase2e_orchestrator_sha256": "fa686f3f363b6b54ec082baf4eb7ea7b21ffe01da8c50f10284d57c65042039e",
+    "phase2d_execution_module_sha256": "99ba4f9a57b5547e776d81d2c7c94aece2670a9b5ccaf348c8a1fbeb0baa5efc",
+    "execution_dependency_sha256": {
+      "qwen_phase2.py": "c9a6f2a277bd841d6bf0ede9e948b18e91e1a8f5a298f7d704d0b4279c99ed39",
+      "qwen_phase2b.py": "60572d8c3054e7ef76055b2c40cf65c2999ef18000930f5a6967fd2ae673041c",
+      "qwen_phase2c_sequence_classifier.py": "6eeb155296b239463d5ba7c8c75dfed8dd59f8c5285cab1edf7cb6a553f9aefb",
+      "qwen_phase2d_sequence_classifier.py": "99ba4f9a57b5547e776d81d2c7c94aece2670a9b5ccaf348c8a1fbeb0baa5efc",
+      "qwen_phase2e_sequence_classifier_lr_grid.py": "fa686f3f363b6b54ec082baf4eb7ea7b21ffe01da8c50f10284d57c65042039e"
+    },
+    "repository_base_commit": "12c7b1a22f552f83d54a752f87f6687c98b52944"
+  },
+  "execution_implementation_phase": "Phase 2D"
+}

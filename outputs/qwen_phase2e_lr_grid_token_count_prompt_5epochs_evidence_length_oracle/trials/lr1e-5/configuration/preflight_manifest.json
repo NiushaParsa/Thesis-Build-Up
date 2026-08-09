@@ -1,0 +1,113 @@
+{
+  "status": "passed",
+  "phase": "Phase 2E",
+  "formulation_version": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr-grid-v1",
+  "model_id": "Qwen/Qwen3.5-0.8B-Base",
+  "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+  "data": {
+    "train_examples": 2245,
+    "validation_examples": 924,
+    "train_documents": 845,
+    "validation_documents": 277,
+    "train_distribution": {
+      "10": 55,
+      "20": 267,
+      "40": 586,
+      "80": 687,
+      "160": 650
+    },
+    "validation_distribution": {
+      "10": 13,
+      "20": 81,
+      "40": 178,
+      "80": 232,
+      "160": 420
+    },
+    "train_oracle_sha256": "64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88",
+    "validation_oracle_sha256": "ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d",
+    "verified_at": "2026-08-08T18:43:25.198383+00:00"
+  },
+  "instruction": "You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = 10 tokens, 2 = 20 tokens, 3 = 40 tokens, 4 = 80 tokens, 5 = 160 tokens. Return only the number",
+  "instruction_sha256": "b3237368922abe709e2bd2d756fb9f25d39e7f5670e5c4cb15daaa3a2d1cf2e5",
+  "model_inputs": [
+    "fixed_supervisor_instruction",
+    "original_question_text"
+  ],
+  "excluded_inputs": [
+    "evidence",
+    "evidence_length",
+    "answer",
+    "paper_text",
+    "retrieved_chunks",
+    "retrieval_scores",
+    "metadata",
+    "handcrafted_features",
+    "chat_template",
+    "assistant_target_tokens"
+  ],
+  "tokenizer": {
+    "class": "Qwen2Tokenizer",
+    "pad_token": "<|endoftext|>",
+    "pad_token_id": 248044,
+    "padding_side": "right",
+    "add_special_tokens": true,
+    "truncation": false
+  },
+  "configuration_audit": {
+    "status": "passed",
+    "checks": {
+      "num_labels": true,
+      "problem_type": true,
+      "id2label": true,
+      "label2id": true,
+      "top_level_pad_token_id": true,
+      "text_config_pad_token_id": true,
+      "top_level_use_cache": true,
+      "text_config_use_cache": true
+    },
+    "num_labels": 5,
+    "id2label": {
+      "0": "10",
+      "1": "20",
+      "2": "40",
+      "3": "80",
+      "4": "160"
+    },
+    "label2id": {
+      "10": 0,
+      "20": 1,
+      "40": 2,
+      "80": 3,
+      "160": 4
+    },
+    "pad_token_id": 248044
+  },
+  "sequence_lengths": {
+    "train": {
+      "minimum": 95,
+      "maximum": 121,
+      "mean": 101.13363028953229,
+      "over_maximum": 0
+    },
+    "validation": {
+      "minimum": 96,
+      "maximum": 124,
+      "mean": 100.59740259740259,
+      "over_maximum": 0
+    }
+  },
+  "pooling_safety": {
+    "unpadded_inputs_containing_pad_token_id": 0,
+    "right_padding": true,
+    "nested_text_config_pad_token_id_explicit": true
+  },
+  "experiment_fingerprint": "96c18d9b75034000be73514afa360d8c2594d697ded6f291e3ee32a4e1fad722",
+  "verified_at": "2026-08-08T18:43:27.036522+00:00",
+  "study_id": "qwen-phase2e-lr-grid-token-count-prompt-5epochs-seed42-v1",
+  "grid_fingerprint": "dc80671e8635cb2e479c7e231662eedb1be0920e28497d8f8e8b016703ff2b2b",
+  "variant": "lr1e-5",
+  "learning_rate": 1e-05,
+  "epochs": 5,
+  "total_optimizer_steps": 355,
+  "warmup_steps": 18
+}

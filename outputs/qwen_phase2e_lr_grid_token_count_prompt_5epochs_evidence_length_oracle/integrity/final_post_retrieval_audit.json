@@ -1,0 +1,98 @@
+{
+  "status": "passed",
+  "phase": "Phase 2E",
+  "study_id": "qwen-phase2e-lr-grid-token-count-prompt-5epochs-seed42-v1",
+  "study_root": "outputs\\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle",
+  "grid_fingerprint": "dc80671e8635cb2e479c7e231662eedb1be0920e28497d8f8e8b016703ff2b2b",
+  "selection": {
+    "status": "classification_winner_lock_verified",
+    "variant": "lr5e-6",
+    "learning_rate": 5e-06,
+    "run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1",
+    "selected_checkpoint_id": "step-000284",
+    "candidate_count": 15,
+    "retrieval_was_not_used_for_selection": true
+  },
+  "retrieval": {
+    "status": "complete_and_recomputed",
+    "results": "outputs\\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle\\trials\\lr5e-6\\retrieval\\results.jsonl",
+    "summary": "outputs\\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle\\trials\\lr5e-6\\retrieval\\summary.json",
+    "records": 924,
+    "unique_question_ids": 924,
+    "retrieval_coverage": 1.0,
+    "mean_joined_retrieval_f1": 0.2793735097402597,
+    "median_joined_retrieval_f1": 0.267412,
+    "top_k": 5,
+    "paper_restricted": true,
+    "evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8"
+  },
+  "transfer": {
+    "verification_record": "outputs\\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle\\integrity\\selected_checkpoints_transfer_verification.json",
+    "verification_record_sha256": "701d78a6f0ba1f3c871ea4afd5f19d0a48138eb2276931da4385a7f80f01e4f3",
+    "verification_status": "passed",
+    "verification_timestamp": "2026-08-08T21:25:36.5263304+00:00",
+    "manifest_bundle": "outputs\\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle\\integrity\\transfer_manifests\\manifest_bundle.sha256",
+    "manifest_bundle_sha256": "1ce870ebfcfcc2d370f6357f0006f393a4c732ee880394b5e1793a96b26d3b46",
+    "manifest_files_verified": 13,
+    "checkpoint_files_verified": 27,
+    "checkpoints": [
+      {
+        "variant": "lr5e-6",
+        "run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1",
+        "checkpoint_id": "step-000284",
+        "relative_path": "qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr5e-6/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1/checkpoints/step-000284",
+        "archive_bytes": 2895385475,
+        "archive_sha256": "d9ad9a71a678ae646df1e1b1dac23d6317b21f8be3ed82834111c57cfb43aa02",
+        "chunk_count": 28,
+        "verified_file_count": 9
+      },
+      {
+        "variant": "lr1e-5",
+        "run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr1e-5-5epochs-full-parameter-20260808-seed42-v1",
+        "checkpoint_id": "step-000284",
+        "relative_path": "qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr1e-5/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr1e-5-5epochs-full-parameter-20260808-seed42-v1/checkpoints/step-000284",
+        "archive_bytes": 2884152550,
+        "archive_sha256": "b96825d2fe23908416bd7ea4ced4e7e89beba7ebe9a30c37f1d57fce2c3ee18f",
+        "chunk_count": 28,
+        "verified_file_count": 9
+      },
+      {
+        "variant": "lr2e-5",
+        "run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr2e-5-5epochs-full-parameter-20260808-seed42-v1",
+        "checkpoint_id": "step-000355",
+        "relative_path": "qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr2e-5/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr2e-5-5epochs-full-parameter-20260808-seed42-v1/checkpoints/step-000355",
+        "archive_bytes": 2860205438,
+        "archive_sha256": "f76fab941057ad6e10db20cff85ca9a86f7b67a28e67f32363d7b1d28108b349",
+        "chunk_count": 28,
+        "verified_file_count": 9
+      }
+    ],
+    "forbidden_payload_count": 0
+  },
+  "metadata": {
+    "manifest": "outputs\\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle\\integrity\\transfer_manifests\\manifests\\metadata_files.sha256",
+    "manifest_entries": 64,
+    "unchanged_entries_verified": 62,
+    "authorized_changed_entries": 2,
+    "authorized_changes": [
+      {
+        "path": "qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/comparison/selected_final_summary.json",
+        "pre_retrieval_sha256": "f45d5ec6beb22eeef6fc7ce12dbb43990ddb8d6578dffcbd90714bef4be38a7b",
+        "current_sha256": "d7ec1d097851dafbb761883bfd76448106fafb8753c502c672ac94dc2bdc0c81",
+        "reason": "authorized_post_retrieval_summary_update"
+      },
+      {
+        "path": "qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr5e-6/final_summary.json",
+        "pre_retrieval_sha256": "cabdd0e0ff3612941f9e0cb39c66a3ef324bf67842de7ae1e52d000ba1c5cf69",
+        "current_sha256": "22332d8aabe52c3b30dfa374f04fd4044c4169e62bc8dae8db21b44b7a46454f",
+        "reason": "authorized_post_retrieval_summary_update"
+      }
+    ],
+    "all_other_metadata_matches_transfer_manifest": true
+  },
+  "experiment_rerun": false,
+  "retrieval_rerun": false,
+  "qdrant_mutation": false,
+  "completed_at": "2026-08-08T21:52:50.934743+00:00",
+  "artifact": "outputs\\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle\\integrity\\final_post_retrieval_audit.json"
+}

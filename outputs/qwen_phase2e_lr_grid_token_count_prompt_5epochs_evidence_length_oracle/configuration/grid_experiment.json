@@ -1,0 +1,117 @@
+{
+  "phase": "Phase 2E",
+  "study_id": "qwen-phase2e-lr-grid-token-count-prompt-5epochs-seed42-v1",
+  "formulation_version": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr-grid-v1",
+  "model_id": "Qwen/Qwen3.5-0.8B-Base",
+  "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+  "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+  "architecture": "AutoModelForSequenceClassification",
+  "instruction": "You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = 10 tokens, 2 = 20 tokens, 3 = 40 tokens, 4 = 80 tokens, 5 = 160 tokens. Return only the number",
+  "instruction_sha256": "b3237368922abe709e2bd2d756fb9f25d39e7f5670e5c4cb15daaa3a2d1cf2e5",
+  "input_template": "{instruction}\\n\\nQuestion: {original_question_text}",
+  "id2label": {
+    "0": "10",
+    "1": "20",
+    "2": "40",
+    "3": "80",
+    "4": "160"
+  },
+  "label2id": {
+    "10": 0,
+    "20": 1,
+    "40": 2,
+    "80": 3,
+    "160": 4
+  },
+  "objective": "uniform_five_class_cross_entropy",
+  "ordered_variants": [
+    "lr5e-6",
+    "lr1e-5",
+    "lr2e-5"
+  ],
+  "learning_rates": {
+    "lr5e-6": 5e-06,
+    "lr1e-5": 1e-05,
+    "lr2e-5": 2e-05
+  },
+  "epochs": 5,
+  "seed": 42,
+  "steps_per_epoch": 71,
+  "total_optimizer_steps": 355,
+  "warmup_steps": 18,
+  "validation_checkpoint_steps": [
+    71,
+    142,
+    213,
+    284,
+    355
+  ],
+  "selection_order": [
+    "higher_macro_f1",
+    "higher_accuracy",
+    "higher_weighted_f1",
+    "higher_balanced_accuracy",
+    "lower_validation_cross_entropy",
+    "earlier_optimizer_step",
+    "lower_numeric_learning_rate_exact_final_tie"
+  ],
+  "run_ids": {
+    "lr5e-6": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1",
+    "lr1e-5": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr1e-5-5epochs-full-parameter-20260808-seed42-v1",
+    "lr2e-5": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr2e-5-5epochs-full-parameter-20260808-seed42-v1"
+  },
+  "train_oracle_sha256": "64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88",
+  "validation_oracle_sha256": "ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d",
+  "expected_initial_classifier_head_sha256_float32": "09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5",
+  "frozen_phase2d_configuration": {
+    "model_id": "Qwen/Qwen3.5-0.8B-Base",
+    "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+    "architecture": "AutoModelForSequenceClassification",
+    "training_method": "full_parameter_sequence_classification",
+    "objective": "uniform_five_class_cross_entropy",
+    "problem_type": "single_label_classification",
+    "dtype": "torch.bfloat16",
+    "device": "cuda",
+    "max_sequence_length": 128,
+    "per_device_batch_size": 4,
+    "gradient_accumulation_steps": 8,
+    "effective_batch_size": 32,
+    "weight_decay": 0.01,
+    "scheduler": "cosine",
+    "warmup_ratio": 0.05,
+    "gradient_clipping": 1.0,
+    "seed": 42,
+    "logging_steps": 1,
+    "evaluation_frequency": "end_of_epoch",
+    "checkpoint_frequency": "end_of_epoch",
+    "checkpoint_retention_policy": "retain_current_and_best_during_training_selected_only_at_completion",
+    "checkpoint_selection_metric": "validation_macro_f1",
+    "checkpoint_tie_break": "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step",
+    "quantization": null,
+    "class_weights": "uniform"
+  },
+  "allowed_changes_from_phase2d": [
+    "phase/formulation/artifact identity",
+    "learning_rate selected from the predeclared grid",
+    "epochs increased from 3 to 5",
+    "derived cosine-schedule horizon and warmup steps"
+  ],
+  "validation_role": "development/model-selection set; repeatedly observed and not an unbiased final generalization estimate",
+  "retrieval_selection_rule": "lock the classification winner before unchanged retrieval; retrieval F1 cannot select or revise the winning trial",
+  "status": "predeclared_before_training",
+  "grid_fingerprint": "dc80671e8635cb2e479c7e231662eedb1be0920e28497d8f8e8b016703ff2b2b",
+  "repository_base_commit": "12c7b1a22f552f83d54a752f87f6687c98b52944",
+  "source_snapshot_status": "content-addressed Phase 2E worktree snapshot; the base commit does not by itself identify the new Phase 2E files",
+  "execution_dependency_sha256": {
+    "qwen_phase2.py": "c9a6f2a277bd841d6bf0ede9e948b18e91e1a8f5a298f7d704d0b4279c99ed39",
+    "qwen_phase2b.py": "60572d8c3054e7ef76055b2c40cf65c2999ef18000930f5a6967fd2ae673041c",
+    "qwen_phase2c_sequence_classifier.py": "6eeb155296b239463d5ba7c8c75dfed8dd59f8c5285cab1edf7cb6a553f9aefb",
+    "qwen_phase2d_sequence_classifier.py": "99ba4f9a57b5547e776d81d2c7c94aece2670a9b5ccaf348c8a1fbeb0baa5efc",
+    "qwen_phase2e_sequence_classifier_lr_grid.py": "fa686f3f363b6b54ec082baf4eb7ea7b21ffe01da8c50f10284d57c65042039e"
+  },
+  "remote_runner_sha256": "183f01df84a334f2bc013d6ae4f95e7d1e676b0deed4630220f5a53b53eda376",
+  "phase2d_execution_module": "/dev/shm/phase2e_code/qwen_phase2d_sequence_classifier.py",
+  "phase2d_execution_module_sha256": "99ba4f9a57b5547e776d81d2c7c94aece2670a9b5ccaf348c8a1fbeb0baa5efc",
+  "phase2e_orchestrator_sha256": "fa686f3f363b6b54ec082baf4eb7ea7b21ffe01da8c50f10284d57c65042039e",
+  "created_at": "2026-08-08T18:43:11.337324+00:00"
+}

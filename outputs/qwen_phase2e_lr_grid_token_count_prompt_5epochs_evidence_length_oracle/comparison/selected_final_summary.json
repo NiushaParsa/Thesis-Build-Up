@@ -1,0 +1,240 @@
+{
+  "status": "complete",
+  "phase": "Phase 2E Base sequence-classification LR-grid fine-tuning",
+  "study_id": "qwen-phase2e-lr-grid-token-count-prompt-5epochs-seed42-v1",
+  "grid_fingerprint": "dc80671e8635cb2e479c7e231662eedb1be0920e28497d8f8e8b016703ff2b2b",
+  "variant": "lr5e-6",
+  "learning_rate": 5e-06,
+  "epochs": 5,
+  "validation_role": "development/model-selection set; repeatedly observed and not an unbiased final generalization estimate",
+  "retrieval_was_not_used_for_selection": true,
+  "global_grid_winner": true,
+  "run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1",
+  "selected_checkpoint_id": "step-000284",
+  "classification": {
+    "accuracy": 0.3484848484848485,
+    "macro_f1": 0.22777929657889012,
+    "weighted_f1": 0.3473258648868964,
+    "balanced_accuracy": 0.24232226137689133,
+    "top_2_accuracy": 0.6190476190476191,
+    "top_2_accuracy_status": "available_from_comparable_five_class_head_logits",
+    "per_class": {
+      "10": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13
+      },
+      "20": {
+        "precision": 0.2,
+        "recall": 0.037037037037037035,
+        "f1": 0.0625,
+        "support": 81
+      },
+      "40": {
+        "precision": 0.2581818181818182,
+        "recall": 0.398876404494382,
+        "f1": 0.31346578366445915,
+        "support": 178
+      },
+      "80": {
+        "precision": 0.26229508196721313,
+        "recall": 0.41379310344827586,
+        "f1": 0.3210702341137124,
+        "support": 232
+      },
+      "160": {
+        "precision": 0.5671641791044776,
+        "recall": 0.3619047619047619,
+        "f1": 0.4418604651162791,
+        "support": 420
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        8,
+        5,
+        0
+      ],
+      [
+        0,
+        3,
+        23,
+        39,
+        16
+      ],
+      [
+        0,
+        3,
+        71,
+        65,
+        39
+      ],
+      [
+        0,
+        3,
+        72,
+        96,
+        61
+      ],
+      [
+        0,
+        6,
+        101,
+        161,
+        152
+      ]
+    ],
+    "evaluated_examples": 924,
+    "valid_predictions": 924,
+    "invalid_predictions": 0
+  },
+  "predicted_distribution": {
+    "10": 0,
+    "20": 15,
+    "40": 275,
+    "80": 366,
+    "160": 268
+  },
+  "oracle_distribution": {
+    "10": 13,
+    "20": 81,
+    "40": 178,
+    "80": 232,
+    "160": 420
+  },
+  "runtime": {
+    "source": "post_training_selected_checkpoint_reload",
+    "new_inference_performed": true,
+    "inference_method": "five_logit_sequence_classifier_argmax",
+    "model_load_seconds": 2.47247052565217,
+    "isolated_inference_wall_seconds": 33.506004774942994,
+    "selected_epoch_validation_wall_seconds": 33.22264311462641,
+    "selected_epoch_exact_score_match": true,
+    "selected_epoch_outputs_compared": 924,
+    "mean_inference_seconds": 0.03612477649043584,
+    "median_inference_seconds": 0.035192497074604034,
+    "total_allocated_batch_forward_seconds": 33.37929347716272,
+    "inference_timing_basis": "synchronized_batch_forward_wall_divided_evenly_per_batch",
+    "uniform_validation_cross_entropy": 1.3759860497016412,
+    "peak_gpu_allocated_gib": 1.7161517143249512,
+    "peak_gpu_reserved_gib": 1.77734375,
+    "rss_gib": 1.6993751525878906,
+    "selected_checkpoint": "/dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr5e-6/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1/checkpoints/step-000284",
+    "selected_checkpoint_id": "step-000284",
+    "checkpoint_model_loading_audit": {
+      "configuration": {
+        "status": "passed",
+        "checks": {
+          "num_labels": true,
+          "problem_type": true,
+          "id2label": true,
+          "label2id": true,
+          "top_level_pad_token_id": true,
+          "text_config_pad_token_id": true,
+          "top_level_use_cache": true,
+          "text_config_use_cache": true
+        },
+        "num_labels": 5,
+        "id2label": {
+          "0": "10",
+          "1": "20",
+          "2": "40",
+          "3": "80",
+          "4": "160"
+        },
+        "label2id": {
+          "10": 0,
+          "20": 1,
+          "40": 2,
+          "80": 3,
+          "160": 4
+        },
+        "pad_token_id": 248044
+      },
+      "classifier_head": {
+        "status": "passed",
+        "initial_base_load": false,
+        "seed_set_before_model_load": 42,
+        "head_parameter_name": "score.weight",
+        "head_shape": [
+          5,
+          1024
+        ],
+        "head_bias": false,
+        "head_weight_dtype": "torch.bfloat16",
+        "head_weight_sha256_float32": "eb2cdb99b95c6941967fa9ec772729fd27c6ae613ffd9a7215332e0ede39b933",
+        "loading_info": {
+          "missing_keys": [],
+          "unexpected_keys": [],
+          "mismatched_keys": [],
+          "error_msgs": []
+        }
+      }
+    },
+    "evaluated_examples": 924,
+    "completed_at": "2026-08-08T20:27:12.182547+00:00",
+    "phase": "Phase 2E Base sequence-classification LR-grid fine-tuning",
+    "study_id": "qwen-phase2e-lr-grid-token-count-prompt-5epochs-seed42-v1",
+    "grid_fingerprint": "dc80671e8635cb2e479c7e231662eedb1be0920e28497d8f8e8b016703ff2b2b",
+    "variant": "lr5e-6",
+    "learning_rate": 5e-06,
+    "epochs": 5,
+    "validation_role": "development/model-selection set; repeatedly observed and not an unbiased final generalization estimate",
+    "retrieval_was_not_used_for_selection": true,
+    "global_grid_winner": true
+  },
+  "trial_final_summary": "/dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr5e-6/final_summary.json",
+  "selection_artifact": "/dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/comparison/selected_trial.json",
+  "completed_at": "2026-08-08T21:32:44.539020+00:00",
+  "retrieval": {
+    "status": "complete",
+    "phase": "Phase 2E",
+    "method_name": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr-grid-selected-router",
+    "study_id": "qwen-phase2e-lr-grid-token-count-prompt-5epochs-seed42-v1",
+    "phase2e_run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1",
+    "variant": "lr5e-6",
+    "learning_rate": 5e-06,
+    "formulation_version": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr-grid-v1",
+    "grid_fingerprint": "dc80671e8635cb2e479c7e231662eedb1be0920e28497d8f8e8b016703ff2b2b",
+    "experiment_fingerprint": "d57c1356578b402ddbf7b77fc64de5c7167a70908c45a05235b8ccb9f7e38adf",
+    "evaluation_run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1-retrieval-top5-paper",
+    "selected_checkpoint_id": "step-000284",
+    "classification_winner_was_locked_before_retrieval": true,
+    "retrieval_was_not_used_for_selection": true,
+    "evaluated_examples": 924,
+    "valid_prediction_retrievals": 924,
+    "invalid_predictions_without_retrieval": 0,
+    "retrieval_coverage": 1.0,
+    "valid_only_mean_joined_retrieval_f1": 0.2793735097402597,
+    "valid_only_median_joined_retrieval_f1": 0.267412,
+    "coverage_adjusted_full_set_mean_joined_retrieval_f1": 0.27937350974026,
+    "full_set_note": "Every canonical Phase 2E classifier output is an explicit argmax over five logits. No default or parser fallback is used; an invalid prediction would be excluded rather than mapped.",
+    "top_k": 5,
+    "paper_restricted": true,
+    "embedding_model": "text-embedding-3-small",
+    "embedding_dimension": 1536,
+    "tokenizer": "gpt2",
+    "metric": "f1_joined_topk",
+    "evaluation_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+    "schema_version": 2,
+    "metric_version": "qasper-token-prf-v2",
+    "normalization_version": "lowercase-remove-punctuation-collapse-whitespace-v1",
+    "runtime_segments": 1,
+    "current_segment_wall_seconds": 282.3799051999813,
+    "completed_invocation_wall_seconds": 282.3799051999813,
+    "cumulative_durable_question_processing_seconds": 271.5550483992556,
+    "complete_uninterrupted_run_wall_seconds": 282.3799051999813,
+    "reported_retrieval_wall_seconds": 282.3799051999813,
+    "reported_retrieval_wall_basis": "complete_uninterrupted_invocation",
+    "runtime_note": "Each completed question stores an fsynced processing duration. After resume, the durable per-question sum is reported rather than fabricating an uninterrupted wall time.",
+    "completed_at": "2026-08-08T21:32:44.508926+00:00"
+  },
+  "artifacts": {
+    "retrieval_results": "outputs\\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle\\trials\\lr5e-6\\retrieval\\results.jsonl",
+    "retrieval_summary": "outputs\\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle\\trials\\lr5e-6\\retrieval\\summary.json",
+    "retrieval_runtime_segments": "outputs\\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle\\trials\\lr5e-6\\retrieval\\runtime_segments.jsonl"
+  }
+}

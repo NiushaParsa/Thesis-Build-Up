@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "checks": {
+    "status_complete": true,
+    "run_id": true,
+    "global_steps": true,
+    "validation_events": true,
+    "complete_frozen_training_config": true,
+    "data_identity": true,
+    "experiment_fingerprint": true,
+    "selected_checkpoint": true,
+    "learning_rate": true,
+    "epochs": true,
+    "total_optimizer_steps": true,
+    "warmup_steps": true,
+    "initial_head_hash": true,
+    "prior_phase2e_metadata": true,
+    "prior_phase2e_identity": true
+  },
+  "variant": "lr5e-6",
+  "run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1",
+  "initial_classifier_head_sha256_float32": "09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5",
+  "verified_at": "2026-08-08T19:18:00.940386+00:00"
+}

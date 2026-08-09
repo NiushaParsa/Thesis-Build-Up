@@ -13,7 +13,8 @@ Python 3.12.6 at
 Python 3.11 was not installed. Following the requested fallback rule,
 `.venv-qwen` was created with Python 3.10.7. It is reserved for pretrained
 Qwen Phase 1 and the completed fine-tuned Qwen Phase 2, Phase 2B, Phase 2C,
-and Phase 2D experiments; it is not used to rerun the earlier baselines.
+and Phase 2D experiments, as well as the Phase 2E classification grid; it is
+not used to rerun the earlier baselines.
 
 The Qwen executable is
 `C:\Users\behno\Repos\Thesis Build Up\.venv-qwen\Scripts\python.exe`.
@@ -402,6 +403,137 @@ all nine extracted checkpoint-file hashes match the remote source. The
 original Python 3.9 `.venv`, system Python, prior Qwen artifacts, Qdrant
 collections, records, port, and storage path remained unchanged.
 
+## Phase 2E remote CUDA environment
+
+Phase 2E reuses the Phase 2D token-count prompt and five-logit Base-model
+classifier while varying the learning rate across three fresh, independent
+five-epoch runs. It uses the same remote executable,
+`/workspace/thesis-granularity-router/.venv-qwen/bin/python`, with exact Python
+version `3.10.7 (main, Oct  3 2022, 02:19:58) [Clang 14.0.3 ]`. The recorded
+software and hardware provenance is unchanged:
+
+- Transformers `5.15.0.dev0`, commit
+  `2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7`;
+- PyTorch `2.8.0+cu128`, CUDA 12.8, TensorBoard `2.20.0`;
+- one `NVIDIA A100-SXM4-40GB` on `cuda`;
+- `torch.bfloat16`, no quantization, deterministic seed 42.
+
+The study ID is
+`qwen-phase2e-lr-grid-token-count-prompt-5epochs-seed42-v1` and its
+formulation is
+`qwen-phase2e-base-sequence-classifier-token-count-prompt-lr-grid-v1`.
+Run IDs are:
+
+- `qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1`;
+- `qwen-phase2e-base-sequence-classifier-token-count-prompt-lr1e-5-5epochs-full-parameter-20260808-seed42-v1`;
+- `qwen-phase2e-base-sequence-classifier-token-count-prompt-lr2e-5-5epochs-full-parameter-20260808-seed42-v1`.
+
+Each trial loads `Qwen/Qwen3.5-0.8B-Base` revision
+`dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68` independently through
+`AutoModelForSequenceClassification`. Each begins from the same initial
+classifier-head hash,
+`09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5`;
+no trial continues from Phase 2D or from another grid trial. Five logits map
+class IDs 0--4 to 10/20/40/80/160. The winning trained head hash is
+`eb2cdb99b95c6941967fa9ec772729fd27c6ae613ffd9a7215332e0ede39b933`.
+
+The exact frozen instruction is:
+
+> You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = 10 tokens, 2 = 20 tokens, 3 = 40 tokens, 4 = 80 tokens, 5 = 160 tokens. Return only the number
+
+Its SHA-256 is
+`b3237368922abe709e2bd2d756fb9f25d39e7f5670e5c4cb15daaa3a2d1cf2e5`.
+The input template remains
+`{instruction}\n\nQuestion: {original_question_text}`. Inputs contain no
+evidence, evidence length, answer, paper text, retrieved chunks or scores,
+embeddings, metadata, or handcrafted features. Train lengths are 95--121
+tokens and validation lengths are 96--124; none is truncated at maximum length
+128.
+
+The three learning rates are 5e-6, 1e-5, and 2e-5. All other within-grid
+training settings are fixed: full-parameter uniform cross-entropy, AdamW,
+batch size 4, gradient accumulation 8, effective batch size 32, weight decay
+0.01, cosine scheduling, warmup ratio 0.05, gradient clipping 1.0, five epochs,
+and 355 updates. Warmup is 18 steps, with validation checkpoints at steps 71,
+142, 213, 284, and 355. All 852,991,040 parameters are marked trainable;
+752,398,144 language/classifier parameters receive gradients, while
+100,592,896 vision parameters receive none on the text-only path.
+
+The preserved data are 2,245 training examples from 845 papers and 924
+validation examples from 277 papers. Training support is
+55/267/586/687/650 and validation support is 13/81/178/232/420 for
+10/20/40/80/160. Frozen Oracle SHA-256 values are
+`64999b9f29c07f01566c478c70fa87d860b397af457b6c0f5fca214bea6beb88`
+for train and
+`ad68655209b258908e90db11cdd54a6e5db49329132912dc4bd8e71c73422a8d`
+for validation.
+
+The fixed global checkpoint-selection rule ranks all 15 checkpoints by higher
+validation macro-F1, accuracy, weighted F1, and balanced accuracy; lower
+validation cross-entropy; earlier step; and finally lower numeric learning
+rate. It selected the 5e-6 trial at epoch 4, step 284. Selection was locked
+before downstream retrieval, and retrieval cannot select or revise it. The
+grid fingerprint is
+`dc80671e8635cb2e479c7e231662eedb1be0920e28497d8f8e8b016703ff2b2b`.
+
+Recorded training wall times for 5e-6, 1e-5, and 2e-5 are respectively
+2044.1943467836827, 2022.7333836276084, and 2067.4948720689863 seconds;
+their sum is 6134.422602480277 seconds. Each trial recorded peak allocated and
+reserved GPU memory of 9.0316162109375 and 9.62109375 GiB. The selected final
+validation load and inference times are 2.47247052565217 and
+33.506004774942994 seconds. Mean and median inference latency are
+0.03612477649043584 and 0.035192497074604034 seconds/question. The selected
+final-validation peak is 1.7161517143249512 GiB allocated, 1.77734375 GiB
+reserved, and 1.6993751525878906 GiB RSS. Known grid training plus selected
+loading and inference time is 6170.401077780873 seconds.
+
+The selected checkpoint produces 924/924 valid outputs. Its
+accuracy/macro-F1/weighted F1/balanced accuracy/top-2 accuracy is
+0.3484848484848485/0.22777929657889012/0.3473258648868964/
+0.24232226137689133/0.6190476190476191, with prediction distribution
+0/15/275/366/268. These are development-set classification results. The 924
+examples are repeatedly observed for checkpoint and hyperparameter selection,
+so they are not an unbiased final generalization estimate. This is one seed;
+the three learning-rate trials are not seed replicates, no QASPER test result
+is claimed, and no run-to-run variance claim is supported.
+
+Phase 2E is not a pure learning-rate ablation against Phase 2D: Phase 2D used
+three epochs, 213 steps, and 11 warmup steps, whereas Phase 2E uses five
+epochs, 355 steps, and 18 warmup steps. The epoch count and cosine-schedule
+horizon therefore change alongside the grid search.
+
+Phase 2E same-paper, read-only `top_k=5` retrieval completed for all 924
+selected-trial predictions: coverage is 924/924 = 1.0. Mean and median joined
+retrieval F1 are 0.2793735097402597 and 0.267412. Because every classifier
+output is valid, the coverage-adjusted full-set mean is
+0.27937350974026. The uninterrupted one-segment retrieval wall time is
+282.3799051999813 seconds. The frozen retrieval evaluation-configuration hash
+is `9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8`.
+The 5e-6, epoch-4, `step-000284` classification winner remained locked and
+unchanged; retrieval was not used to select or revise it.
+
+Recorded CUDA-host commands:
+
+```bash
+.venv-qwen/bin/python qwen_phase2e_sequence_classifier_lr_grid.py --study-root /dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle prepare
+.venv-qwen/bin/python qwen_phase2e_sequence_classifier_lr_grid.py --study-root /dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle inspect --variant lr5e-6
+.venv-qwen/bin/python qwen_phase2e_sequence_classifier_lr_grid.py --study-root /dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle train --variant lr5e-6
+.venv-qwen/bin/python qwen_phase2e_sequence_classifier_lr_grid.py --study-root /dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle inspect --variant lr1e-5
+.venv-qwen/bin/python qwen_phase2e_sequence_classifier_lr_grid.py --study-root /dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle train --variant lr1e-5
+.venv-qwen/bin/python qwen_phase2e_sequence_classifier_lr_grid.py --study-root /dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle inspect --variant lr2e-5
+.venv-qwen/bin/python qwen_phase2e_sequence_classifier_lr_grid.py --study-root /dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle train --variant lr2e-5
+.venv-qwen/bin/python qwen_phase2e_sequence_classifier_lr_grid.py --study-root /dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle select
+.venv-qwen/bin/python qwen_phase2e_sequence_classifier_lr_grid.py --study-root /dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle final-selected
+```
+
+Recorded local read-only retrieval commands are:
+
+```powershell
+.\.venv-qwen\Scripts\python.exe qwen_phase2e_posttraining.py --study-root outputs\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle audit-selected
+.\.venv-qwen\Scripts\python.exe qwen_phase2e_posttraining.py --study-root outputs\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle retrieve-selected
+.\.venv-qwen\Scripts\python.exe qwen_phase2e_posttraining.py --study-root outputs\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle audit-final
+```
+
 ## Phase 1 records
 
 - Direct dependencies: `requirements-qwen.txt`
@@ -514,3 +646,52 @@ Large selected-checkpoint and TensorBoard files remain local/Git-ignored where
 configured; the lightweight provenance, predictions, metrics, retrieval
 records, and integrity manifests are the commit-oriented records. Phase 2D is
 separate from Phase 2C and does not overwrite it.
+
+## Phase 2E records
+
+- Grid configuration and experiment identity:
+  `outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/configuration/grid_experiment.json`.
+- Global winner identity and selection audit:
+  `outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/comparison/selected_trial.json`.
+- All 15 checkpoint metrics:
+  `outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/comparison/lr_grid_metrics.csv`.
+- Selected final classification/runtime summary:
+  `outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/comparison/selected_final_summary.json`.
+- Trial-specific configurations, manifests, histories, validation outputs,
+  classification results, and selected checkpoints:
+  `outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr5e-6/`,
+  `trials/lr1e-5/`, and `trials/lr2e-5/`.
+- TensorBoard event files remain with the retained remote originals under the
+  corresponding `/dev/shm/.../trials/<variant>/tensorboard/` paths. They were
+  deliberately excluded from the promoted local study; JSONL training and
+  validation histories preserve the numeric training record locally.
+- Canonical selected-trial summary, predictions, logits, parsed predictions,
+  invalid record, runtime, metrics, matrix, and histogram:
+  `outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr5e-6/final_summary.json`,
+  `validation/`, and `classification/`.
+- Selected-checkpoint transfer verification and transfer manifests:
+  `outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/integrity/selected_checkpoints_transfer_verification.json`
+  and `integrity/transfer_manifests/`.
+- Final post-retrieval integrity audit:
+  `outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/integrity/final_post_retrieval_audit.json`.
+  The audit records 64/64 metadata files verified at transfer time. After
+  retrieval, 62 remain byte-identical and exactly two authorized summary
+  rewrites are present: `comparison/selected_final_summary.json` and
+  `trials/lr5e-6/final_summary.json`. It verifies all 13/13 transfer-bundle
+  manifest files, all 27/27 files across the three retained checkpoints, zero
+  forbidden payloads, and independently recomputes all 924 retrieval records.
+- Reproduction implementations and focused tests:
+  `qwen_phase2e_sequence_classifier_lr_grid.py`,
+  `qwen_phase2e_posttraining.py`,
+  `tests/test_qwen_phase2e_sequence_classifier_lr_grid.py`, and
+  `tests/test_qwen_phase2e_posttraining.py`.
+- Human-readable records: `docs/QWEN_PHASE2E_RESULTS.md` and
+  `reports/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/experiment_report.md`.
+
+Retrieval records are stored only below the locked winner at
+`outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr5e-6/retrieval/`:
+`results.jsonl`, `runtime_segments.jsonl`, and `summary.json`. The selected
+trial's `final_summary.json` and
+`comparison/selected_final_summary.json` also contain the completed retrieval
+summary. Phase 2E is separate from Phase 2D and does not overwrite any
+previous experiment.

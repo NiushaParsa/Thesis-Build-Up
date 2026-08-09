@@ -1,0 +1,43 @@
+{
+  "status": "passed",
+  "instance_id": 46617164,
+  "remote": "root@212.13.234.23",
+  "remote_transfer_root": "/dev/shm/phase2e_transfer_v1",
+  "study": "qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle",
+  "variants": [
+    {
+      "variant": "lr5e-6",
+      "run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1",
+      "checkpoint_id": "step-000284",
+      "relative_path": "qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr5e-6/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1/checkpoints/step-000284",
+      "archive_bytes": "2895385475",
+      "archive_sha256": "d9ad9a71a678ae646df1e1b1dac23d6317b21f8be3ed82834111c57cfb43aa02",
+      "chunk_count": "28"
+    },
+    {
+      "variant": "lr1e-5",
+      "run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr1e-5-5epochs-full-parameter-20260808-seed42-v1",
+      "checkpoint_id": "step-000284",
+      "relative_path": "qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr1e-5/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr1e-5-5epochs-full-parameter-20260808-seed42-v1/checkpoints/step-000284",
+      "archive_bytes": "2884152550",
+      "archive_sha256": "b96825d2fe23908416bd7ea4ced4e7e89beba7ebe9a30c37f1d57fce2c3ee18f",
+      "chunk_count": "28"
+    },
+    {
+      "variant": "lr2e-5",
+      "run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr2e-5-5epochs-full-parameter-20260808-seed42-v1",
+      "checkpoint_id": "step-000355",
+      "relative_path": "qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr2e-5/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr2e-5-5epochs-full-parameter-20260808-seed42-v1/checkpoints/step-000355",
+      "archive_bytes": "2860205438",
+      "archive_sha256": "f76fab941057ad6e10db20cff85ca9a86f7b67a28e67f32363d7b1d28108b349",
+      "chunk_count": "28"
+    }
+  ],
+  "metadata_and_all_three_selected_checkpoints_verified": true,
+  "all_remote_and_local_hashes_match": true,
+  "remote_originals_retained": true,
+  "resumed_transaction": true,
+  "local_study_bytes": 14230299262,
+  "local_study_gib": 13.252999,
+  "verified_at": "2026-08-08T21:25:36.5263304+00:00"
+}

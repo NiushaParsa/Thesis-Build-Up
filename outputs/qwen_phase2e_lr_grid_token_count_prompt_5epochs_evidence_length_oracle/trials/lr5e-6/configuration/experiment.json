@@ -1,0 +1,33 @@
+{
+  "phase": "Phase 2E",
+  "study_id": "qwen-phase2e-lr-grid-token-count-prompt-5epochs-seed42-v1",
+  "formulation_version": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr-grid-v1",
+  "grid_fingerprint": "dc80671e8635cb2e479c7e231662eedb1be0920e28497d8f8e8b016703ff2b2b",
+  "trial_fingerprint_static": "df801b6c6107ce703584610fb09aa502de56f6c349353824cabca8e8c0e7bf6d",
+  "variant": "lr5e-6",
+  "learning_rate": 5e-06,
+  "epochs": 5,
+  "run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1",
+  "model_id": "Qwen/Qwen3.5-0.8B-Base",
+  "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+  "architecture": "AutoModelForSequenceClassification",
+  "instruction": "You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = 10 tokens, 2 = 20 tokens, 3 = 40 tokens, 4 = 80 tokens, 5 = 160 tokens. Return only the number",
+  "instruction_sha256": "b3237368922abe709e2bd2d756fb9f25d39e7f5670e5c4cb15daaa3a2d1cf2e5",
+  "input_template": "{instruction}\\n\\nQuestion: {original_question_text}",
+  "id2label": {
+    "0": "10",
+    "1": "20",
+    "2": "40",
+    "3": "80",
+    "4": "160"
+  },
+  "label2id": {
+    "10": 0,
+    "20": 1,
+    "40": 2,
+    "80": 3,
+    "160": 4
+  },
+  "objective": "uniform_five_class_cross_entropy",
+  "created_at": "2026-08-08T18:43:15.620415+00:00"
+}

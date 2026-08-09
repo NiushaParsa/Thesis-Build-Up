@@ -1,0 +1,140 @@
+{
+  "model_id": "Qwen/Qwen3.5-0.8B-Base",
+  "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+  "architecture": "AutoModelForSequenceClassification",
+  "training_method": "full_parameter_sequence_classification",
+  "formulation_version": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr-grid-v1",
+  "objective": "uniform_five_class_cross_entropy",
+  "problem_type": "single_label_classification",
+  "dtype": "torch.bfloat16",
+  "device": "cuda",
+  "max_sequence_length": 128,
+  "per_device_batch_size": 4,
+  "gradient_accumulation_steps": 8,
+  "effective_batch_size": 32,
+  "learning_rate": 2e-05,
+  "weight_decay": 0.01,
+  "scheduler": "cosine",
+  "warmup_ratio": 0.05,
+  "epochs": 5,
+  "gradient_clipping": 1.0,
+  "seed": 42,
+  "logging_steps": 1,
+  "evaluation_frequency": "end_of_epoch",
+  "checkpoint_frequency": "end_of_epoch",
+  "checkpoint_retention_policy": "retain_current_and_best_during_training_selected_only_at_completion",
+  "checkpoint_selection_metric": "validation_macro_f1",
+  "checkpoint_tie_break": "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step",
+  "early_stopping": "none_fixed_five_epochs",
+  "quantization": null,
+  "class_weights": "uniform",
+  "run_mode": "full",
+  "active_per_device_batch_size": 4,
+  "active_gradient_accumulation_steps": 8,
+  "active_effective_batch_size": 32,
+  "maximum_optimizer_steps": null,
+  "total_optimizer_steps": 355,
+  "warmup_steps": 18,
+  "run_id": "qwen-phase2e-base-sequence-classifier-token-count-prompt-lr2e-5-5epochs-full-parameter-20260808-seed42-v1",
+  "output_root": "/dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr2e-5",
+  "repository_commit": "not_applicable_content_addressed_phase2e_snapshot",
+  "training_script_sha256": "99ba4f9a57b5547e776d81d2c7c94aece2670a9b5ccaf348c8a1fbeb0baa5efc",
+  "python_version": "3.10.7 (main, Oct  3 2022, 02:19:58) [Clang 14.0.3 ]",
+  "python_executable": "/workspace/thesis-granularity-router/.venv-qwen/bin/python",
+  "torch_version": "2.8.0+cu128",
+  "torch_cuda_version": "12.8",
+  "transformers_version": "5.15.0.dev0",
+  "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+  "tensorboard_version": "2.20.0",
+  "gpu": "NVIDIA A100-SXM4-40GB",
+  "instruction": "You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = 10 tokens, 2 = 20 tokens, 3 = 40 tokens, 4 = 80 tokens, 5 = 160 tokens. Return only the number",
+  "instruction_sha256": "b3237368922abe709e2bd2d756fb9f25d39e7f5670e5c4cb15daaa3a2d1cf2e5",
+  "pad_token_id": 248044,
+  "id2label": {
+    "0": "10",
+    "1": "20",
+    "2": "40",
+    "3": "80",
+    "4": "160"
+  },
+  "label2id": {
+    "10": 0,
+    "20": 1,
+    "40": 2,
+    "80": 3,
+    "160": 4
+  },
+  "initial_model_loading_audit": {
+    "configuration": {
+      "status": "passed",
+      "checks": {
+        "num_labels": true,
+        "problem_type": true,
+        "id2label": true,
+        "label2id": true,
+        "top_level_pad_token_id": true,
+        "text_config_pad_token_id": true,
+        "top_level_use_cache": true,
+        "text_config_use_cache": true
+      },
+      "num_labels": 5,
+      "id2label": {
+        "0": "10",
+        "1": "20",
+        "2": "40",
+        "3": "80",
+        "4": "160"
+      },
+      "label2id": {
+        "10": 0,
+        "20": 1,
+        "40": 2,
+        "80": 3,
+        "160": 4
+      },
+      "pad_token_id": 248044
+    },
+    "classifier_head": {
+      "status": "passed",
+      "initial_base_load": true,
+      "seed_set_before_model_load": 42,
+      "head_parameter_name": "score.weight",
+      "head_shape": [
+        5,
+        1024
+      ],
+      "head_bias": false,
+      "head_weight_dtype": "torch.bfloat16",
+      "head_weight_sha256_float32": "09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5",
+      "loading_info": {
+        "missing_keys": [
+          "score.weight"
+        ],
+        "unexpected_keys": [],
+        "mismatched_keys": [],
+        "error_msgs": []
+      }
+    }
+  },
+  "experiment_fingerprint": "b8c32c2f4501881db3ee7d04be5b57c455d5fcdd87cc46e17f422010074d9628",
+  "resume_contract_sha256": "f4b661507bc7e03faa5a15da4b35ef4bd7547db8b2b687d786fc9fa319e1df1b",
+  "created_at": "2026-08-08T19:51:58.722534+00:00",
+  "phase2e_metadata": {
+    "phase": "Phase 2E",
+    "study_id": "qwen-phase2e-lr-grid-token-count-prompt-5epochs-seed42-v1",
+    "grid_fingerprint": "dc80671e8635cb2e479c7e231662eedb1be0920e28497d8f8e8b016703ff2b2b",
+    "variant": "lr2e-5",
+    "learning_rate": 2e-05,
+    "epochs": 5,
+    "phase2e_orchestrator_sha256": "fa686f3f363b6b54ec082baf4eb7ea7b21ffe01da8c50f10284d57c65042039e",
+    "phase2d_execution_module_sha256": "99ba4f9a57b5547e776d81d2c7c94aece2670a9b5ccaf348c8a1fbeb0baa5efc",
+    "execution_dependency_sha256": {
+      "qwen_phase2.py": "c9a6f2a277bd841d6bf0ede9e948b18e91e1a8f5a298f7d704d0b4279c99ed39",
+      "qwen_phase2b.py": "60572d8c3054e7ef76055b2c40cf65c2999ef18000930f5a6967fd2ae673041c",
+      "qwen_phase2c_sequence_classifier.py": "6eeb155296b239463d5ba7c8c75dfed8dd59f8c5285cab1edf7cb6a553f9aefb",
+      "qwen_phase2d_sequence_classifier.py": "99ba4f9a57b5547e776d81d2c7c94aece2670a9b5ccaf348c8a1fbeb0baa5efc",
+      "qwen_phase2e_sequence_classifier_lr_grid.py": "fa686f3f363b6b54ec082baf4eb7ea7b21ffe01da8c50f10284d57c65042039e"
+    },
+    "repository_base_commit": "12c7b1a22f552f83d54a752f87f6687c98b52944"
+  }
+}

@@ -18,6 +18,11 @@ outputs/qwen_phase2c_sequence_classifier_evidence_length_oracle/runs/*/checkpoin
 outputs/qwen_phase2c_sequence_classifier_evidence_length_oracle/tensorboard/
 outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/runs/*/checkpoints/
 outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/tensorboard/
+outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/*/runs/*/checkpoints/
+outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/*/tensorboard/
+outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/checkpoint_archives/
+outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/*/recovery/
+outputs/.qwen_phase2e_receive_*/
 tmp/huggingface_qwen_base_cache/
 tmp/phase2c_chunks/
 tmp/phase2c-step-*.tar.zst
@@ -32,3 +37,9 @@ tmp/qwen-phase2d-sequence-classifier.conf
 tmp/qwen-phase2d-sequence-classifier.sh
 tmp/phase2d_transfer.sh
 tmp/phase2d_integrity_check.py
+tmp/phase2e_chunks/
+tmp/phase2e-*.tar.zst
+tmp/qwen-phase2e-lr-grid.conf
+tmp/qwen-phase2e-lr-grid.sh
+tmp/phase2e_transfer.sh
+tmp/phase2e_integrity_check.py

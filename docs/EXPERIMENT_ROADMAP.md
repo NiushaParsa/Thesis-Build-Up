@@ -126,7 +126,7 @@ Full retrieved and evidence text is omitted by default and can be included with 
 As inspected through 2026-06-22, the legacy local ingestion checkpoint
 represents 1,585 papers, but not every stage is complete. This dated snapshot
 does not supersede the later, file-backed Qwen Phase 1/Phase 2/Phase 2B/Phase
-2C/Phase 2D results:
+2C/Phase 2D/Phase 2E results:
 
 | Checkpoint stage | Papers marked complete |
 |---|---:|
@@ -155,7 +155,7 @@ Additional limitations are:
   used by Qwen.
 - No unified legacy embedding-router routed evaluator exists. The separate Qwen
   routed evaluator is implemented and completed for Phases 1, 2, both
-  Phase 2B variants, Phase 2C, and Phase 2D.
+  Phase 2B variants, Phase 2C, Phase 2D, and Phase 2E.
 - Focused unit tests exist, but no live-Qdrant integration or complete end-to-end experiment test exists.
 - There is no complete reproducibility guide covering environment setup, service lifecycle, ingestion verification, experiments, analysis, and artifact provenance.
 
@@ -267,8 +267,8 @@ The implementation exposes two separately named policies: `mixed-raw` preserves 
 **Status:** The legacy embedding-router code is implemented and tested; its
 live-collection rerun remains blocked by the old-Oracle `RouterDataset`
 snapshot. The separate Qwen evidence-length-Oracle path completed full Phase 2
-and both Phase 2B training and validation runs, plus the Phase 2C and Phase 2D
-Base-model sequence-classification runs, from preserved files.
+and both Phase 2B training and validation runs, plus the Phase 2C, Phase 2D,
+and Phase 2E Base-model sequence-classification runs, from preserved files.
 
 **Goal:** Train a model that predicts the oracle granularity label from a question embedding without access to evidence at inference time.
 
@@ -300,8 +300,8 @@ The implemented framing is fixed five-class classification from question embeddi
 
 **Status:** Partially complete. The Qwen routed evaluator is implemented and
 has completed same-paper top-five retrieval for Phase 1, Phase 2, both
-Phase 2B variants, Phase 2C, and Phase 2D. A unified legacy embedding-router
-comparison evaluator remains planned.
+Phase 2B variants, Phase 2C, Phase 2D, and the locked Phase 2E winner. A
+unified legacy embedding-router comparison evaluator remains planned.
 
 **Goal:** For each question, predict one granularity from question-only input,
 retrieve top K chunks only at that granularity, and evaluate the result without
@@ -722,7 +722,7 @@ mean/median joined retrieval F1
 0.2767166677489178/0.2558975. These retrieval-overlap scores are not
 classification metrics: the modest Phase 2D classification improvement is
 paired with a small mean retrieval decrease of 0.0024305281385280653 relative
-to Phase 2C. The six-way comparison now places Phase 2D first on macro-F1,
+to Phase 2C. At Phase 2D completion, the six-way comparison placed Phase 2D first on macro-F1,
 weighted F1, and balanced accuracy; numeric Phase 2 remains first on accuracy,
 and Phase 2B-A remains first on mean joined retrieval F1.
 
@@ -761,6 +761,99 @@ The Phase 2D output tree retains configuration, per-epoch and canonical
 predictions, classification and retrieval records, runtimes, the selected
 checkpoint, and remote/local transfer verification.
 
+#### Phase 2E predeclared learning-rate grid and five-epoch development selection
+
+Phase 2E is complete. It evaluates three independent, fresh-from-Base
+sequence-classifier runs at learning rates `5e-6`, `1e-5`, and `2e-5` for
+five epochs each. All other within-grid settings are frozen: the Phase 2D
+model and revision, exact-token prompt and prompt hash, preserved 2,245/924
+examples and evidence-length-Oracle files, question-only input, five-logit
+head, uniform cross-entropy, seed 42, maximum length 128, microbatch 4,
+gradient accumulation 8, effective batch 32, weight decay 0.01, cosine
+schedule, gradient clipping 1.0, BF16 CUDA, and no quantization. Each trial
+has 355 optimizer updates, 18 warmup steps, and validation at steps
+71/142/213/284/355. No trial continues from Phase 2D or another Phase 2E
+trial.
+
+The predeclared selector compares all 15 validation checkpoints
+lexicographically by higher macro-F1, accuracy, weighted F1, and balanced
+accuracy; lower cross-entropy; earlier optimizer step; and finally lower
+numeric learning rate only for an exact remaining tie. The winner was locked
+before retrieval. Retrieval could neither select nor revise it.
+
+| Trial | Per-trial selected epoch/step | Selected macro-F1 | Recorded run seconds |
+|---|---:|---:|---:|
+| `5e-6` | 4 / 284 | 0.22777929657889012 | 2044.1943467836827 |
+| `1e-5` | 4 / 284 | 0.21540884371375907 | 2022.7333836276084 |
+| `2e-5` | 5 / 355 | 0.2252323080025679 | 2067.4948720689863 |
+
+The global winner is the `5e-6` epoch-4 checkpoint `step-000284`. A clean
+reload reproduced all 924 stored checkpoint predictions and metrics exactly.
+Its final development-set classification results are:
+
+| Metric | Phase 2E winner |
+|---|---:|
+| Accuracy | 0.3484848484848485 |
+| Macro-F1 | 0.22777929657889012 |
+| Weighted F1 | 0.3473258648868964 |
+| Balanced accuracy | 0.24232226137689133 |
+| Top-2 accuracy | 0.6190476190476191 |
+| Uniform validation cross-entropy | 1.3759860497016412 |
+| Valid predictions | 924/924 |
+
+Oracle support is 13/81/178/232/420 and the winner predicts
+0/15/275/366/268 for classes 10/20/40/80/160. It never predicts class 10;
+class-20 recall is 0.037037037037037035. Accuracy remains below the
+class-160 majority baseline 0.45454545454545453, while macro-F1 exceeds the
+majority macro-F1 0.125. The selected classifier is slightly below Phase 2D
+on macro-F1 by 0.0021659442139392304 and accuracy by 0.02056277056277056,
+while balanced accuracy is higher by 0.003140986875327545. Phase 2E therefore
+does not improve the primary classification metric over Phase 2D.
+
+Only the locked winner received the unchanged downstream evaluation. The
+existing Qdrant collections were read without rebuilding or re-indexing;
+same-paper, predicted-granularity retrieval used `top_k=5`, the same
+1,536-dimensional `text-embedding-3-small` vectors, cosine similarity, chunk
+ordering and concatenation, and joined GPT-2 token-level F1. Coverage is
+924/924. Mean, median, and coverage-adjusted full-set joined retrieval F1 are
+0.2793735097402597, 0.267412, and 0.27937350974026. Retrieval took
+282.3799051999813 seconds. Relative to Phase 2D, mean/median retrieval F1 are
+higher by 0.00265684199134192/0.0115145; this is descriptive and does not
+override the locked classification selection. Classification agreement with
+the Oracle and downstream evidence-token overlap are different metrics.
+
+The three recorded training runs total 6134.422602480277 seconds. Winner
+loading and isolated inference take 2.47247052565217 and
+33.506004774942994 seconds. Known grid training, winner reload/inference, and
+retrieval time is 6452.78098298085 seconds (about 1 hour 47 minutes 33
+seconds), excluding preflight, packaging, transfer, and documentation. Each
+training run peaked at 9.0316162109375 GiB allocated GPU memory and
+9.62109375 GiB reserved.
+
+This is a development/model-selection result, not an unbiased final test
+estimate. The same 924 official validation examples have been repeatedly
+observed in earlier phases and now select among 15 Phase 2E checkpoints.
+There is one seed and no variance, confidence interval, significance, or
+QASPER-test claim. Within Phase 2E only learning rate differs between trials;
+Phase 2E versus Phase 2D is not a pure learning-rate or extra-epoch ablation
+because the cosine horizon and warmup changed from 213/11 to 355/18. Earlier
+Logistic Regression and MLP classification results use the old retrieval-F1
+Oracle and are not directly comparable.
+
+The authoritative grid lock and completed global summary are
+`outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/comparison/selected_trial.json`
+and `comparison/selected_final_summary.json`; all 15 rows are in
+`comparison/lr_grid_metrics.csv`. Detailed results and reproduction commands
+are in `docs/QWEN_PHASE2E_RESULTS.md` and
+`reports/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/experiment_report.md`.
+The retained study also includes all three selected checkpoints, their
+content-addressed transfer manifests, canonical winner predictions,
+classification artifacts, and 924 record-level retrieval results. The final
+post-retrieval audit verifies the transfer bundle 13/13, all checkpoint files
+27/27, 62 unchanged transfer-manifest metadata files plus exactly two
+authorized retrieval-summary updates, and zero forbidden payloads. It is saved
+as `integrity/final_post_retrieval_audit.json`.
+
 The Qwen interpreter audit, separate-environment rationale, minimal dependency
 manifest, exact package lock, and recreation commands are recorded in
 `docs/QWEN_ENVIRONMENT.md`. The legacy `.venv` remains separate and unchanged.
@@ -770,7 +863,7 @@ and router components exist with automated tests, full split-safe experiments
 have immutable record-level artifacts, and the final statistical comparison
 can be reproduced from a clean environment without undocumented manual steps.
 Fixed-separate, both Oracle-label paths, mixed retrieval, leakage-safe legacy
-router code, and complete Qwen Phase 1/Phase 2/Phase 2B/Phase 2C/Phase 2D
+router code, and complete Qwen Phase 1/Phase 2/Phase 2B/Phase 2C/Phase 2D/Phase 2E
 classification and routed retrieval now exist. The broader matched-method
 final analysis and any
 same-new-Oracle retraining of Logistic Regression/MLP remain unfinished.

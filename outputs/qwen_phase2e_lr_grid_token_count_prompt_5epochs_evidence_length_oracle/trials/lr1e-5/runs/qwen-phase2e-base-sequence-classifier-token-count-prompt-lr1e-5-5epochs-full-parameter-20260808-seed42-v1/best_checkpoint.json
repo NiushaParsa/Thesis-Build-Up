@@ -1,0 +1,123 @@
+{
+  "checkpoint": "/dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr1e-5/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr1e-5-5epochs-full-parameter-20260808-seed42-v1/checkpoints/step-000284",
+  "checkpoint_id": "step-000284",
+  "global_step": 284,
+  "epoch": 4,
+  "validation_loss": 1.458046925016296,
+  "classification_metrics": {
+    "accuracy": 0.3235930735930736,
+    "macro_f1": 0.21540884371375907,
+    "weighted_f1": 0.32864368966292395,
+    "balanced_accuracy": 0.22681571407388273,
+    "top_2_accuracy": 0.6038961038961039,
+    "top_2_accuracy_status": "available_from_comparable_five_class_head_logits",
+    "per_class": {
+      "10": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13
+      },
+      "20": {
+        "precision": 0.0851063829787234,
+        "recall": 0.04938271604938271,
+        "f1": 0.062499999999999986,
+        "support": 81
+      },
+      "40": {
+        "precision": 0.25874125874125875,
+        "recall": 0.4157303370786517,
+        "f1": 0.3189655172413793,
+        "support": 178
+      },
+      "80": {
+        "precision": 0.23052959501557632,
+        "recall": 0.31896551724137934,
+        "f1": 0.26763110307414106,
+        "support": 232
+      },
+      "160": {
+        "precision": 0.550561797752809,
+        "recall": 0.35,
+        "f1": 0.42794759825327505,
+        "support": 420
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        6,
+        6,
+        1
+      ],
+      [
+        0,
+        4,
+        23,
+        37,
+        17
+      ],
+      [
+        1,
+        13,
+        74,
+        52,
+        38
+      ],
+      [
+        1,
+        10,
+        83,
+        74,
+        64
+      ],
+      [
+        1,
+        20,
+        100,
+        152,
+        147
+      ]
+    ],
+    "evaluated_examples": 924,
+    "valid_predictions": 924,
+    "invalid_predictions": 0
+  },
+  "predicted_distribution": {
+    "10": 3,
+    "20": 47,
+    "40": 286,
+    "80": 321,
+    "160": 267
+  },
+  "predictions": "/dev/shm/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr1e-5/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr1e-5-5epochs-full-parameter-20260808-seed42-v1/validation/predictions_step-000284.jsonl",
+  "validation_wall_seconds": 32.64094417728484,
+  "experiment_fingerprint": "96c18d9b75034000be73514afa360d8c2594d697ded6f291e3ee32a4e1fad722",
+  "checkpoints_pruned_before_save": [],
+  "checkpoint_retained": true,
+  "checkpoints_pruned_after_evaluation": [
+    "step-000213"
+  ],
+  "selection_metric": "validation_macro_f1",
+  "tie_break": "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step",
+  "selected_at": "2026-08-08T19:51:51.332198+00:00",
+  "phase2e_metadata": {
+    "phase": "Phase 2E",
+    "study_id": "qwen-phase2e-lr-grid-token-count-prompt-5epochs-seed42-v1",
+    "grid_fingerprint": "dc80671e8635cb2e479c7e231662eedb1be0920e28497d8f8e8b016703ff2b2b",
+    "variant": "lr1e-5",
+    "learning_rate": 1e-05,
+    "epochs": 5,
+    "phase2e_orchestrator_sha256": "fa686f3f363b6b54ec082baf4eb7ea7b21ffe01da8c50f10284d57c65042039e",
+    "phase2d_execution_module_sha256": "99ba4f9a57b5547e776d81d2c7c94aece2670a9b5ccaf348c8a1fbeb0baa5efc",
+    "execution_dependency_sha256": {
+      "qwen_phase2.py": "c9a6f2a277bd841d6bf0ede9e948b18e91e1a8f5a298f7d704d0b4279c99ed39",
+      "qwen_phase2b.py": "60572d8c3054e7ef76055b2c40cf65c2999ef18000930f5a6967fd2ae673041c",
+      "qwen_phase2c_sequence_classifier.py": "6eeb155296b239463d5ba7c8c75dfed8dd59f8c5285cab1edf7cb6a553f9aefb",
+      "qwen_phase2d_sequence_classifier.py": "99ba4f9a57b5547e776d81d2c7c94aece2670a9b5ccaf348c8a1fbeb0baa5efc",
+      "qwen_phase2e_sequence_classifier_lr_grid.py": "fa686f3f363b6b54ec082baf4eb7ea7b21ffe01da8c50f10284d57c65042039e"
+    },
+    "repository_base_commit": "12c7b1a22f552f83d54a752f87f6687c98b52944"
+  }
+}
