@@ -1680,3 +1680,215 @@ The exact remote grid sequence and recovery command are documented in
 snapshot based on repository commit
 `12c7b1a22f552f83d54a752f87f6687c98b52944`; that base commit does not itself
 contain the new Phase 2E files.
+
+## Phase 3A — Multiscale Similarity-Tree Router
+
+### 1. Objective and relation to the supervisor proposal
+
+Phase 3A implements the proposed complementary method: use the distribution
+of semantic similarity scores across the already constructed multiscale chunk
+hierarchy to predict the evidence-length Oracle class. It is a separate
+score-tree baseline, not another Qwen fine-tuning run.
+
+For each question, the method compares the existing question embedding with
+every chunk from its source paper at 10, 20, 40, 80, and 160 tokens. Existing
+chunk indices reconstruct the 160 -> 80 -> 40 -> 20 -> 10 relationships. Since
+a paper generally has multiple 160-token chunks, the concrete structure is a
+forest. The values are cosine similarities and are not claimed to be
+calibrated probabilities.
+
+### 2. Dataset, Oracle, and permitted inputs
+
+The preserved evidence-length Oracle and paper-disjoint splits remain:
+
+| Split | Questions | Papers | 10 | 20 | 40 | 80 | 160 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Train | 2,245 | 845 | 55 | 267 | 586 | 687 | 650 |
+| Validation | 924 | 277 | 13 | 81 | 178 | 232 | 420 |
+
+The Oracle is a target only. Phase 3A feature construction is independent of
+ground-truth evidence, evidence length, answers, evidence embeddings,
+evidence-to-chunk similarity, retrieved chunks, retrieval F1, and Oracle label.
+It uses the existing 1,536-dimensional `text-embedding-3-small` question and
+chunk vectors to calculate same-paper cosine scores. The raw question vector
+is not itself passed to the classifier.
+
+### 3. Method and leakage-safe selection
+
+The complete score distribution at every level is saved. The level-only model
+has 85 aggregate features; the predeclared primary model has 173 features,
+adding 88 parent-child/tree statistics. Five-fold paper-grouped
+cross-validation on train only selects learning rate and weight decay by
+macro-F1. All questions belonging to one paper remain in one fold.
+
+The selected models are:
+
+| Model | Features | LR | Weight decay | Grouped OOF accuracy | Grouped OOF macro-F1 |
+|---|---:|---:|---:|---:|---:|
+| Level-only logistic | 85 | 0.03 | 0.001 | 0.3242761692650334 | 0.22533833565985803 |
+| Tree logistic, primary | 173 | 0.01 | 0.0 | 0.3060133630289532 | 0.22217588936798274 |
+
+Both use uniform cross-entropy, AdamW, 300 full-batch epochs, deterministic
+seed 42, and standardized features fitted on train only. The primary tree
+formulation was declared before validation and was not selected because of
+its validation result.
+
+### 4. Classification result
+
+| Metric | Phase 3A tree |
+|---|---:|
+| Accuracy | 0.30303030303030304 (280/924) |
+| Macro-F1 | 0.1928144851068439 |
+| Weighted F1 | 0.3037047064693007 |
+| Balanced accuracy | 0.19804594967839187 |
+| Top-2 accuracy | 0.6136363636363636 |
+| Mean absolute class distance | 1.0281385281385282 |
+| Within-one-level accuracy | 0.7337662337662337 |
+| Mean absolute token distance | 56.6991341991342 |
+| Quadratic weighted kappa | 0.03960842466855796 |
+
+All 924 predictions are valid. The predicted distribution is
+8/31/209/356/320 for 10/20/40/80/160, versus Oracle support
+13/81/178/232/420.
+
+| Class | Precision | Recall | F1 | Support |
+|---:|---:|---:|---:|---:|
+| 10 | 0.0 | 0.0 | 0.0 | 13 |
+| 20 | 0.12903225806451613 | 0.04938271604938271 | 0.07142857142857142 | 81 |
+| 40 | 0.16267942583732056 | 0.19101123595505617 | 0.17571059431524547 | 178 |
+| 80 | 0.25280898876404495 | 0.3879310344827586 | 0.30612244897959184 | 232 |
+| 160 | 0.475 | 0.3619047619047619 | 0.41081081081081083 | 420 |
+
+Confusion matrix, Oracle rows and predicted columns ordered
+10/20/40/80/160:
+
+```text
+[[  0,   0,   4,   6,   3],
+ [  2,   4,  23,  23,  29],
+ [  3,   4,  34,  79,  58],
+ [  1,   9,  54,  90,  78],
+ [  2,  14,  94, 158, 152]]
+```
+
+The deployable train-majority class is 80, with validation accuracy
+0.2510822510822511 and macro-F1 0.08027681660899653. The class-160 validation
+majority is a descriptive, non-deployable reference with accuracy
+0.45454545454545453 and macro-F1 0.125. Phase 3A improves on the deployable
+train-majority reference but does not beat the descriptive majority accuracy.
+
+### 5. What the hierarchy contributed
+
+The 85-feature level-only model reaches validation accuracy
+0.3235930735930736 and macro-F1 0.1891945748453902. The 173-feature tree model
+raises macro-F1 by 0.003619910261453696 but lowers accuracy by
+0.02056277056277056. Grouped train-paper OOF macro-F1 instead favors the
+level-only model. The observed validation difference is therefore not robust
+evidence that the parent-child features add generalizable signal.
+
+Naive heuristics are substantially weaker in macro-F1: maximum similarity
+0.060034573030522155, top-5 mean 0.05725663186510825, tuned penalized top-5
+0.14337561538823293, and tuned leaf breadth 0.12417130346260578. This shows why
+the highest raw similarity cannot simply be interpreted as the best evidence
+length.
+
+### 6. End-to-end retrieval
+
+The frozen predictions were passed through the unchanged same-paper,
+`top_k=5`, cosine retrieval and joined GPT-2-token F1 implementation.
+
+| Retrieval item | Result |
+|---|---:|
+| Coverage | 924/924 = 1.0 |
+| Mean joined retrieval F1 | 0.26773840692640694 |
+| Median joined retrieval F1 | 0.25228 |
+| Coverage-adjusted full-set mean | 0.26773840692640705 |
+| Wall time | 168.46491879993118 seconds |
+
+Classification accuracy, macro-F1, weighted F1, and balanced accuracy measure
+Oracle-label prediction. Joined retrieval F1 measures evidence-token overlap
+after the chosen granularity controls retrieval. These are different metrics.
+
+### 7. Same-Oracle contextual comparison
+
+| Metric | Phase 2D | Phase 2E | Phase 3A |
+|---|---:|---:|---:|
+| Accuracy | 0.36904761904761907 | 0.3484848484848485 | 0.30303030303030304 |
+| Macro-F1 | 0.22994524079282935 | 0.22777929657889012 | 0.1928144851068439 |
+| Weighted F1 | 0.3644656337102369 | 0.3473258648868964 | 0.3037047064693007 |
+| Balanced accuracy | 0.2391812745015638 | 0.24232226137689133 | 0.19804594967839187 |
+| Top-2 accuracy | 0.6341991341991342 | 0.6190476190476191 | 0.6136363636363636 |
+| Mean joined retrieval F1 | 0.2767166677489178 | 0.2793735097402597 | 0.26773840692640694 |
+| Median joined retrieval F1 | 0.2558975 | 0.267412 | 0.25228 |
+
+Phases 2D, 2E, and 3A share the new Oracle and preserved split, so this is a
+valid descriptive development comparison. Phase 3A does not improve over the
+two Qwen classifiers. The validation set has been repeatedly observed and is
+not an unbiased final test set. Old-Oracle Logistic Regression/MLP
+classification values remain not directly comparable.
+
+### 8. Runtime, recovery, and integrity
+
+The initial gRPC feature scroll ended with `DEADLINE_EXCEEDED` after 1,844
+train records had been saved incrementally. The last pre-failure progress
+record was 1,827/2,245 at 3,276.9802199 seconds. Qdrant was unchanged and the
+REST retry resumed safely without duplication.
+
+Recorded successful/resumed times are 827.396431 seconds for the remaining
+train extraction, 1311.1521062 seconds for validation extraction,
+56.6241827 seconds for grouped CV/training/validation, and
+168.46491879993118 seconds for retrieval, totaling 2363.6376387 seconds. The
+exact total including the failed first attempt is unavailable and is not
+fabricated.
+
+The legacy `.venv` remained unchanged and ran audit, extraction, training, and
+finalization with Python 3.9.12, NumPy 2.0.2, and PyTorch 2.8.0+cpu. Retrieval
+used the already existing `.venv-qwen` because the frozen shared retrieval
+module imports `psutil`, absent from `.venv`. No environment was modified.
+
+Qdrant was read-only throughout. `PaperChunk` remained at 1,701,822 points and
+`PaperQuestion` at 4,526 points. The final complete collection snapshot equals
+the preflight snapshot. Manual cosine scores matched Qdrant top-10 results
+within `1.0856323240382437e-07` maximum absolute difference.
+
+### 9. Interpretation and next step
+
+Phase 3A demonstrates that full multiscale score distributions contain some
+Oracle-label signal: the learned models outperform a deployable train-prior
+constant, and they substantially outperform simple maximum/mean-similarity
+heuristics. However, the tree-only result is weaker than Phase 2D/2E, class 10
+has zero recall, class 20 recall is 0.04938271604938271, and the explicit
+hierarchy contribution is small and inconsistent between grouped OOF and
+validation.
+
+The result supports treating the two approaches as complementary rather than
+replacing Qwen with the tree model. A logical next experiment is a predeclared
+fusion of question representation and similarity-tree features, selected with
+repeated paper-grouped train folds. Any final thesis generalization claim
+requires an untouched test set.
+
+### 10. Artifacts and reproduction
+
+Authoritative records are:
+
+- `docs/SIMILARITY_TREE_PHASE3A_RESULTS.md`;
+- `reports/similarity_tree_phase3a_evidence_length_oracle/experiment_report.md`;
+- `outputs/similarity_tree_phase3a_evidence_length_oracle/final_summary.json`;
+- `configuration/experiment.json`;
+- `integrity/preflight_audit.json` and `integrity/final_audit.json`;
+- full compressed score trees and slim feature files under `features/`;
+- grouped-fold and model-selection records under `cross_validation/`;
+- trained model artifacts under `models/`;
+- `heuristics/metrics.json`;
+- `validation/predictions.jsonl`;
+- classification metrics, confusion matrix, and histogram under
+  `classification/`; and
+- `retrieval/results.jsonl` and `retrieval/summary.json`.
+
+```powershell
+.\.venv\Scripts\python.exe similarity_tree_phase3a.py audit
+.\.venv\Scripts\python.exe similarity_tree_phase3a.py extract
+.\.venv\Scripts\python.exe similarity_tree_phase3a.py train-evaluate
+.\.venv-qwen\Scripts\python.exe similarity_tree_phase3a.py retrieve
+.\.venv\Scripts\python.exe similarity_tree_phase3a.py finalize
+.\.venv-qwen\Scripts\python.exe -m pytest -q tests\test_similarity_tree_phase3a.py tests\test_router.py
+```

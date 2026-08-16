@@ -1,0 +1,51 @@
+{
+  "phase": "Phase 3A",
+  "formulation_version": "similarity-tree-router-evidence-length-oracle-v1",
+  "created_at": "2026-08-13T18:07:01.469814+00:00",
+  "classes": [
+    10,
+    20,
+    40,
+    80,
+    160
+  ],
+  "feature_source": "full same-paper question-to-chunk cosine score trees",
+  "embedding_model": "text-embedding-3-small",
+  "embedding_dimension": 1536,
+  "chunk_collection": "PaperChunk",
+  "question_collection": "PaperQuestion",
+  "qdrant_access": "read_only",
+  "oracle_version": "oracle-evidence-length-gpt2-smaller-midpoint-v1",
+  "oracle_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+  "primary_model": "tree_logistic_regression",
+  "training_split": "preserved train only",
+  "hyperparameter_selection": "5-fold paper-grouped cross-validation on train only",
+  "final_evaluation_split": "preserved validation",
+  "selection_metric": "macro_f1",
+  "linear_learning_rates": [
+    0.03,
+    0.01,
+    0.003
+  ],
+  "linear_weight_decays": [
+    0.0,
+    0.001,
+    0.01
+  ],
+  "linear_epochs": 300,
+  "random_seed": 42,
+  "softmax_temperature_feature": 0.05,
+  "retrieval": {
+    "top_k": 5,
+    "paper_restricted": true
+  },
+  "forbidden_features": [
+    "ground-truth evidence",
+    "evidence length",
+    "answers",
+    "evidence embeddings",
+    "evidence-to-chunk similarity",
+    "retrieval F1",
+    "Oracle label as a feature"
+  ]
+}

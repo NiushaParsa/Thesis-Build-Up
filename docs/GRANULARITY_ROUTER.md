@@ -754,3 +754,69 @@ Recorded local read-only retrieval commands:
 .\.venv-qwen\Scripts\python.exe qwen_phase2e_posttraining.py --study-root outputs\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle retrieve-selected
 .\.venv-qwen\Scripts\python.exe qwen_phase2e_posttraining.py --study-root outputs\qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle audit-final
 ```
+
+## Phase 3A multiscale similarity-tree router
+
+Phase 3A tests a complementary routing signal proposed after Phase 2E. For
+each question it reads the existing source-paper chunk vectors at all five
+granularities, computes the complete question-to-chunk cosine score
+distributions, and reconstructs local parent-child branches from the preserved
+chunk indices. A paper contains a forest of 160 -> 80 -> 40 -> 20 -> 10
+branches rather than one global root. Similarities are scores, not calibrated
+probabilities.
+
+The feature boundary is strict. The classifier receives 85 level-distribution
+features or, for the predeclared primary model, 173 level plus hierarchy
+features. It does not receive evidence, evidence length, answers, evidence
+embeddings, evidence-to-chunk similarities, retrieval F1, or the Oracle label
+as a feature. The existing 1,536-dimensional question vector is used to
+compute same-paper similarities but is not a direct classifier feature.
+
+Hyperparameters were selected by five-fold paper-grouped cross-validation on
+the 2,245 training questions/845 papers only. The 924 validation questions/277
+papers were evaluated after locking. The selected primary model uses learning
+rate 0.01, weight decay 0.0, 300 full-batch epochs, uniform cross-entropy, and
+seed 42.
+
+| Validation metric | Phase 3A tree result |
+|---|---:|
+| Accuracy | 0.30303030303030304 |
+| Macro-F1 | 0.1928144851068439 |
+| Weighted F1 | 0.3037047064693007 |
+| Balanced accuracy | 0.19804594967839187 |
+| Top-2 accuracy | 0.6136363636363636 |
+| Mean absolute class distance | 1.0281385281385282 |
+| Within-one-level accuracy | 0.7337662337662337 |
+| Quadratic weighted kappa | 0.03960842466855796 |
+
+All 924 predictions are valid. Predicted 10/20/40/80/160 counts are
+8/31/209/356/320; Oracle counts are 13/81/178/232/420. Per-class F1 is
+0.0/0.07142857142857142/0.17571059431524547/0.30612244897959184/
+0.41081081081081083. Class 10 has zero recall, class 20 remains weak, and the
+model underpredicts the majority class 160.
+
+The level-only comparator has accuracy 0.3235930735930736 and macro-F1
+0.1891945748453902. The hierarchy features therefore add only
+0.003619910261453696 validation macro-F1 while reducing accuracy by
+0.02056277056277056. Moreover, paper-grouped OOF macro-F1 is
+0.22533833565985803 for level-only and 0.22217588936798274 for tree features.
+The saved result does not establish a robust hierarchy-specific improvement.
+
+The deployable train-prior majority is class 80 and has validation accuracy
+0.2510822510822511/macro-F1 0.08027681660899653. The validation-label class-160
+majority is a descriptive, non-deployable reference with accuracy
+0.45454545454545453/macro-F1 0.125. The Phase 3A model beats the former on both
+measures and the latter on macro-F1, but not on accuracy.
+
+Unchanged same-paper `top_k=5` retrieval covers 924/924 questions and obtains
+mean/median joined retrieval F1 0.26773840692640694/0.25228. Classification
+metrics measure Oracle-label agreement; joined retrieval F1 measures GPT-2
+token overlap after downstream retrieval. Phase 3A is below the same-Oracle
+Phase 2D and Phase 2E results on macro-F1 and retrieval F1.
+
+Qdrant remained read-only. The complete collection snapshot matches before
+and after the experiment. The initial gRPC extraction timed out after 1,844
+durably saved train rows; REST resume finished without duplication. Neither
+`.venv` nor `.venv-qwen` was changed. Full results, artifacts, limitations, and
+commands are recorded in `docs/SIMILARITY_TREE_PHASE3A_RESULTS.md` and
+`outputs/similarity_tree_phase3a_evidence_length_oracle/final_summary.json`.

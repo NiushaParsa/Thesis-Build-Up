@@ -1,0 +1,20 @@
+{
+  "phase": "Phase 3A",
+  "formulation_version": "similarity-tree-router-evidence-length-oracle-v1",
+  "router_model": "tree_logistic_regression",
+  "evaluated_examples": 924,
+  "valid_prediction_retrievals": 924,
+  "retrieval_coverage": 1.0,
+  "mean_joined_retrieval_f1": 0.26773840692640694,
+  "median_joined_retrieval_f1": 0.25228,
+  "coverage_adjusted_full_set_mean_joined_retrieval_f1": 0.26773840692640705,
+  "top_k": 5,
+  "paper_restricted": true,
+  "embedding_model": "text-embedding-3-small",
+  "embedding_dimension": 1536,
+  "similarity": "cosine",
+  "retrieval_wall_seconds_this_invocation": 168.46491879993118,
+  "qdrant_collections_unchanged": true,
+  "result_path": "outputs\\similarity_tree_phase3a_evidence_length_oracle\\retrieval\\results.jsonl",
+  "result_sha256": "4d46d76e750a51e9aefd1594b6b343dee6ee172098dac44561c7b4e61d99bb5e"
+}

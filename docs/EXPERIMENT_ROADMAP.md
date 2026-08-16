@@ -867,3 +867,63 @@ router code, and complete Qwen Phase 1/Phase 2/Phase 2B/Phase 2C/Phase 2D/Phase 
 classification and routed retrieval now exist. The broader matched-method
 final analysis and any
 same-new-Oracle retraining of Logistic Regression/MLP remain unfinished.
+
+### Phase 3A multiscale similarity-tree router
+
+Phase 3A is complete. It implements the supervisor-proposed complementary
+approach that derives routing features from the distribution of semantic
+similarity scores across the existing 160 -> 80 -> 40 -> 20 -> 10 chunk
+hierarchy. Because a paper normally contains multiple 160-token chunks, the
+implementation operates on a multiscale forest. It uses all same-paper
+question-to-chunk cosine scores and existing chunk indices; cosine scores are
+not described as calibrated probabilities.
+
+The preserved evidence-length Oracle, 2,245-question/845-paper train split,
+and 924-question/277-paper validation split were unchanged. Evidence, evidence
+length, answers, evidence embeddings, evidence-to-chunk similarity, retrieval
+F1, and the Oracle label were prohibited as features. Qdrant remained
+read-only and its complete collection snapshot matched the preflight snapshot
+after extraction, retrieval, and finalization.
+
+Two deterministic uniform-cross-entropy linear classifiers were fitted after
+five-fold paper-grouped train-only hyperparameter selection: an 85-feature
+level-distribution model and the predeclared primary 173-feature hierarchy
+model. The level/tree grouped OOF macro-F1 values are
+0.22533833565985803/0.22217588936798274. The locked validation results are:
+
+| Metric | Level-only | Tree, primary |
+|---|---:|---:|
+| Accuracy | 0.3235930735930736 | 0.30303030303030304 |
+| Macro-F1 | 0.1891945748453902 | 0.1928144851068439 |
+| Weighted F1 | 0.31267712296852007 | 0.3037047064693007 |
+| Balanced accuracy | 0.20515866865924984 | 0.19804594967839187 |
+| Top-2 accuracy | 0.6255411255411255 | 0.6136363636363636 |
+
+The primary tree prediction distribution is 8/31/209/356/320 for classes
+10/20/40/80/160, against Oracle support 13/81/178/232/420. It obtains class
+F1 values 0.0/0.07142857142857142/0.17571059431524547/
+0.30612244897959184/0.41081081081081083. Adding hierarchy features raises
+validation macro-F1 by only 0.003619910261453696 and lowers accuracy by
+0.02056277056277056; the grouped OOF direction favors level-only features.
+This is not robust evidence of a hierarchy-specific gain.
+
+Unchanged same-paper `top_k=5` retrieval covers 924/924 questions. Mean and
+median joined retrieval F1 are 0.26773840692640694 and 0.25228. These remain
+separate from classification accuracy/F1. Phase 3A is below Phase 2D and Phase
+2E on macro-F1 and downstream retrieval F1. That comparison is allowed because
+all three use the new Oracle and preserved split, but it remains a repeatedly
+observed development-set comparison rather than an unbiased final test.
+
+The initial resumable gRPC extraction stopped with `DEADLINE_EXCEEDED` after
+1,844 saved train rows. No data or Qdrant state changed. REST retry/resume then
+completed all 3,169 examples without duplication. Successful/resumed timed
+stages total 2363.6376387 seconds; the exact total including the failed first
+attempt is unavailable. No virtual environment was modified.
+
+Authoritative results and methods are in
+`docs/SIMILARITY_TREE_PHASE3A_RESULTS.md`,
+`reports/similarity_tree_phase3a_evidence_length_oracle/experiment_report.md`,
+and `outputs/similarity_tree_phase3a_evidence_length_oracle/final_summary.json`.
+Phase 3A establishes the score-tree-only baseline. A future fusion experiment
+should combine question representation and score-tree features under repeated
+paper-grouped selection, followed by evaluation on an untouched test set.

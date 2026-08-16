@@ -1,0 +1,145 @@
+{
+  "phase": "Phase 3A",
+  "completed_at": "2026-08-14T16:23:03.800283+00:00",
+  "splits": [
+    {
+      "split": "train",
+      "questions": 2245,
+      "documents": 845,
+      "raw_similarity_tree_path": "outputs\\similarity_tree_phase3a_evidence_length_oracle\\features\\train_similarity_trees.jsonl.gz",
+      "feature_path": "outputs\\similarity_tree_phase3a_evidence_length_oracle\\features\\train_features.jsonl",
+      "raw_similarity_tree_sha256": "92b568f4dd37901f3df28c07d057b07aea009756e05444865fd2011225bed297",
+      "feature_sha256": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+      "invocation_wall_seconds": 827.396431,
+      "resumed_records": 1844
+    },
+    {
+      "split": "validation",
+      "questions": 924,
+      "documents": 277,
+      "raw_similarity_tree_path": "outputs\\similarity_tree_phase3a_evidence_length_oracle\\features\\validation_similarity_trees.jsonl.gz",
+      "feature_path": "outputs\\similarity_tree_phase3a_evidence_length_oracle\\features\\validation_features.jsonl",
+      "raw_similarity_tree_sha256": "5b3f1a0c4f8ea12ec47d4e0a0903a715d5fbefaa1875c51aafa982730ac4ec12",
+      "feature_sha256": "548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893",
+      "invocation_wall_seconds": 1311.1521062,
+      "resumed_records": 0
+    }
+  ],
+  "qdrant_snapshot_before": {
+    "PaperChunk": {
+      "status": "green",
+      "points_count": 1701822,
+      "indexed_vectors_count": 1701822,
+      "vector_size": 1536,
+      "distance": "Cosine"
+    },
+    "PaperEvidence": {
+      "status": "green",
+      "points_count": 9522,
+      "indexed_vectors_count": 0,
+      "vector_size": 1536,
+      "distance": "Cosine"
+    },
+    "Stage4VerifyRouterDataset": {
+      "status": "green",
+      "points_count": 2,
+      "indexed_vectors_count": 0,
+      "vector_size": 1536,
+      "distance": "Cosine"
+    },
+    "Stage5MixedEvaluation": {
+      "status": "green",
+      "points_count": 2,
+      "indexed_vectors_count": 0,
+      "vector_size": null,
+      "distance": null
+    },
+    "RouterDataset": {
+      "status": "green",
+      "points_count": 3170,
+      "indexed_vectors_count": 0,
+      "vector_size": 1536,
+      "distance": "Cosine"
+    },
+    "PaperQuestion": {
+      "status": "green",
+      "points_count": 4526,
+      "indexed_vectors_count": 0,
+      "vector_size": 1536,
+      "distance": "Cosine"
+    },
+    "RetrievalEvaluation": {
+      "status": "green",
+      "points_count": 18622,
+      "indexed_vectors_count": 0,
+      "vector_size": null,
+      "distance": null
+    },
+    "Stage4VerifyRetrievalEval": {
+      "status": "green",
+      "points_count": 10,
+      "indexed_vectors_count": 0,
+      "vector_size": null,
+      "distance": null
+    }
+  },
+  "qdrant_snapshot_after": {
+    "PaperChunk": {
+      "status": "green",
+      "points_count": 1701822,
+      "indexed_vectors_count": 1701822,
+      "vector_size": 1536,
+      "distance": "Cosine"
+    },
+    "PaperEvidence": {
+      "status": "green",
+      "points_count": 9522,
+      "indexed_vectors_count": 0,
+      "vector_size": 1536,
+      "distance": "Cosine"
+    },
+    "Stage4VerifyRouterDataset": {
+      "status": "green",
+      "points_count": 2,
+      "indexed_vectors_count": 0,
+      "vector_size": 1536,
+      "distance": "Cosine"
+    },
+    "Stage5MixedEvaluation": {
+      "status": "green",
+      "points_count": 2,
+      "indexed_vectors_count": 0,
+      "vector_size": null,
+      "distance": null
+    },
+    "RouterDataset": {
+      "status": "green",
+      "points_count": 3170,
+      "indexed_vectors_count": 0,
+      "vector_size": 1536,
+      "distance": "Cosine"
+    },
+    "PaperQuestion": {
+      "status": "green",
+      "points_count": 4526,
+      "indexed_vectors_count": 0,
+      "vector_size": 1536,
+      "distance": "Cosine"
+    },
+    "RetrievalEvaluation": {
+      "status": "green",
+      "points_count": 18622,
+      "indexed_vectors_count": 0,
+      "vector_size": null,
+      "distance": null
+    },
+    "Stage4VerifyRetrievalEval": {
+      "status": "green",
+      "points_count": 10,
+      "indexed_vectors_count": 0,
+      "vector_size": null,
+      "distance": null
+    }
+  },
+  "collections_unchanged": true
+}
