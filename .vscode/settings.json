@@ -1,0 +1,55 @@
+{
+  "latex-workshop.latex.outDir": "%DIR%/build",
+  "latex-workshop.latex.recipe.default": "pdfLaTeX + Biber + glossaries",
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "pdfLaTeX + Biber + glossaries",
+      "tools": ["pdflatex", "biber", "makeindex-glossary", "pdflatex", "pdflatex"]
+    }
+  ],
+  "latex-workshop.latex.tools": [
+    {
+      "name": "pdflatex",
+      "command": "pdflatex",
+      "args": [
+        "-shell-escape",
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-output-directory=%OUTDIR%",
+        "%DOC%"
+      ],
+      "env": {}
+    },
+    {
+      "name": "biber",
+      "command": "biber",
+      "args": [
+        "--input-directory=%OUTDIR%",
+        "--output-directory=%OUTDIR%",
+        "%DOCFILE%"
+      ],
+      "env": {}
+    },
+    {
+      "name": "makeindex-glossary",
+      "command": "makeindex",
+      "args": [
+        "-s",
+        "%OUTDIR%/%DOCFILE%.ist",
+        "-t",
+        "%OUTDIR%/%DOCFILE%.glg",
+        "-o",
+        "%OUTDIR%/%DOCFILE%.gls",
+        "%OUTDIR%/%DOCFILE%.glo"
+      ],
+      "env": {}
+    }
+  ],
+  "latex-workshop.latex.autoBuild.run": "onSave",
+  "latex-workshop.view.pdf.viewer": "tab",
+  "latex-workshop.synctex.afterBuild.enabled": true,
+  "files.exclude": {
+    "**/build": true
+  }
+}

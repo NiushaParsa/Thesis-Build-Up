@@ -47,3 +47,27 @@ tmp/qwen-phase2e-lr-grid.conf
 tmp/qwen-phase2e-lr-grid.sh
 tmp/phase2e_transfer.sh
 tmp/phase2e_integrity_check.py
+
+# LaTeX build output (sources live under Master_Thesis_Template__PoliTo___1_)
+Master_Thesis_Template__PoliTo___1_/build/
+Master_Thesis_Template__PoliTo___1_/svg-inkscape/
+Master_Thesis_Template__PoliTo___1_/*.acn
+Master_Thesis_Template__PoliTo___1_/*.acr
+Master_Thesis_Template__PoliTo___1_/*.alg
+Master_Thesis_Template__PoliTo___1_/*.aux
+Master_Thesis_Template__PoliTo___1_/*.bbl
+Master_Thesis_Template__PoliTo___1_/*.bcf
+Master_Thesis_Template__PoliTo___1_/*.blg
+Master_Thesis_Template__PoliTo___1_/*.fdb_latexmk
+Master_Thesis_Template__PoliTo___1_/*.fls
+Master_Thesis_Template__PoliTo___1_/*.glg
+Master_Thesis_Template__PoliTo___1_/*.glo
+Master_Thesis_Template__PoliTo___1_/*.gls
+Master_Thesis_Template__PoliTo___1_/*.ist
+Master_Thesis_Template__PoliTo___1_/*.lof
+Master_Thesis_Template__PoliTo___1_/*.log
+Master_Thesis_Template__PoliTo___1_/*.lot
+Master_Thesis_Template__PoliTo___1_/*.out
+Master_Thesis_Template__PoliTo___1_/*.run.xml
+Master_Thesis_Template__PoliTo___1_/*.synctex.gz
+Master_Thesis_Template__PoliTo___1_/*.toc
