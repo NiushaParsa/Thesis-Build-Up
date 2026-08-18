@@ -4,6 +4,7 @@
 .env
 .venv-qwen/
 .venv-qwen-repair-backup/
+.venv-phase3b/
 tmp/huggingface_qwen_cache/
 tmp/matplotlib/
 json_output/
@@ -25,6 +26,7 @@ outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/t
 outputs/.qwen_phase2e_receive_*/
 outputs/similarity_tree_phase3a_evidence_length_oracle/recovery/
 tmp/phase3a_*.log
+tmp/phase3b_*.log
 tmp/huggingface_qwen_base_cache/
 tmp/phase2c_chunks/
 tmp/phase2c-step-*.tar.zst

@@ -820,3 +820,52 @@ durably saved train rows; REST resume finished without duplication. Neither
 `.venv` nor `.venv-qwen` was changed. Full results, artifacts, limitations, and
 commands are recorded in `docs/SIMILARITY_TREE_PHASE3A_RESULTS.md` and
 `outputs/similarity_tree_phase3a_evidence_length_oracle/final_summary.json`.
+
+## Phase 3B nonlinear similarity-tree router
+
+Phase 3B isolates model capacity as a follow-up to the Phase 3A linear
+baseline. It reuses Phase 3A's frozen 85-dimensional level features and
+173-dimensional hierarchy features, preserved examples, Oracle labels, and
+paper-grouped fold assignment. No Qdrant extraction was repeated. Evidence,
+answers, evidence length, retrieval F1, and Oracle labels are not model input.
+
+The models are five-class XGBoost classifiers trained with square-root
+inverse-frequency example weights. A fixed 12-candidate grid was evaluated
+separately for both representations over five paper-grouped training folds.
+Selection used train-only OOF macro-F1; the primary variant and its parameters
+were locked before validation evaluation. The selected models are:
+
+- level: depth 2, learning rate 0.03, 200 trees;
+- tree: depth 2, learning rate 0.05, 200 trees.
+
+Tree OOF macro-F1 0.2197631383461649 narrowly exceeds level OOF macro-F1
+0.21641959654127185, so the tree model is primary. Its validation metrics are
+accuracy 0.329004329004329, macro-F1 0.2246699873714014, weighted F1
+0.329619858512113, balanced accuracy 0.2327228358766522, and top-2 accuracy
+0.5898268398268398. Its 10/20/40/80/160 predictions are
+13/32/201/377/301. The confusion matrix is:
+
+| Oracle \\ predicted | 10 | 20 | 40 | 80 | 160 |
+|---|---:|---:|---:|---:|---:|
+| 10 | 1 | 0 | 3 | 7 | 2 |
+| 20 | 3 | 3 | 18 | 30 | 27 |
+| 40 | 3 | 8 | 44 | 78 | 45 |
+| 80 | 2 | 8 | 51 | 100 | 71 |
+| 160 | 4 | 13 | 85 | 162 | 156 |
+
+Against Phase 3A, Phase 3B gains 0.025974025974025983 accuracy and
+0.031855502264557495 macro-F1, while top-2 accuracy decreases by
+0.023809523809523836. The nonlinear model now recalls one of 13 class-10
+examples, but class 20 remains difficult (recall 0.037037037037037035).
+
+The unchanged same-paper retrieval evaluation covers 924/924 examples and
+produces mean/median joined retrieval F1 0.27172125974025974/0.2487165. This
+retrieval metric is downstream token overlap and is distinct from Oracle-label
+classification metrics.
+
+Phase 3B runs in the isolated `.venv-phase3b`; both earlier environments were
+unchanged. Complete protocol, environment, candidate results, trained models,
+predictions, classification artifacts, feature importance, retrieval records,
+runtime, and integrity checks are under
+`outputs/similarity_tree_phase3b_xgboost_evidence_length_oracle/`. See
+`docs/SIMILARITY_TREE_PHASE3B_RESULTS.md` for the concise result report.

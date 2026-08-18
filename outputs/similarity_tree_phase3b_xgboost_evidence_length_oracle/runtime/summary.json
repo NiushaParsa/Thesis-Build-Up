@@ -1,0 +1,11 @@
+{
+  "cross_validation_seconds_by_variant": {
+    "level_xgboost": 197.80893129995093,
+    "tree_xgboost": 492.87182669946924
+  },
+  "cross_validation_seconds_sum": 690.6807579994202,
+  "recovery_final_fit_and_validation_invocation_seconds": 7.2022769001778215,
+  "retrieval_seconds": 314.059133999981,
+  "known_recorded_computational_stage_seconds": 1011.942168899579,
+  "note": "The sum uses durable per-candidate CV times, the recovery invocation that wrote the selection lock and final validation, and retrieval. Interactive audit and orchestration overhead are not included."
+}

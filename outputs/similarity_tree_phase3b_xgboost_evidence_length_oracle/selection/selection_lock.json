@@ -1,0 +1,235 @@
+{
+  "phase": "Phase 3B",
+  "locked_at": "2026-08-16T18:08:09.399849+00:00",
+  "selection_data": "preserved train split only",
+  "validation_metrics_observed_at_lock": false,
+  "selection_metric": "macro_f1",
+  "primary_variant": "tree_xgboost",
+  "variant_oof_results": {
+    "level_xgboost": {
+      "selected_candidate_id": "depth2-lr0.03-trees200",
+      "selected_parameters": {
+        "max_depth": 2,
+        "learning_rate": 0.03,
+        "n_estimators": 200,
+        "min_child_weight": 5.0,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "reg_lambda": 1.0,
+        "reg_alpha": 0.0
+      },
+      "oof_metrics": {
+        "accuracy": 0.3051224944320713,
+        "macro_f1": 0.21641959654127185,
+        "weighted_f1": 0.28819092033644367,
+        "balanced_accuracy": 0.22237614125234278,
+        "top_2_accuracy": 0.5755011135857461,
+        "per_class": {
+          "10": {
+            "precision": 0.05555555555555555,
+            "recall": 0.03636363636363636,
+            "f1": 0.04395604395604396,
+            "support": 55
+          },
+          "20": {
+            "precision": 0.17142857142857143,
+            "recall": 0.0449438202247191,
+            "f1": 0.0712166172106825,
+            "support": 267
+          },
+          "40": {
+            "precision": 0.28627450980392155,
+            "recall": 0.24914675767918087,
+            "f1": 0.26642335766423353,
+            "support": 586
+          },
+          "80": {
+            "precision": 0.32479508196721313,
+            "recall": 0.46142649199417757,
+            "f1": 0.38123872519543,
+            "support": 687
+          },
+          "160": {
+            "precision": 0.31852986217457885,
+            "recall": 0.32,
+            "f1": 0.3192632386799693,
+            "support": 650
+          }
+        },
+        "confusion_matrix": [
+          [
+            2,
+            5,
+            14,
+            27,
+            7
+          ],
+          [
+            8,
+            12,
+            58,
+            119,
+            70
+          ],
+          [
+            7,
+            24,
+            146,
+            246,
+            163
+          ],
+          [
+            10,
+            11,
+            144,
+            317,
+            205
+          ],
+          [
+            9,
+            18,
+            148,
+            267,
+            208
+          ]
+        ],
+        "class_distribution": {
+          "10": 55,
+          "20": 267,
+          "40": 586,
+          "80": 687,
+          "160": 650
+        },
+        "predicted_distribution": {
+          "10": 36,
+          "20": 70,
+          "40": 510,
+          "80": 976,
+          "160": 653
+        },
+        "top_2_accuracy_status": "available",
+        "mean_absolute_class_distance": 1.0334075723830736,
+        "within_one_level_accuracy": 0.7314031180400891,
+        "mean_absolute_token_distance": 52.645879732739424,
+        "quadratic_weighted_kappa": 0.07114038104952691,
+        "correct_count": 685,
+        "example_count": 2245
+      }
+    },
+    "tree_xgboost": {
+      "selected_candidate_id": "depth2-lr0.05-trees200",
+      "selected_parameters": {
+        "max_depth": 2,
+        "learning_rate": 0.05,
+        "n_estimators": 200,
+        "min_child_weight": 5.0,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "reg_lambda": 1.0,
+        "reg_alpha": 0.0
+      },
+      "oof_metrics": {
+        "accuracy": 0.2868596881959911,
+        "macro_f1": 0.2197631383461649,
+        "weighted_f1": 0.2762733990139719,
+        "balanced_accuracy": 0.21850702043132825,
+        "top_2_accuracy": 0.578173719376392,
+        "per_class": {
+          "10": {
+            "precision": 0.1111111111111111,
+            "recall": 0.05454545454545454,
+            "f1": 0.07317073170731707,
+            "support": 55
+          },
+          "20": {
+            "precision": 0.21495327102803738,
+            "recall": 0.08614232209737828,
+            "f1": 0.1229946524064171,
+            "support": 267
+          },
+          "40": {
+            "precision": 0.26422018348623855,
+            "recall": 0.24573378839590443,
+            "f1": 0.2546419098143236,
+            "support": 586
+          },
+          "80": {
+            "precision": 0.30726872246696035,
+            "recall": 0.40611353711790393,
+            "f1": 0.3498432601880878,
+            "support": 687
+          },
+          "160": {
+            "precision": 0.29635258358662614,
+            "recall": 0.3,
+            "f1": 0.2981651376146789,
+            "support": 650
+          }
+        },
+        "confusion_matrix": [
+          [
+            3,
+            4,
+            16,
+            27,
+            5
+          ],
+          [
+            6,
+            23,
+            67,
+            102,
+            69
+          ],
+          [
+            4,
+            34,
+            144,
+            238,
+            166
+          ],
+          [
+            5,
+            22,
+            158,
+            279,
+            223
+          ],
+          [
+            9,
+            24,
+            160,
+            262,
+            195
+          ]
+        ],
+        "class_distribution": {
+          "10": 55,
+          "20": 267,
+          "40": 586,
+          "80": 687,
+          "160": 650
+        },
+        "predicted_distribution": {
+          "10": 27,
+          "20": 107,
+          "40": 545,
+          "80": 908,
+          "160": 658
+        },
+        "top_2_accuracy_status": "available",
+        "mean_absolute_class_distance": 1.0525612472160357,
+        "within_one_level_accuracy": 0.7287305122494432,
+        "mean_absolute_token_distance": 54.02227171492205,
+        "quadratic_weighted_kappa": 0.07637616724392271,
+        "correct_count": 644,
+        "example_count": 2245
+      }
+    }
+  },
+  "source_feature_hashes": {
+    "train": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+    "validation": "548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893"
+  },
+  "grid_fingerprint": "6681e6b77f26cca8a412a32d1dbdc7fd6f15f0c2e2b9e50cea1759660062df9a"
+}

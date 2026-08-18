@@ -1,0 +1,170 @@
+{
+  "phase": "Phase 3B",
+  "formulation_version": "similarity-tree-xgboost-evidence-length-oracle-v1",
+  "created_at": "2026-08-16T17:55:45.156989+00:00",
+  "source_feature_root": "outputs\\similarity_tree_phase3a_evidence_length_oracle",
+  "source_feature_hashes": {
+    "train": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+    "validation": "548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893"
+  },
+  "source_oracle_config_hash": "9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8",
+  "classes": [
+    10,
+    20,
+    40,
+    80,
+    160
+  ],
+  "feature_variants": {
+    "level_xgboost": "level_features",
+    "tree_xgboost": "tree_features"
+  },
+  "feature_counts": {
+    "level_xgboost": 85,
+    "tree_xgboost": 173
+  },
+  "classifier": "XGBoost gradient-boosted decision trees",
+  "objective": "multi:softprob",
+  "class_weighting": "sqrt(maximum_fold_class_count / fold_class_count)",
+  "selection": "five-fold paper-grouped train-only out-of-fold macro-F1",
+  "variant_selection": "train-only OOF macro-F1; tree preferred only on an exact tie",
+  "grid": [
+    {
+      "max_depth": 2,
+      "learning_rate": 0.03,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 2,
+      "learning_rate": 0.03,
+      "n_estimators": 400,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "n_estimators": 400,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 3,
+      "learning_rate": 0.03,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 3,
+      "learning_rate": 0.03,
+      "n_estimators": 400,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "n_estimators": 400,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 4,
+      "learning_rate": 0.03,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 4,
+      "learning_rate": 0.03,
+      "n_estimators": 400,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 4,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 4,
+      "learning_rate": 0.05,
+      "n_estimators": 400,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    }
+  ],
+  "grid_fingerprint": "6681e6b77f26cca8a412a32d1dbdc7fd6f15f0c2e2b9e50cea1759660062df9a",
+  "random_seed": 42,
+  "validation_policy": "evaluate only after durable train-only selection lock",
+  "qdrant_used_for_training": false,
+  "retrieval": {
+    "top_k": 5,
+    "paper_restricted": true,
+    "read_only": true
+  },
+  "forbidden_features": [
+    "evidence",
+    "oracle",
+    "answer",
+    "retrieval_f1",
+    "joined_f1",
+    "chunk_f1"
+  ]
+}

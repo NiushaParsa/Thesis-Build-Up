@@ -1892,3 +1892,239 @@ Authoritative records are:
 .\.venv\Scripts\python.exe similarity_tree_phase3a.py finalize
 .\.venv-qwen\Scripts\python.exe -m pytest -q tests\test_similarity_tree_phase3a.py tests\test_router.py
 ```
+
+## Phase 3B — Nonlinear Similarity-Tree Router
+
+### 1. Objective and controlled change
+
+Phase 3B tests the specific hypothesis that Phase 3A's linear classifier was
+too simple to exploit the multiscale similarity-tree representation. The only
+substantive modeling change is replacement of the linear classifier with a
+bounded XGBoost classifier. The evidence-length Oracle, preserved train and
+validation examples, feature definitions, paper-grouped folds, retrieval
+configuration, and evaluation implementations remain fixed.
+
+The experiment uses the frozen Phase 3A feature files rather than querying
+Qdrant again. Their SHA-256 hashes are:
+
+- train: `6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c`;
+- validation: `548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893`.
+
+No evidence, evidence length, answer, evidence embedding, evidence-to-chunk
+similarity, retrieval F1, or Oracle label was used as a feature. The Oracle
+label is used only as the supervised target.
+
+### 2. Dataset, representation, and environment
+
+The preserved data contain 2,245 training questions from 845 papers and 924
+validation questions from 277 different papers. The train distribution for
+10/20/40/80/160 is 55/267/586/687/650; validation support is
+13/81/178/232/420.
+
+Two representations provide a controlled ablation:
+
+- `level_xgboost`: 85 distribution features computed independently at the
+  five chunk levels;
+- `tree_xgboost`: the same 85 features plus 88 hierarchy-relation features,
+  for 173 features total.
+
+Phase 3B uses the separate `.venv-phase3b` environment with Python 3.12.6,
+XGBoost 3.0.2, NumPy 2.2.6, SciPy 1.15.3, and pytest 8.4.1. The legacy
+`.venv` and Qwen-specific `.venv-qwen` were not changed.
+
+### 3. Training and leakage-safe selection
+
+Training uses square-root inverse-frequency example weights calculated only
+from each training fold. This makes minority examples more influential
+without applying the more extreme full inverse-frequency weighting. The final
+all-train weights for classes 10/20/40/80/160 are
+3.534248023400323/1.6040678626121678/1.0827534108953252/1.0/
+1.0280676421924175.
+
+Each representation was evaluated over the same fixed 12-candidate grid:
+maximum depth 2/3/4, learning rate 0.03/0.05, and 200/400 trees, with
+`min_child_weight=5`, `subsample=0.8`, `colsample_bytree=0.8`, L2 penalty 1,
+and L1 penalty 0. Five paper-grouped training folds were reused exactly from
+Phase 3A. Macro-F1 was the primary selection metric.
+
+The selected train-only OOF results are:
+
+| Variant | Selected candidate | Accuracy | Macro-F1 | Weighted F1 | Balanced accuracy | Top-2 accuracy |
+|---|---|---:|---:|---:|---:|---:|
+| Level XGBoost | depth 2, LR 0.03, 200 trees | 0.3051224944320713 | 0.21641959654127185 | 0.28819092033644367 | 0.22237614125234278 | 0.5755011135857461 |
+| Tree XGBoost | depth 2, LR 0.05, 200 trees | 0.2868596881959911 | 0.2197631383461649 | 0.2762733990139719 | 0.21850702043132825 | 0.578173719376392 |
+
+Tree XGBoost was selected because its OOF macro-F1 was higher by
+0.0033435418048930465. The selection lock explicitly records
+`validation_metrics_observed_at_lock=false`; validation labels did not select
+the variant or hyperparameters.
+
+### 4. Locked validation classification results
+
+| Metric | Level XGBoost | Tree XGBoost, primary |
+|---|---:|---:|
+| Accuracy | 0.29329004329004327 | 0.329004329004329 |
+| Macro-F1 | 0.18218086837881048 | 0.2246699873714014 |
+| Weighted F1 | 0.2881468780711505 | 0.329619858512113 |
+| Balanced accuracy | 0.19528817289827233 | 0.2327228358766522 |
+| Top-2 accuracy | 0.5800865800865801 | 0.5898268398268398 |
+
+For the primary model, 304 of 924 labels are correct. Mean absolute class
+distance is 0.9848484848484849, within-one-level accuracy is
+0.7521645021645021, mean absolute token distance is 53.61471861471861, and
+quadratic weighted kappa is 0.09084101277786871.
+
+The Oracle and primary prediction distributions are:
+
+| Class | Oracle | Predicted |
+|---:|---:|---:|
+| 10 | 13 | 13 |
+| 20 | 81 | 32 |
+| 40 | 178 | 201 |
+| 80 | 232 | 377 |
+| 160 | 420 | 301 |
+
+Per-class results are:
+
+| Class | Precision | Recall | F1 | Support |
+|---:|---:|---:|---:|---:|
+| 10 | 0.07692307692307693 | 0.07692307692307693 | 0.07692307692307693 | 13 |
+| 20 | 0.09375 | 0.037037037037037035 | 0.05309734513274336 | 81 |
+| 40 | 0.21890547263681592 | 0.24719101123595505 | 0.2321899736147757 | 178 |
+| 80 | 0.26525198938992045 | 0.43103448275862066 | 0.3284072249589491 | 232 |
+| 160 | 0.5182724252491694 | 0.37142857142857144 | 0.43273231622746183 | 420 |
+
+The 5 by 5 confusion matrix, with Oracle labels as rows and predictions as
+columns in 10/20/40/80/160 order, is:
+
+| Oracle \\ predicted | 10 | 20 | 40 | 80 | 160 |
+|---|---:|---:|---:|---:|---:|
+| 10 | 1 | 0 | 3 | 7 | 2 |
+| 20 | 3 | 3 | 18 | 30 | 27 |
+| 40 | 3 | 8 | 44 | 78 | 45 |
+| 80 | 2 | 8 | 51 | 100 | 71 |
+| 160 | 4 | 13 | 85 | 162 | 156 |
+
+### 5. Comparisons and interpretation
+
+Relative to the Phase 3A primary linear tree model, Phase 3B changes the main
+metrics as follows:
+
+| Metric | Phase 3A | Phase 3B | Phase 3B minus 3A |
+|---|---:|---:|---:|
+| Accuracy | 0.30303030303030304 | 0.329004329004329 | +0.025974025974025983 |
+| Macro-F1 | 0.1928144851068439 | 0.2246699873714014 | +0.031855502264557495 |
+| Weighted F1 | 0.3037047064693007 | 0.329619858512113 | +0.025915152042812306 |
+| Balanced accuracy | 0.19804594967839187 | 0.2327228358766522 | +0.03467688619826034 |
+| Top-2 accuracy | 0.6136363636363636 | 0.5898268398268398 | -0.023809523809523836 |
+
+The nonlinear classifier produces meaningful gains in accuracy, macro-F1,
+weighted F1, and balanced accuracy, and it obtains nonzero class-10 recall.
+However, class-20 recall remains only 0.037037037037037035 and top-2 accuracy
+decreases. Thus linear capacity was one limitation, but it does not explain
+the full difficulty of inferring evidence length from similarity-score
+structure.
+
+Phase 3B still trails the same-Oracle Phase 2D and Phase 2E Qwen classifiers:
+
+| Phase | Accuracy | Macro-F1 | Weighted F1 | Balanced accuracy | Top-2 accuracy |
+|---|---:|---:|---:|---:|---:|
+| 2D | 0.36904761904761907 | 0.22994524079282935 | 0.3644656337102369 | 0.2391812745015638 | 0.6341991341991342 |
+| 2E selected checkpoint | 0.3484848484848485 | 0.22777929657889012 | 0.3473258648868964 | 0.24232226137689133 | 0.6190476190476191 |
+| 3B | 0.329004329004329 | 0.2246699873714014 | 0.329619858512113 | 0.2327228358766522 | 0.5898268398268398 |
+
+These three phases use the same evidence-length Oracle and preserved split, so
+the metrics describe matched-task development results. Nevertheless, the
+validation split has been inspected repeatedly and selected a Phase 2E
+checkpoint; this table must not be presented as an unbiased final test
+comparison. Old retrieval-F1-Oracle Logistic Regression and MLP results remain
+not directly comparable.
+
+Feature importance is descriptive rather than causal. The leading tree-model
+features include `level_40_top5_mean`, `level_20_max`, `level_160_q75`,
+`level_40_top10_mean`, and `level_20_top10_mean`. The explicit hierarchy
+feature `edge_40_to_20_sibling_abs_gap_mean` also appears among the leading
+features, but importance alone does not prove that this relation generalizes.
+
+### 6. End-to-end retrieval
+
+The unchanged downstream evaluation uses the predicted granularity,
+paper-restricted retrieval, the same `text-embedding-3-small` 1,536-dimensional
+question vectors, cosine similarity, existing Qdrant collections and chunk
+ordering, `top_k=5`, the same concatenation, and joined GPT-2 token-level
+retrieval F1.
+
+- retrieval coverage: 924/924, or 100%;
+- mean joined retrieval F1: 0.27172125974025974;
+- median joined retrieval F1: 0.2487165;
+- coverage-adjusted full-set mean: 0.27172125974025974.
+
+Mean retrieval F1 is 0.0039828528138528 higher than Phase 3A; the median is
+0.0035634999999999972 lower. Phase 2D/2E mean retrieval F1 values are
+0.2767166677489178/0.2793735097402597, respectively. Classification metrics
+measure evidence-length-Oracle label prediction; joined retrieval F1 measures
+downstream token overlap. They are distinct quantities.
+
+### 7. Runtime and integrity
+
+Cross-validation required 197.80893129995093 seconds for the level variant and
+492.87182669946924 seconds for the tree variant. The recovery invocation that
+wrote the selection lock and performed final fits/validation took
+7.2022769001778215 seconds. Retrieval took 314.059133999981 seconds. The sum of
+known recorded computational stages is 1011.942168899579 seconds, approximately
+16 minutes 52 seconds; interactive audit and orchestration overhead are not
+included.
+
+The saved primary model was independently reloaded. It reproduced all 924
+identities and labels, every metric, and all class probabilities with maximum
+absolute difference 0.0. The model SHA-256 is
+`3c44a6b1290532295ec74528063c8b4f23dd82bd381bf18f002c37db0c08d801`;
+the canonical prediction SHA-256 is
+`d997c9d2363c2b909af0228f9d9f742377c2cc812020834203858ee1a762105b`.
+Qdrant was read-only and its complete collection snapshot was identical before
+and after retrieval.
+
+### 8. Conclusion and next step
+
+Phase 3B confirms that a nonlinear model extracts more useful routing signal
+from the score-tree features than the Phase 3A linear model. The improvement
+is real within the locked validation protocol but moderate, and the model does
+not surpass the strongest question-only Qwen results. The evidence therefore
+supports the supervisor's view that score-tree information is complementary.
+
+The next technically justified experiment is a predeclared Phase 3C fusion of
+question representation and the frozen similarity-tree features. Model and
+hyperparameter selection should remain entirely within repeated
+paper-grouped training folds. Because the current validation set has now been
+used for several development decisions, a final generalization claim should
+be confirmed on an untouched test set. Phase 3C must remain separate and must
+not overwrite Phase 2 or Phase 3A/3B artifacts.
+
+### 9. Artifacts and reproduction
+
+Authoritative records are:
+
+- `docs/SIMILARITY_TREE_PHASE3B_RESULTS.md`;
+- `reports/similarity_tree_phase3b_xgboost_evidence_length_oracle/experiment_report.md`;
+- `outputs/similarity_tree_phase3b_xgboost_evidence_length_oracle/final_summary.json`;
+- `configuration/experiment.json`;
+- `selection/selection_lock.json`;
+- complete candidate and grouped-fold records under `cross_validation/`;
+- trained JSON models and metadata under `models/`;
+- canonical and ablation predictions under `validation/`;
+- classification metrics, confusion matrix, and histogram under
+  `classification/`;
+- feature-importance tables under `feature_importance/`;
+- `retrieval/results.jsonl` and `retrieval/summary.json`;
+- `runtime/summary.json`; and
+- `integrity/preflight_audit.json` and `integrity/final_audit.json`.
+
+```powershell
+py -3.12 -m venv .venv-phase3b
+.\.venv-phase3b\Scripts\python.exe -m pip install -r requirements-phase3b.txt
+.\.venv-phase3b\Scripts\python.exe similarity_tree_phase3b.py audit
+.\.venv-phase3b\Scripts\python.exe similarity_tree_phase3b.py train-evaluate
+.\.venv-qwen\Scripts\python.exe similarity_tree_phase3b.py retrieve
+.\.venv-phase3b\Scripts\python.exe similarity_tree_phase3b.py finalize
+.\.venv-phase3b\Scripts\python.exe -m pytest -q tests\test_similarity_tree_phase3b.py
+```

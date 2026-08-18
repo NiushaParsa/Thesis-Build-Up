@@ -1,0 +1,22 @@
+{
+  "verified_at": "2026-08-16T18:17:52.887104+00:00",
+  "status": "passed",
+  "source_feature_hashes": {
+    "train": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+    "validation": "548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893"
+  },
+  "primary_prediction_rows": 924,
+  "retrieval_rows": 924,
+  "qdrant_snapshot_matches": true,
+  "model_reload_verification": {
+    "model_reload_succeeded": true,
+    "prediction_identities_match": true,
+    "predicted_labels_match": true,
+    "maximum_absolute_probability_difference": 0.0,
+    "metrics_match": true,
+    "canonical_predictions_match_selected_variant": true,
+    "model_sha256": "3c44a6b1290532295ec74528063c8b4f23dd82bd381bf18f002c37db0c08d801",
+    "prediction_sha256": "d997c9d2363c2b909af0228f9d9f742377c2cc812020834203858ee1a762105b"
+  },
+  "artifact_count_before_final_files": 24
+}

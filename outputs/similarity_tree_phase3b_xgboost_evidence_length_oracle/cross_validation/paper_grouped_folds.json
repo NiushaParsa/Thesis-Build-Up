@@ -1,0 +1,62 @@
+[
+  {
+    "fold": 0,
+    "examples": 449,
+    "documents": 169,
+    "class_distribution": {
+      "10": 11,
+      "20": 53,
+      "40": 118,
+      "80": 137,
+      "160": 130
+    }
+  },
+  {
+    "fold": 1,
+    "examples": 449,
+    "documents": 167,
+    "class_distribution": {
+      "10": 11,
+      "20": 53,
+      "40": 117,
+      "80": 138,
+      "160": 130
+    }
+  },
+  {
+    "fold": 2,
+    "examples": 449,
+    "documents": 169,
+    "class_distribution": {
+      "10": 11,
+      "20": 54,
+      "40": 117,
+      "80": 137,
+      "160": 130
+    }
+  },
+  {
+    "fold": 3,
+    "examples": 450,
+    "documents": 170,
+    "class_distribution": {
+      "10": 11,
+      "20": 54,
+      "40": 117,
+      "80": 138,
+      "160": 130
+    }
+  },
+  {
+    "fold": 4,
+    "examples": 448,
+    "documents": 170,
+    "class_distribution": {
+      "10": 11,
+      "20": 53,
+      "40": 117,
+      "80": 137,
+      "160": 130
+    }
+  }
+]

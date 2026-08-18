@@ -927,3 +927,64 @@ and `outputs/similarity_tree_phase3a_evidence_length_oracle/final_summary.json`.
 Phase 3A establishes the score-tree-only baseline. A future fusion experiment
 should combine question representation and score-tree features under repeated
 paper-grouped selection, followed by evaluation on an untouched test set.
+
+### Phase 3B nonlinear similarity-tree router
+
+Phase 3B is complete. It tests whether Phase 3A was limited by its linear
+classifier while holding the data, evidence-length Oracle, preserved splits,
+and extracted similarity-tree features fixed. The frozen Phase 3A train and
+validation feature hashes are
+`6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c`
+and `548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893`.
+No similarity extraction, embedding call, collection mutation, or Oracle
+regeneration was performed.
+
+Two class-weighted XGBoost classifiers were compared: the 85-feature
+level-distribution representation and the 173-feature hierarchy
+representation. Twelve bounded hyperparameter candidates per variant were
+evaluated using the unchanged five paper-grouped train folds. Square-root
+inverse-frequency weights were calculated from each fold's training portion.
+Macro-F1 was the primary selection metric. The primary tree variant and all
+hyperparameters were written to a selection lock before validation metrics
+were computed.
+
+The selected level/tree train-only OOF macro-F1 values are
+0.21641959654127185/0.2197631383461649. The tree variant was therefore selected
+as primary. Locked validation results are:
+
+| Metric | Level XGBoost | Tree XGBoost, primary |
+|---|---:|---:|
+| Accuracy | 0.29329004329004327 | 0.329004329004329 |
+| Macro-F1 | 0.18218086837881048 | 0.2246699873714014 |
+| Weighted F1 | 0.2881468780711505 | 0.329619858512113 |
+| Balanced accuracy | 0.19528817289827233 | 0.2327228358766522 |
+| Top-2 accuracy | 0.5800865800865801 | 0.5898268398268398 |
+
+The primary prediction distribution is 13/32/201/377/301 for classes
+10/20/40/80/160. Its per-class F1 values are
+0.07692307692307693/0.05309734513274336/0.2321899736147757/
+0.3284072249589491/0.43273231622746183. Relative to Phase 3A, macro-F1 rises by
+0.031855502264557495 and accuracy by 0.025974025974025983. Top-2 accuracy falls
+by 0.023809523809523836. This supports the hypothesis that nonlinear capacity
+helps, but the modest absolute result and weak minority-class performance show
+that classifier simplicity was not the only limitation.
+
+Unchanged paper-restricted `top_k=5` retrieval covers all 924 validation
+questions. Mean/median joined retrieval F1 are
+0.27172125974025974/0.2487165. Mean retrieval F1 improves over Phase 3A by
+0.0039828528138528, but remains below the same-Oracle Phase 2D and Phase 2E
+results. These are development-set comparisons, not an unbiased test-set
+estimate.
+
+Phase 3B used a new isolated `.venv-phase3b` (Python 3.12.6, XGBoost 3.0.2,
+NumPy 2.2.6, and SciPy 1.15.3). It did not modify `.venv` or `.venv-qwen`.
+Known recorded computational stages total 1011.942168899579 seconds. Model
+reload reproduced every label with maximum probability difference 0.0, and
+the complete Qdrant snapshot matched before and after retrieval.
+
+Authoritative results are in `docs/SIMILARITY_TREE_PHASE3B_RESULTS.md`,
+`reports/similarity_tree_phase3b_xgboost_evidence_length_oracle/experiment_report.md`,
+and `outputs/similarity_tree_phase3b_xgboost_evidence_length_oracle/final_summary.json`.
+The next justified experiment is a predeclared fusion of question and
+similarity-tree representations, with selection confined to paper-grouped
+training folds and final confirmation on an untouched test set.

@@ -1,0 +1,13 @@
+{
+  "environment_name": ".venv-phase3b",
+  "python_version": "3.12.6",
+  "python_executable": "C:\\Users\\behno\\Repos\\Thesis Build Up\\.venv-phase3b\\Scripts\\python.exe",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.2.6",
+  "xgboost": "3.0.2",
+  "device": "CPU",
+  "tree_method": "hist",
+  "package_lock_path": "outputs\\similarity_tree_phase3b_xgboost_evidence_length_oracle\\environment\\package_lock.txt",
+  "legacy_venv_modified": false,
+  "qwen_venv_modified": false
+}

@@ -1,0 +1,43 @@
+{
+  "phase": "Phase 3B",
+  "audited_at": "2026-08-16T17:55:45.159025+00:00",
+  "status": "passed",
+  "source_phase3a_final_summary": "outputs\\similarity_tree_phase3a_evidence_length_oracle\\final_summary.json",
+  "source_phase3a_final_summary_sha256": "e747500b057bf395eab38a50cbb73a5e491cfe0010b7327f94429dd5c927e2cd",
+  "source_feature_hashes": {
+    "train": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+    "validation": "548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893"
+  },
+  "train_examples": 2245,
+  "train_documents": 845,
+  "validation_examples": 924,
+  "validation_documents": 277,
+  "paper_overlap": 0,
+  "train_distribution": {
+    "10": 55,
+    "20": 267,
+    "40": 586,
+    "80": 687,
+    "160": 650
+  },
+  "fold_manifest_matches_phase3a": true,
+  "feature_counts": {
+    "level": 85,
+    "tree": 173
+  },
+  "environment": {
+    "environment_name": ".venv-phase3b",
+    "python_version": "3.12.6",
+    "python_executable": "C:\\Users\\behno\\Repos\\Thesis Build Up\\.venv-phase3b\\Scripts\\python.exe",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "numpy": "2.2.6",
+    "xgboost": "3.0.2",
+    "device": "CPU",
+    "tree_method": "hist",
+    "package_lock_path": "outputs\\similarity_tree_phase3b_xgboost_evidence_length_oracle\\environment\\package_lock.txt",
+    "legacy_venv_modified": false,
+    "qwen_venv_modified": false
+  },
+  "qdrant_contacted": false,
+  "phase3a_artifacts_modified": false
+}
