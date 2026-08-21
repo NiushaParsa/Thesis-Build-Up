@@ -2128,3 +2128,42 @@ py -3.12 -m venv .venv-phase3b
 .\.venv-phase3b\Scripts\python.exe similarity_tree_phase3b.py finalize
 .\.venv-phase3b\Scripts\python.exe -m pytest -q tests\test_similarity_tree_phase3b.py
 ```
+
+## Phase 3C — Qwen Phase 2D and Similarity-Tree Phase 3B Fusion
+
+Phase 3C implements the proposed final combination. The selected Phase 2D
+Qwen checkpoint is frozen and supplies five class logits; these are combined
+with the 173 saved Phase 3B same-paper similarity-tree features in a
+class-weighted XGBoost model. A second variant combines the 1,024-dimensional
+final Qwen hidden state with the same tree features. Qwen receives only the
+unchanged Phase 2D instruction and original question. It has zero trainable
+parameters, gradients, or parameter updates in Phase 3C.
+
+The logits-plus-tree variant wins the grouped training-fold macro-F1 comparison
+and is primary. Its validation results are:
+
+| Metric | Phase 3C |
+|---|---:|
+| Accuracy | 0.31926406926406925 |
+| Macro-F1 | 0.2306766979333351 |
+| Weighted F1 | 0.33398724658349993 |
+| Balanced accuracy | 0.2358503567311523 |
+| Top-2 accuracy | 0.5768398268398268 |
+
+Oracle counts for 10/20/40/80/160 are 13/81/178/232/420; Phase 3C predicts
+27/88/251/300/258. Its mean/median joined retrieval F1 is
+0.2872016341991342/0.271346 at 924/924 coverage using the unchanged same-paper
+top-5 pipeline. Mean retrieval F1 exceeds Phase 2D by 0.0104849664502164 and
+Phase 3B by 0.01548037445887446. However, classification accuracy is lower
+than both components, and macro-F1 exceeds Phase 2D by only
+0.00073145714050575. The main benefit is downstream retrieval, not broad
+classification improvement.
+
+The Phase 2D checkpoint had already been selected on this validation set, and
+its training-fold representations are not from nested Qwen fold retraining.
+These are development results rather than an unbiased final test estimate.
+No source feature, earlier model, Oracle record, retrieval artifact, or Qdrant
+collection was modified. Full records are in
+`docs/QWEN_PHASE3C_FUSION_RESULTS.md`,
+`reports/qwen_phase3c_fusion_evidence_length_oracle/experiment_report.md`, and
+`outputs/qwen_phase3c_fusion_evidence_length_oracle/final_summary.json`.

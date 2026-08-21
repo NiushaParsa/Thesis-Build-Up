@@ -1,0 +1,32 @@
+{
+  "phase": "Phase 3C",
+  "verified_at": "2026-08-21T18:57:00.069659+00:00",
+  "status": "passed",
+  "source_feature_hashes": {
+    "train": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+    "validation": "548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893"
+  },
+  "phase2d_checkpoint_sha256": "020af0a83af773239e7e60e9983afad29cae3f31493c7073e9162e040b732814",
+  "prediction_rows": 924,
+  "retrieval_rows": 924,
+  "qdrant_snapshot_matches": true,
+  "qwen_parameter_updates": 0,
+  "model_reload_verification": {
+    "qwen_logits_tree": {
+      "status": "passed",
+      "prediction_rows": 924,
+      "predicted_labels_match": true,
+      "metrics_match": true,
+      "maximum_absolute_probability_difference": 0.0,
+      "model_sha256": "2afd59dd4b2fcb62509cb820b8f83754a117ea9fd6a8c219e86d7cce3b85733e"
+    },
+    "qwen_hidden_tree": {
+      "status": "passed",
+      "prediction_rows": 924,
+      "predicted_labels_match": true,
+      "metrics_match": true,
+      "maximum_absolute_probability_difference": 1.4901161193847656e-08,
+      "model_sha256": "8124bad5efde7b31f8c3fecccd380597f47afd4f6a338c10c0c1de9b49a5275c"
+    }
+  }
+}

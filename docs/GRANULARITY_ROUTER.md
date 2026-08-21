@@ -869,3 +869,29 @@ predictions, classification artifacts, feature importance, retrieval records,
 runtime, and integrity checks are under
 `outputs/similarity_tree_phase3b_xgboost_evidence_length_oracle/`. See
 `docs/SIMILARITY_TREE_PHASE3B_RESULTS.md` for the concise result report.
+
+## Phase 3C Qwen and tree fusion
+
+Phase 3C combines the frozen Phase 2D Qwen sequence classifier with the frozen
+Phase 3B same-paper similarity tree. The selected model uses five Qwen class
+logits plus 173 tree features in a class-weighted XGBoost classifier. A
+1,024-hidden-state-plus-tree variant was also evaluated. Selection used the
+preserved paper-grouped training folds, and Qwen remained frozen with zero
+parameter updates.
+
+The primary validation result is accuracy 0.31926406926406925, macro-F1
+0.2306766979333351, weighted F1 0.33398724658349993, balanced accuracy
+0.2358503567311523, and top-2 accuracy 0.5768398268398268. Predictions for
+10/20/40/80/160 are 27/88/251/300/258, against Oracle counts
+13/81/178/232/420.
+
+Unchanged paper-restricted top-5 retrieval covers 924/924 examples and obtains
+mean/median joined retrieval F1 0.2872016341991342/0.271346. This downstream
+mean exceeds Phase 2D by 0.0104849664502164 and Phase 3B by
+0.01548037445887446, despite lower classification accuracy. Classification
+metrics and retrieval F1 must therefore remain clearly distinguished.
+
+This is a development-set result because the frozen Phase 2D checkpoint was
+previously selected on the same validation set. See
+`docs/QWEN_PHASE3C_FUSION_RESULTS.md` and
+`outputs/qwen_phase3c_fusion_evidence_length_oracle/final_summary.json`.

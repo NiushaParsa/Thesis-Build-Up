@@ -1,0 +1,14 @@
+{
+  "environment_name": ".venv-fusion",
+  "python_version": "3.10.7",
+  "python_executable": "/workspace/thesis-granularity-router/.venv-fusion/bin/python",
+  "platform": "Linux-5.15.0-173-generic-x86_64-with-glibc2.39",
+  "numpy": "2.2.6",
+  "xgboost": "3.0.2",
+  "qwen_extraction_device": "CUDA",
+  "fusion_classifier_device": "CPU",
+  "legacy_venv_modified": false,
+  "phase2d_artifacts_modified": false,
+  "phase3a_artifacts_modified": false,
+  "phase3b_artifacts_modified": false
+}

@@ -1,0 +1,170 @@
+{
+  "phase": "Phase 3C",
+  "formulation_version": "qwen-phase2d-hidden-state-plus-phase3b-tree-xgboost-v1",
+  "created_at": "2026-08-21T18:14:19.214208+00:00",
+  "objective": "combine Phase 2D question representation with Phase 3B paper-specific similarity tree",
+  "classes": [
+    10,
+    20,
+    40,
+    80,
+    160
+  ],
+  "source_phase2d_checkpoint": "outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/runs/qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1/checkpoints/step-000213/model",
+  "source_phase2d_checkpoint_sha256": "020af0a83af773239e7e60e9983afad29cae3f31493c7073e9162e040b732814",
+  "source_phase3a_feature_hashes": {
+    "train": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+    "validation": "548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893"
+  },
+  "source_phase3b_final_summary": "outputs/similarity_tree_phase3b_xgboost_evidence_length_oracle/final_summary.json",
+  "qwen_frozen": true,
+  "gradient_computation": false,
+  "parameter_updates_to_qwen": 0,
+  "prompt": "You are a router for a retrieval-augmented generation system. Based only on the question, select the option representing the context size most suitable for retrieving the evidence required to answer it. Choose exactly one value from: 1 = 10 tokens, 2 = 20 tokens, 3 = 40 tokens, 4 = 80 tokens, 5 = 160 tokens. Return only the number",
+  "prompt_sha256": "b3237368922abe709e2bd2d756fb9f25d39e7f5670e5c4cb15daaa3a2d1cf2e5",
+  "input_template": "{instruction}\\n\\nQuestion: {original_question_text}",
+  "max_sequence_length": 128,
+  "fusion_variants": {
+    "qwen_logits_tree": [
+      "qwen_logits",
+      "tree_features"
+    ],
+    "qwen_hidden_tree": [
+      "qwen_hidden",
+      "tree_features"
+    ]
+  },
+  "fusion_classifier": "XGBoost multi:softprob",
+  "xgboost_grid": [
+    {
+      "max_depth": 2,
+      "learning_rate": 0.03,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 2,
+      "learning_rate": 0.03,
+      "n_estimators": 400,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "n_estimators": 400,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 3,
+      "learning_rate": 0.03,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 3,
+      "learning_rate": 0.03,
+      "n_estimators": 400,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "n_estimators": 400,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 4,
+      "learning_rate": 0.03,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 4,
+      "learning_rate": 0.03,
+      "n_estimators": 400,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 4,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    {
+      "max_depth": 4,
+      "learning_rate": 0.05,
+      "n_estimators": 400,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    }
+  ],
+  "xgboost_grid_fingerprint": "6681e6b77f26cca8a412a32d1dbdc7fd6f15f0c2e2b9e50cea1759660062df9a",
+  "class_weighting": "sqrt(maximum_fold_class_count / fold_class_count)",
+  "selection": "five-fold paper-grouped train-only OOF macro-F1",
+  "validation_policy": "fusion model selection locked before Phase 3C validation inference",
+  "development_set_caveat": "The frozen Phase 2D checkpoint was previously selected on this same validation split; Phase 3C is therefore a development-set result, not an unbiased final test estimate.",
+  "retrieval": {
+    "top_k": 5,
+    "paper_restricted": true,
+    "read_only": true
+  }
+}

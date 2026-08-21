@@ -1,0 +1,53 @@
+{
+  "qwen_extraction_splits": {
+    "train": {
+      "examples": 2245,
+      "wall_seconds": 63.53712313249707,
+      "mean_seconds_per_example": 0.02830161444162473,
+      "hidden_size": 1024,
+      "minimum_token_count": 95,
+      "maximum_token_count": 121,
+      "path": "outputs/qwen_phase3c_fusion_evidence_length_oracle/qwen_features/train_qwen_features.npz",
+      "sha256": "0b8dd4b529b498166c4ea268a2aa351727e7a5100b759db33ff8d77d6762624c",
+      "logits_shape": [
+        2245,
+        5
+      ],
+      "hidden_shape": [
+        2245,
+        1024
+      ]
+    },
+    "validation": {
+      "examples": 924,
+      "wall_seconds": 26.019640373066068,
+      "mean_seconds_per_example": 0.028159784263975564,
+      "hidden_size": 1024,
+      "minimum_token_count": 96,
+      "maximum_token_count": 124,
+      "path": "outputs/qwen_phase3c_fusion_evidence_length_oracle/qwen_features/validation_qwen_features.npz",
+      "sha256": "3d3c2ae4182fade0449a1aef1390f8683209c199c609b373a618a98db63ff30d",
+      "logits_shape": [
+        924,
+        5
+      ],
+      "hidden_shape": [
+        924,
+        1024
+      ]
+    }
+  },
+  "post_model_load_extraction_and_verification_seconds": 93.55617220513523,
+  "cross_validation_seconds_by_variant": {
+    "qwen_logits_tree": 200.63359110243618,
+    "qwen_hidden_tree": 1036.5514699425548
+  },
+  "train_evaluate_command_seconds_including_cross_validation": 1247.1628678720444,
+  "final_fit_and_validation_seconds_by_variant": {
+    "qwen_logits_tree": 1.3541359566152096,
+    "qwen_hidden_tree": 7.120544536039233
+  },
+  "retrieval_seconds": 335.15109509998,
+  "known_recorded_sequential_stage_seconds": 1675.8701351771597,
+  "runtime_accounting_note": "The train-evaluate command time already includes both cross-validation searches and final fitting, so the per-variant CV times are descriptive and are not added again. Model-loading time before the extraction timer was not recorded and is not fabricated."
+}

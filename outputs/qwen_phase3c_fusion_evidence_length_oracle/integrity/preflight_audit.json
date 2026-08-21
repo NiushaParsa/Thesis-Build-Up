@@ -1,0 +1,32 @@
+{
+  "phase": "Phase 3C",
+  "status": "passed",
+  "audited_at": "2026-08-21T18:14:19.214744+00:00",
+  "train_examples": 2245,
+  "validation_examples": 924,
+  "train_documents": 845,
+  "validation_documents": 277,
+  "paper_overlap": 0,
+  "source_feature_hashes": {
+    "train": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+    "validation": "548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893"
+  },
+  "checkpoint_sha256": "020af0a83af773239e7e60e9983afad29cae3f31493c7073e9162e040b732814",
+  "fold_manifest_matches_phase3a_phase3b": true,
+  "qdrant_contacted": false,
+  "source_artifacts_modified": false,
+  "environment": {
+    "environment_name": ".venv-fusion",
+    "python_version": "3.10.7",
+    "python_executable": "/workspace/thesis-granularity-router/.venv-fusion/bin/python",
+    "platform": "Linux-5.15.0-173-generic-x86_64-with-glibc2.39",
+    "numpy": "2.2.6",
+    "xgboost": "3.0.2",
+    "qwen_extraction_device": "CUDA",
+    "fusion_classifier_device": "CPU",
+    "legacy_venv_modified": false,
+    "phase2d_artifacts_modified": false,
+    "phase3a_artifacts_modified": false,
+    "phase3b_artifacts_modified": false
+  }
+}

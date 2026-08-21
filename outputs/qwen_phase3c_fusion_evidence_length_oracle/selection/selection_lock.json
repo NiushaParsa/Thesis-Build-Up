@@ -1,0 +1,231 @@
+{
+  "phase": "Phase 3C",
+  "locked_at": "2026-08-21T18:37:50.538679+00:00",
+  "fusion_selection_data": "preserved train split only",
+  "phase3c_validation_labels_observed_for_fusion_selection": false,
+  "primary_variant": "qwen_logits_tree",
+  "selection_metric": "paper-grouped OOF macro-F1",
+  "variant_oof_results": {
+    "qwen_logits_tree": {
+      "selected_candidate_id": "depth2-lr0.05-trees200",
+      "selected_parameters": {
+        "max_depth": 2,
+        "learning_rate": 0.05,
+        "n_estimators": 200,
+        "min_child_weight": 5.0,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "reg_lambda": 1.0,
+        "reg_alpha": 0.0
+      },
+      "oof_metrics": {
+        "accuracy": 0.4717149220489978,
+        "macro_f1": 0.38383459364081357,
+        "weighted_f1": 0.468304675183809,
+        "balanced_accuracy": 0.38118555379226826,
+        "top_2_accuracy": 0.7278396436525613,
+        "per_class": {
+          "10": {
+            "precision": 0.14893617021276595,
+            "recall": 0.12727272727272726,
+            "f1": 0.1372549019607843,
+            "support": 55
+          },
+          "20": {
+            "precision": 0.30414746543778803,
+            "recall": 0.24719101123595505,
+            "f1": 0.27272727272727276,
+            "support": 267
+          },
+          "40": {
+            "precision": 0.4559322033898305,
+            "recall": 0.4590443686006826,
+            "f1": 0.45748299319727886,
+            "support": 586
+          },
+          "80": {
+            "precision": 0.504774897680764,
+            "recall": 0.5385735080058224,
+            "f1": 0.5211267605633803,
+            "support": 687
+          },
+          "160": {
+            "precision": 0.5273556231003039,
+            "recall": 0.5338461538461539,
+            "f1": 0.5305810397553516,
+            "support": 650
+          }
+        },
+        "confusion_matrix": [
+          [
+            7,
+            12,
+            15,
+            12,
+            9
+          ],
+          [
+            7,
+            66,
+            83,
+            65,
+            46
+          ],
+          [
+            10,
+            59,
+            269,
+            127,
+            121
+          ],
+          [
+            14,
+            47,
+            121,
+            370,
+            135
+          ],
+          [
+            9,
+            33,
+            102,
+            159,
+            347
+          ]
+        ],
+        "class_distribution": {
+          "10": 55,
+          "20": 267,
+          "40": 586,
+          "80": 687,
+          "160": 650
+        },
+        "predicted_distribution": {
+          "10": 47,
+          "20": 217,
+          "40": 590,
+          "80": 733,
+          "160": 658
+        },
+        "top_2_accuracy_status": "available",
+        "mean_absolute_class_distance": 0.8062360801781737,
+        "within_one_level_accuracy": 0.7848552338530067,
+        "mean_absolute_token_distance": 38.43207126948775,
+        "quadratic_weighted_kappa": 0.3316425512702029,
+        "correct_count": 1059,
+        "example_count": 2245
+      }
+    },
+    "qwen_hidden_tree": {
+      "selected_candidate_id": "depth2-lr0.03-trees200",
+      "selected_parameters": {
+        "max_depth": 2,
+        "learning_rate": 0.03,
+        "n_estimators": 200,
+        "min_child_weight": 5.0,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "reg_lambda": 1.0,
+        "reg_alpha": 0.0
+      },
+      "oof_metrics": {
+        "accuracy": 0.44097995545657015,
+        "macro_f1": 0.35436172573956737,
+        "weighted_f1": 0.4371023393444973,
+        "balanced_accuracy": 0.3532414108900802,
+        "top_2_accuracy": 0.6966592427616927,
+        "per_class": {
+          "10": {
+            "precision": 0.12,
+            "recall": 0.10909090909090909,
+            "f1": 0.1142857142857143,
+            "support": 55
+          },
+          "20": {
+            "precision": 0.2757009345794392,
+            "recall": 0.2209737827715356,
+            "f1": 0.24532224532224534,
+            "support": 267
+          },
+          "40": {
+            "precision": 0.41308089500860584,
+            "recall": 0.40955631399317405,
+            "f1": 0.4113110539845758,
+            "support": 586
+          },
+          "80": {
+            "precision": 0.4888558692421991,
+            "recall": 0.47889374090247455,
+            "f1": 0.4838235294117647,
+            "support": 687
+          },
+          "160": {
+            "precision": 0.4896836313617607,
+            "recall": 0.5476923076923077,
+            "f1": 0.5170660856935366,
+            "support": 650
+          }
+        },
+        "confusion_matrix": [
+          [
+            6,
+            9,
+            18,
+            7,
+            15
+          ],
+          [
+            9,
+            59,
+            85,
+            54,
+            60
+          ],
+          [
+            13,
+            69,
+            240,
+            121,
+            143
+          ],
+          [
+            17,
+            43,
+            145,
+            329,
+            153
+          ],
+          [
+            5,
+            34,
+            93,
+            162,
+            356
+          ]
+        ],
+        "class_distribution": {
+          "10": 55,
+          "20": 267,
+          "40": 586,
+          "80": 687,
+          "160": 650
+        },
+        "predicted_distribution": {
+          "10": 50,
+          "20": 214,
+          "40": 581,
+          "80": 673,
+          "160": 727
+        },
+        "top_2_accuracy_status": "available",
+        "mean_absolute_class_distance": 0.8530066815144766,
+        "within_one_level_accuracy": 0.7763919821826281,
+        "mean_absolute_token_distance": 40.98440979955456,
+        "quadratic_weighted_kappa": 0.3052299965226144,
+        "correct_count": 990,
+        "example_count": 2245
+      }
+    }
+  },
+  "development_set_caveat": "The frozen Phase 2D checkpoint had already been selected on the preserved validation split before Phase 3C."
+}
