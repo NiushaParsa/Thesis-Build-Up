@@ -1,0 +1,68 @@
+{
+  "clean_phase3c_oof": {
+    "classification_accuracy": 0.3225108225108225,
+    "classification_macro_f1": 0.20998522506102316,
+    "classification_weighted_f1": 0.32674104553954336,
+    "classification_balanced_accuracy": 0.21785914500689135,
+    "mean_joined_retrieval_f1": 0.27830322619047615
+  },
+  "original_phase3c": {
+    "classification_accuracy": 0.31926406926406925,
+    "classification_macro_f1": 0.2306766979333351,
+    "classification_weighted_f1": 0.33398724658349993,
+    "classification_balanced_accuracy": 0.2358503567311523,
+    "mean_joined_retrieval_f1": 0.2872016341991342,
+    "delta_clean_minus_reference_accuracy": 0.0032467532467532756,
+    "delta_clean_minus_reference_macro_f1": -0.020691472872311933,
+    "delta_clean_minus_reference_retrieval_f1": -0.008898408008658043
+  },
+  "phase2d": {
+    "classification_accuracy": 0.36904761904761907,
+    "classification_macro_f1": 0.22994524079282935,
+    "classification_weighted_f1": 0.3644656337102369,
+    "classification_balanced_accuracy": 0.2391812745015638,
+    "mean_joined_retrieval_f1": 0.2767166677489178,
+    "delta_clean_minus_reference_accuracy": -0.04653679653679654,
+    "delta_clean_minus_reference_macro_f1": -0.019960015731806197,
+    "delta_clean_minus_reference_retrieval_f1": 0.0015865584415583611
+  },
+  "phase3b": {
+    "classification_accuracy": 0.329004329004329,
+    "classification_macro_f1": 0.2246699873714014,
+    "classification_weighted_f1": 0.329619858512113,
+    "classification_balanced_accuracy": 0.2327228358766522,
+    "mean_joined_retrieval_f1": 0.27172125974025974,
+    "delta_clean_minus_reference_accuracy": -0.006493506493506496,
+    "delta_clean_minus_reference_macro_f1": -0.014684762310378241,
+    "delta_clean_minus_reference_retrieval_f1": 0.006581966450216414
+  },
+  "fixed_granularity_baselines": {
+    "fixed_10": {
+      "mean_joined_retrieval_f1": 0.22111944047619048,
+      "median_joined_retrieval_f1": 0.207362
+    },
+    "fixed_20": {
+      "mean_joined_retrieval_f1": 0.28874969588744587,
+      "median_joined_retrieval_f1": 0.28091750000000004
+    },
+    "fixed_40": {
+      "mean_joined_retrieval_f1": 0.3158559274891775,
+      "median_joined_retrieval_f1": 0.3091675
+    },
+    "fixed_80": {
+      "mean_joined_retrieval_f1": 0.2857245205627706,
+      "median_joined_retrieval_f1": 0.2665675
+    },
+    "fixed_160": {
+      "mean_joined_retrieval_f1": 0.21679366125541125,
+      "median_joined_retrieval_f1": 0.183777
+    }
+  },
+  "fixed_granularity_deltas": {
+    "fixed_10": 0.05718378571428567,
+    "fixed_20": -0.010446469696969718,
+    "fixed_40": -0.03755270129870136,
+    "fixed_80": -0.00742129437229444,
+    "fixed_160": 0.0615095649350649
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "phase": "Phase 3C-OOF",
+  "fold": 3,
+  "status": "complete",
+  "training": {
+    "role": "outer_fold_3",
+    "status": "trained_fixed_final_epoch_endpoint",
+    "training_examples": 1795,
+    "training_documents": 675,
+    "training_distribution": {
+      "10": 44,
+      "20": 213,
+      "40": 469,
+      "80": 549,
+      "160": 520
+    },
+    "configuration": {
+      "model_id": "Qwen/Qwen3.5-0.8B-Base",
+      "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "architecture": "AutoModelForSequenceClassification",
+      "training_method": "full_parameter_sequence_classification",
+      "formulation_version": "qwen-phase2d-base-sequence-classifier-token-count-prompt-v1",
+      "objective": "uniform_five_class_cross_entropy",
+      "problem_type": "single_label_classification",
+      "dtype": "torch.bfloat16",
+      "device": "cuda",
+      "max_sequence_length": 128,
+      "per_device_batch_size": 4,
+      "gradient_accumulation_steps": 8,
+      "effective_batch_size": 32,
+      "learning_rate": 2e-05,
+      "weight_decay": 0.01,
+      "scheduler": "cosine",
+      "warmup_ratio": 0.05,
+      "epochs": 3,
+      "gradient_clipping": 1.0,
+      "seed": 42,
+      "logging_steps": 1,
+      "evaluation_frequency": "end_of_epoch",
+      "checkpoint_frequency": "end_of_epoch",
+      "checkpoint_retention_policy": "retain_current_and_best_during_training_selected_only_at_completion",
+      "checkpoint_selection_metric": "validation_macro_f1",
+      "checkpoint_tie_break": "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step",
+      "early_stopping": "none_fixed_three_epochs",
+      "quantization": null,
+      "class_weights": "uniform"
+    },
+    "active_evaluation_frequency": "none",
+    "active_checkpoint_selection": "none_fixed_epoch_3_endpoint",
+    "optimizer_steps_per_epoch": 57,
+    "total_optimizer_steps": 171,
+    "warmup_steps": 9,
+    "initial_step_loss": 1.7948624640703201,
+    "final_step_loss": 1.1399383544921875,
+    "training_wall_seconds": 1304.0971037223935,
+    "approximate_peak_process_rss_gib": 2.0634002685546875,
+    "peak_cuda_allocated_gib": 9.024145603179932,
+    "peak_cuda_reserved_gib": 9.400390625,
+    "model_loading_audit": {
+      "configuration": {
+        "status": "passed",
+        "checks": {
+          "num_labels": true,
+          "problem_type": true,
+          "id2label": true,
+          "label2id": true,
+          "top_level_pad_token_id": true,
+          "text_config_pad_token_id": true,
+          "top_level_use_cache": true,
+          "text_config_use_cache": true
+        },
+        "num_labels": 5,
+        "id2label": {
+          "0": "10",
+          "1": "20",
+          "2": "40",
+          "3": "80",
+          "4": "160"
+        },
+        "label2id": {
+          "10": 0,
+          "20": 1,
+          "40": 2,
+          "80": 3,
+          "160": 4
+        },
+        "pad_token_id": 248044
+      },
+      "classifier_head": {
+        "status": "passed",
+        "initial_base_load": true,
+        "seed_set_before_model_load": 42,
+        "head_parameter_name": "score.weight",
+        "head_shape": [
+          5,
+          1024
+        ],
+        "head_bias": false,
+        "head_weight_dtype": "torch.bfloat16",
+        "head_weight_sha256_float32": "09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5",
+        "loading_info": {
+          "missing_keys": [
+            "score.weight"
+          ],
+          "unexpected_keys": [],
+          "mismatched_keys": [],
+          "error_msgs": []
+        }
+      }
+    },
+    "environment": {
+      "python_version": "3.10.7",
+      "python_executable": "/workspace/thesis-granularity-router/.venv-fusion/bin/python",
+      "torch_version": "2.8.0+cu128",
+      "torch_cuda_version": "12.8",
+      "transformers_version": "5.15.0.dev0",
+      "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+      "gpu": "NVIDIA A100-SXM4-40GB",
+      "dtype": "torch.bfloat16"
+    },
+    "completed_at": "2026-08-23T18:20:46.492127+00:00"
+  },
+  "heldout_extraction": {
+    "examples": 450,
+    "wall_seconds": 4.600976189598441,
+    "batch_size": 16,
+    "minimum_token_count": 96,
+    "maximum_token_count": 121
+  },
+  "training_question_ids_sha256": "5ed1e5a8f6a9dbab8b7856253c8342d24b49b8fe9a67172c6c3a76e0c435953e",
+  "heldout_question_ids_sha256": "a4a53475e5997355fed6c68cbe74a5bf40d8e3907843cfec5fa71769bf4aede1",
+  "training_document_ids_sha256": "3e716574bb1c2f8e8b1c7e558534d3e308d7077140d6ffbd31e4b2a53e8257d1",
+  "heldout_document_ids_sha256": "ec2ad0bcf9838e7f9ce8e94e33d98613e1ff9f2196971bf4890e53012bb4cdbe",
+  "paper_overlap_count": 0,
+  "heldout_logits_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/qwen_oof/fold-3/heldout_logits.npz",
+  "heldout_logits_sha256": "8c9d8ac355c6c17b73784733ba0e66890d8cc8f8afec2648e454f7c9b77cbbbd",
+  "fold_model_retention": "not retained after held-out logit extraction; deterministic training configuration and history are retained",
+  "completed_at": "2026-08-23T18:20:51.239764+00:00"
+}

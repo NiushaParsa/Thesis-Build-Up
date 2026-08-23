@@ -1,0 +1,14 @@
+{
+  "outer_qwen_folds": {
+    "0": 1081.676607036963,
+    "1": 1093.4879636038095,
+    "2": 1115.3998259305954,
+    "3": 1304.0971037223935,
+    "4": 1293.795559739694
+  },
+  "full_qwen_refit_seconds": 1433.617594877258,
+  "validation_qwen_extraction_seconds": 8.11124730668962,
+  "meta_training_and_validation_seconds": 9.938012402504683,
+  "retrieval_seconds": 372.00730140000815,
+  "known_sequential_stage_seconds": 7712.131216019916
+}

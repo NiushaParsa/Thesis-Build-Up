@@ -1,0 +1,104 @@
+{
+  "phase": "Phase 3C-OOF",
+  "status": "passed",
+  "audited_at": "2026-08-23T17:02:53.622519+00:00",
+  "repository_commit": "5da577084fec8b5012b98a0e774a9eedf75d90d8",
+  "source_feature_hashes": {
+    "train": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+    "validation": "548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893"
+  },
+  "train_examples": 2245,
+  "train_documents": 845,
+  "validation_examples": 924,
+  "validation_documents": 277,
+  "folds": [
+    {
+      "fold": 0,
+      "examples": 449,
+      "documents": 169,
+      "class_distribution": {
+        "10": 11,
+        "20": 53,
+        "40": 118,
+        "80": 137,
+        "160": 130
+      }
+    },
+    {
+      "fold": 1,
+      "examples": 449,
+      "documents": 167,
+      "class_distribution": {
+        "10": 11,
+        "20": 53,
+        "40": 117,
+        "80": 138,
+        "160": 130
+      }
+    },
+    {
+      "fold": 2,
+      "examples": 449,
+      "documents": 169,
+      "class_distribution": {
+        "10": 11,
+        "20": 54,
+        "40": 117,
+        "80": 137,
+        "160": 130
+      }
+    },
+    {
+      "fold": 3,
+      "examples": 450,
+      "documents": 170,
+      "class_distribution": {
+        "10": 11,
+        "20": 54,
+        "40": 117,
+        "80": 138,
+        "160": 130
+      }
+    },
+    {
+      "fold": 4,
+      "examples": 448,
+      "documents": 170,
+      "class_distribution": {
+        "10": 11,
+        "20": 53,
+        "40": 117,
+        "80": 137,
+        "160": 130
+      }
+    }
+  ],
+  "fold_assignment_sha256": "892a44f57a11c6fa9be7ec708df3355f4247555bde319c61325c0d201492ee62",
+  "fixed_primary_variant": "five_Qwen_logits_plus_173_tree_features",
+  "fixed_candidate": {
+    "max_depth": 2,
+    "learning_rate": 0.05,
+    "n_estimators": 200,
+    "min_child_weight": 5.0,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "reg_lambda": 1.0,
+    "reg_alpha": 0.0
+  },
+  "required_artifacts": {
+    "qwen_phase2d_sequence_classifier.py": "99ba4f9a57b5547e776d81d2c7c94aece2670a9b5ccaf348c8a1fbeb0baa5efc",
+    "qwen_phase3c_fusion.py": "bbfaf3b554c50c47186d5694708c7f55496199ab4ddcfe35802afb5a46368655",
+    "similarity_tree_phase3b.py": "ca51cee77179c4a455086ad8639ba5f30bfcab58c1bfaea00002d164725e9be9",
+    "outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/final_summary.json": "a6c5de551d84f6d2670e6bf0965df654158c2ea3ecf68f8c2c4ff7f252e66ee7",
+    "outputs/similarity_tree_phase3b_xgboost_evidence_length_oracle/final_summary.json": "16f2b6f138cf10912762acbc263e115397c7f473ffd4daae575ef2264541d0d3",
+    "outputs/qwen_phase3c_fusion_evidence_length_oracle/final_summary.json": "115dfd26152f57bbf3831b1d69e2f3731b258de723f8a107afc77eb6a7aa664b",
+    "reports/final_validation_comparison/strategy_metrics.json": "34eecdd30ac79f66a629a9aa685e69a7556f726e12c31de235b7a4a287380a78"
+  },
+  "validation_preflight_scope": "existence, row count, schema, and frozen-file hash only; no values were used for training or any decision",
+  "unavoidable_deviations": [
+    "Each outer Qwen fit sees four fifths of the training papers, so its fixed three epochs contain fewer optimizer steps than the original all-training-data Phase 2D fit.",
+    "The original Phase 2D checkpoint was selected by validation macro-F1. The clean protocol instead freezes the third/final epoch endpoint using training data only. The original selected checkpoint was also epoch 3.",
+    "A sixth Qwen fit on all 2,245 training questions is required to create validation-time base logits after the stacking procedure is frozen.",
+    "Only the original primary Phase 3C five-logit fusion is rerun; the non-primary 1,024-hidden-state exploratory variant is outside scope."
+  ]
+}

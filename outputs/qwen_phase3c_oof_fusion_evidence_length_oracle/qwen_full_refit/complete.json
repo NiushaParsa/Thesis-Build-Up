@@ -1,0 +1,127 @@
+{
+  "phase": "Phase 3C-OOF",
+  "status": "complete",
+  "training": {
+    "role": "full_training_refit_for_frozen_validation_inference",
+    "status": "trained_fixed_final_epoch_endpoint",
+    "training_examples": 2245,
+    "training_documents": 845,
+    "training_distribution": {
+      "10": 55,
+      "20": 267,
+      "40": 586,
+      "80": 687,
+      "160": 650
+    },
+    "configuration": {
+      "model_id": "Qwen/Qwen3.5-0.8B-Base",
+      "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "architecture": "AutoModelForSequenceClassification",
+      "training_method": "full_parameter_sequence_classification",
+      "formulation_version": "qwen-phase2d-base-sequence-classifier-token-count-prompt-v1",
+      "objective": "uniform_five_class_cross_entropy",
+      "problem_type": "single_label_classification",
+      "dtype": "torch.bfloat16",
+      "device": "cuda",
+      "max_sequence_length": 128,
+      "per_device_batch_size": 4,
+      "gradient_accumulation_steps": 8,
+      "effective_batch_size": 32,
+      "learning_rate": 2e-05,
+      "weight_decay": 0.01,
+      "scheduler": "cosine",
+      "warmup_ratio": 0.05,
+      "epochs": 3,
+      "gradient_clipping": 1.0,
+      "seed": 42,
+      "logging_steps": 1,
+      "evaluation_frequency": "end_of_epoch",
+      "checkpoint_frequency": "end_of_epoch",
+      "checkpoint_retention_policy": "retain_current_and_best_during_training_selected_only_at_completion",
+      "checkpoint_selection_metric": "validation_macro_f1",
+      "checkpoint_tie_break": "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step",
+      "early_stopping": "none_fixed_three_epochs",
+      "quantization": null,
+      "class_weights": "uniform"
+    },
+    "active_evaluation_frequency": "none",
+    "active_checkpoint_selection": "none_fixed_epoch_3_endpoint",
+    "optimizer_steps_per_epoch": 71,
+    "total_optimizer_steps": 213,
+    "warmup_steps": 11,
+    "initial_step_loss": 1.5487420707941055,
+    "final_step_loss": 1.5045942068099976,
+    "training_wall_seconds": 1433.617594877258,
+    "approximate_peak_process_rss_gib": 2.0747413635253906,
+    "peak_cuda_allocated_gib": 9.0316162109375,
+    "peak_cuda_reserved_gib": 9.6015625,
+    "model_loading_audit": {
+      "configuration": {
+        "status": "passed",
+        "checks": {
+          "num_labels": true,
+          "problem_type": true,
+          "id2label": true,
+          "label2id": true,
+          "top_level_pad_token_id": true,
+          "text_config_pad_token_id": true,
+          "top_level_use_cache": true,
+          "text_config_use_cache": true
+        },
+        "num_labels": 5,
+        "id2label": {
+          "0": "10",
+          "1": "20",
+          "2": "40",
+          "3": "80",
+          "4": "160"
+        },
+        "label2id": {
+          "10": 0,
+          "20": 1,
+          "40": 2,
+          "80": 3,
+          "160": 4
+        },
+        "pad_token_id": 248044
+      },
+      "classifier_head": {
+        "status": "passed",
+        "initial_base_load": true,
+        "seed_set_before_model_load": 42,
+        "head_parameter_name": "score.weight",
+        "head_shape": [
+          5,
+          1024
+        ],
+        "head_bias": false,
+        "head_weight_dtype": "torch.bfloat16",
+        "head_weight_sha256_float32": "09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5",
+        "loading_info": {
+          "missing_keys": [
+            "score.weight"
+          ],
+          "unexpected_keys": [],
+          "mismatched_keys": [],
+          "error_msgs": []
+        }
+      }
+    },
+    "environment": {
+      "python_version": "3.10.7",
+      "python_executable": "/workspace/thesis-granularity-router/.venv-fusion/bin/python",
+      "torch_version": "2.8.0+cu128",
+      "torch_cuda_version": "12.8",
+      "transformers_version": "5.15.0.dev0",
+      "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+      "gpu": "NVIDIA A100-SXM4-40GB",
+      "dtype": "torch.bfloat16"
+    },
+    "completed_at": "2026-08-23T19:06:53.938817+00:00"
+  },
+  "model_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/qwen_full_refit/model",
+  "model_sha256": "020af0a83af773239e7e60e9983afad29cae3f31493c7073e9162e040b732814",
+  "validation_rows_opened": false,
+  "checkpoint_selection": "none_fixed_epoch_3_endpoint",
+  "completed_at": "2026-08-23T19:06:57.509016+00:00"
+}

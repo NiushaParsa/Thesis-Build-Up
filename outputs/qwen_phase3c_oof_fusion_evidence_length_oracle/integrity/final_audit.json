@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "verified_at": "2026-08-23T19:25:41.526581+00:00",
+  "prediction_rows": 924,
+  "retrieval_rows": 924,
+  "qdrant_collections_unchanged": true,
+  "training_oof_logit_rows": 2245,
+  "paper_grouped_oof": true,
+  "validation_used_for_training_or_selection": false,
+  "fixed_candidate_matches_original_phase3c": true
+}

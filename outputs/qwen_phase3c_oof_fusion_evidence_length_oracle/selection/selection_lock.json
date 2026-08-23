@@ -1,0 +1,42 @@
+{
+  "phase": "Phase 3C-OOF",
+  "status": "frozen_before_validation_evaluation",
+  "locked_at": "2026-08-23T19:06:59.732303+00:00",
+  "selection_data": "2,245-question preserved training split only",
+  "validation_used_for_any_decision": false,
+  "base_model_protocol": {
+    "outer_folds": 5,
+    "paper_grouped": true,
+    "seed": 42,
+    "each_training_logit_from_model_excluding_question_and_source_paper": true,
+    "validation_model": "fixed third-epoch full-training refit",
+    "checkpoint_selection": "none"
+  },
+  "fusion_protocol": {
+    "variant": "qwen_oof_logits_tree",
+    "features": [
+      "five_oof_Qwen_logits",
+      "173_Phase3B_tree_features"
+    ],
+    "feature_count": 178,
+    "preprocessing": "raw concatenation; no scaling or thresholding",
+    "fixed_candidate_source": "original Phase 3C primary qwen_logits_tree",
+    "fixed_candidate": {
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    "class_weighting": "square-root inverse frequency",
+    "seed": 42
+  },
+  "fold_assignment_sha256": "892a44f57a11c6fa9be7ec708df3355f4247555bde319c61325c0d201492ee62",
+  "train_oof_logits_sha256": "ee73c962d45b86034da7dfa903f9ff9ce92abd5707c6cec3b49a6ca7d1f4115d",
+  "full_refit_model_sha256": "020af0a83af773239e7e60e9983afad29cae3f31493c7073e9162e040b732814",
+  "source_train_features_sha256": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+  "procedure_script_sha256": "851a6d24eb575d785a2d317c755344dfb63dfcf77cc79008450ef74d20fda4d9"
+}

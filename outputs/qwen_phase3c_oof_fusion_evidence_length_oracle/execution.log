@@ -1,0 +1,2178 @@
+{
+  "phase": "Phase 3C-OOF",
+  "status": "passed",
+  "audited_at": "2026-08-23T17:02:53.622519+00:00",
+  "repository_commit": "5da577084fec8b5012b98a0e774a9eedf75d90d8",
+  "source_feature_hashes": {
+    "train": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+    "validation": "548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893"
+  },
+  "train_examples": 2245,
+  "train_documents": 845,
+  "validation_examples": 924,
+  "validation_documents": 277,
+  "folds": [
+    {
+      "fold": 0,
+      "examples": 449,
+      "documents": 169,
+      "class_distribution": {
+        "10": 11,
+        "20": 53,
+        "40": 118,
+        "80": 137,
+        "160": 130
+      }
+    },
+    {
+      "fold": 1,
+      "examples": 449,
+      "documents": 167,
+      "class_distribution": {
+        "10": 11,
+        "20": 53,
+        "40": 117,
+        "80": 138,
+        "160": 130
+      }
+    },
+    {
+      "fold": 2,
+      "examples": 449,
+      "documents": 169,
+      "class_distribution": {
+        "10": 11,
+        "20": 54,
+        "40": 117,
+        "80": 137,
+        "160": 130
+      }
+    },
+    {
+      "fold": 3,
+      "examples": 450,
+      "documents": 170,
+      "class_distribution": {
+        "10": 11,
+        "20": 54,
+        "40": 117,
+        "80": 138,
+        "160": 130
+      }
+    },
+    {
+      "fold": 4,
+      "examples": 448,
+      "documents": 170,
+      "class_distribution": {
+        "10": 11,
+        "20": 53,
+        "40": 117,
+        "80": 137,
+        "160": 130
+      }
+    }
+  ],
+  "fold_assignment_sha256": "892a44f57a11c6fa9be7ec708df3355f4247555bde319c61325c0d201492ee62",
+  "fixed_primary_variant": "five_Qwen_logits_plus_173_tree_features",
+  "fixed_candidate": {
+    "max_depth": 2,
+    "learning_rate": 0.05,
+    "n_estimators": 200,
+    "min_child_weight": 5.0,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "reg_lambda": 1.0,
+    "reg_alpha": 0.0
+  },
+  "required_artifacts": {
+    "qwen_phase2d_sequence_classifier.py": "99ba4f9a57b5547e776d81d2c7c94aece2670a9b5ccaf348c8a1fbeb0baa5efc",
+    "qwen_phase3c_fusion.py": "bbfaf3b554c50c47186d5694708c7f55496199ab4ddcfe35802afb5a46368655",
+    "similarity_tree_phase3b.py": "ca51cee77179c4a455086ad8639ba5f30bfcab58c1bfaea00002d164725e9be9",
+    "outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/final_summary.json": "a6c5de551d84f6d2670e6bf0965df654158c2ea3ecf68f8c2c4ff7f252e66ee7",
+    "outputs/similarity_tree_phase3b_xgboost_evidence_length_oracle/final_summary.json": "16f2b6f138cf10912762acbc263e115397c7f473ffd4daae575ef2264541d0d3",
+    "outputs/qwen_phase3c_fusion_evidence_length_oracle/final_summary.json": "115dfd26152f57bbf3831b1d69e2f3731b258de723f8a107afc77eb6a7aa664b",
+    "reports/final_validation_comparison/strategy_metrics.json": "34eecdd30ac79f66a629a9aa685e69a7556f726e12c31de235b7a4a287380a78"
+  },
+  "validation_preflight_scope": "existence, row count, schema, and frozen-file hash only; no values were used for training or any decision",
+  "unavoidable_deviations": [
+    "Each outer Qwen fit sees four fifths of the training papers, so its fixed three epochs contain fewer optimizer steps than the original all-training-data Phase 2D fit.",
+    "The original Phase 2D checkpoint was selected by validation macro-F1. The clean protocol instead freezes the third/final epoch endpoint using training data only. The original selected checkpoint was also epoch 3.",
+    "A sixth Qwen fit on all 2,245 training questions is required to create validation-time base logits after the stacking procedure is frozen.",
+    "Only the original primary Phase 3C five-logit fusion is rerun; the non-primary 1,024-hidden-state exploratory variant is outside scope."
+  ]
+}
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s]Loading weights: 100%|██████████| 473/473 [00:00<00:00, 6101.45it/s]
+[transformers] [1mQwen3_5ForSequenceClassification LOAD REPORT[0m from: Qwen/Qwen3.5-0.8B-Base
+Key          | Status  | 
+-------------+---------+-
+score.weight | MISSING | 
+
+Notes:
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+{
+  "phase": "Phase 3C-OOF",
+  "fold": 0,
+  "status": "complete",
+  "training": {
+    "role": "outer_fold_0",
+    "status": "trained_fixed_final_epoch_endpoint",
+    "training_examples": 1796,
+    "training_documents": 676,
+    "training_distribution": {
+      "10": 44,
+      "20": 214,
+      "40": 468,
+      "80": 550,
+      "160": 520
+    },
+    "configuration": {
+      "model_id": "Qwen/Qwen3.5-0.8B-Base",
+      "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "architecture": "AutoModelForSequenceClassification",
+      "training_method": "full_parameter_sequence_classification",
+      "formulation_version": "qwen-phase2d-base-sequence-classifier-token-count-prompt-v1",
+      "objective": "uniform_five_class_cross_entropy",
+      "problem_type": "single_label_classification",
+      "dtype": "torch.bfloat16",
+      "device": "cuda",
+      "max_sequence_length": 128,
+      "per_device_batch_size": 4,
+      "gradient_accumulation_steps": 8,
+      "effective_batch_size": 32,
+      "learning_rate": 2e-05,
+      "weight_decay": 0.01,
+      "scheduler": "cosine",
+      "warmup_ratio": 0.05,
+      "epochs": 3,
+      "gradient_clipping": 1.0,
+      "seed": 42,
+      "logging_steps": 1,
+      "evaluation_frequency": "end_of_epoch",
+      "checkpoint_frequency": "end_of_epoch",
+      "checkpoint_retention_policy": "retain_current_and_best_during_training_selected_only_at_completion",
+      "checkpoint_selection_metric": "validation_macro_f1",
+      "checkpoint_tie_break": "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step",
+      "early_stopping": "none_fixed_three_epochs",
+      "quantization": null,
+      "class_weights": "uniform"
+    },
+    "active_evaluation_frequency": "none",
+    "active_checkpoint_selection": "none_fixed_epoch_3_endpoint",
+    "optimizer_steps_per_epoch": 57,
+    "total_optimizer_steps": 171,
+    "warmup_steps": 9,
+    "initial_step_loss": 1.594139188528061,
+    "final_step_loss": 1.2042096853256226,
+    "training_wall_seconds": 1081.676607036963,
+    "approximate_peak_process_rss_gib": 2.086761474609375,
+    "peak_cuda_allocated_gib": 9.02887773513794,
+    "peak_cuda_reserved_gib": 9.400390625,
+    "model_loading_audit": {
+      "configuration": {
+        "status": "passed",
+        "checks": {
+          "num_labels": true,
+          "problem_type": true,
+          "id2label": true,
+          "label2id": true,
+          "top_level_pad_token_id": true,
+          "text_config_pad_token_id": true,
+          "top_level_use_cache": true,
+          "text_config_use_cache": true
+        },
+        "num_labels": 5,
+        "id2label": {
+          "0": "10",
+          "1": "20",
+          "2": "40",
+          "3": "80",
+          "4": "160"
+        },
+        "label2id": {
+          "10": 0,
+          "20": 1,
+          "40": 2,
+          "80": 3,
+          "160": 4
+        },
+        "pad_token_id": 248044
+      },
+      "classifier_head": {
+        "status": "passed",
+        "initial_base_load": true,
+        "seed_set_before_model_load": 42,
+        "head_parameter_name": "score.weight",
+        "head_shape": [
+          5,
+          1024
+        ],
+        "head_bias": false,
+        "head_weight_dtype": "torch.bfloat16",
+        "head_weight_sha256_float32": "09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5",
+        "loading_info": {
+          "missing_keys": [
+            "score.weight"
+          ],
+          "unexpected_keys": [],
+          "mismatched_keys": [],
+          "error_msgs": []
+        }
+      }
+    },
+    "environment": {
+      "python_version": "3.10.7",
+      "python_executable": "/workspace/thesis-granularity-router/.venv-fusion/bin/python",
+      "torch_version": "2.8.0+cu128",
+      "torch_cuda_version": "12.8",
+      "transformers_version": "5.15.0.dev0",
+      "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+      "gpu": "NVIDIA A100-SXM4-40GB",
+      "dtype": "torch.bfloat16"
+    },
+    "completed_at": "2026-08-23T17:21:18.076405+00:00"
+  },
+  "heldout_extraction": {
+    "examples": 449,
+    "wall_seconds": 4.772542223334312,
+    "batch_size": 16,
+    "minimum_token_count": 96,
+    "maximum_token_count": 119
+  },
+  "training_question_ids_sha256": "6d7014c3abeb521290732a043a270b4bb65f60ce9c00b02baffb7ce3798d74fb",
+  "heldout_question_ids_sha256": "912d4d1d41a43c33ec019495237843524fc5b3dc986127419342522e3855a729",
+  "training_document_ids_sha256": "65e95742f3c701d533f581a916a98f16d6aed55a5ab0a5dbf9e5278524b9b8b1",
+  "heldout_document_ids_sha256": "c6790c7035747029fbfcd79cb3b0c13d365b63749268fa6d8e73b6ac9b61521a",
+  "paper_overlap_count": 0,
+  "heldout_logits_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/qwen_oof/fold-0/heldout_logits.npz",
+  "heldout_logits_sha256": "975b62def6cca7586466b5cde04ebc7765a54a4f9b6286d5abcf1ac1e1490276",
+  "fold_model_retention": "not retained after held-out logit extraction; deterministic training configuration and history are retained",
+  "completed_at": "2026-08-23T17:21:22.996973+00:00"
+}
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s]Loading weights: 100%|██████████| 473/473 [00:00<00:00, 7139.41it/s]
+[transformers] [1mQwen3_5ForSequenceClassification LOAD REPORT[0m from: Qwen/Qwen3.5-0.8B-Base
+Key          | Status  | 
+-------------+---------+-
+score.weight | MISSING | 
+
+Notes:
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+{
+  "phase": "Phase 3C-OOF",
+  "fold": 1,
+  "status": "complete",
+  "training": {
+    "role": "outer_fold_1",
+    "status": "trained_fixed_final_epoch_endpoint",
+    "training_examples": 1796,
+    "training_documents": 678,
+    "training_distribution": {
+      "10": 44,
+      "20": 214,
+      "40": 469,
+      "80": 549,
+      "160": 520
+    },
+    "configuration": {
+      "model_id": "Qwen/Qwen3.5-0.8B-Base",
+      "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "architecture": "AutoModelForSequenceClassification",
+      "training_method": "full_parameter_sequence_classification",
+      "formulation_version": "qwen-phase2d-base-sequence-classifier-token-count-prompt-v1",
+      "objective": "uniform_five_class_cross_entropy",
+      "problem_type": "single_label_classification",
+      "dtype": "torch.bfloat16",
+      "device": "cuda",
+      "max_sequence_length": 128,
+      "per_device_batch_size": 4,
+      "gradient_accumulation_steps": 8,
+      "effective_batch_size": 32,
+      "learning_rate": 2e-05,
+      "weight_decay": 0.01,
+      "scheduler": "cosine",
+      "warmup_ratio": 0.05,
+      "epochs": 3,
+      "gradient_clipping": 1.0,
+      "seed": 42,
+      "logging_steps": 1,
+      "evaluation_frequency": "end_of_epoch",
+      "checkpoint_frequency": "end_of_epoch",
+      "checkpoint_retention_policy": "retain_current_and_best_during_training_selected_only_at_completion",
+      "checkpoint_selection_metric": "validation_macro_f1",
+      "checkpoint_tie_break": "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step",
+      "early_stopping": "none_fixed_three_epochs",
+      "quantization": null,
+      "class_weights": "uniform"
+    },
+    "active_evaluation_frequency": "none",
+    "active_checkpoint_selection": "none_fixed_epoch_3_endpoint",
+    "optimizer_steps_per_epoch": 57,
+    "total_optimizer_steps": 171,
+    "warmup_steps": 9,
+    "initial_step_loss": 1.3426937907934189,
+    "final_step_loss": 1.6766510009765625,
+    "training_wall_seconds": 1093.4879636038095,
+    "approximate_peak_process_rss_gib": 2.0658302307128906,
+    "peak_cuda_allocated_gib": 9.025043964385986,
+    "peak_cuda_reserved_gib": 9.380859375,
+    "model_loading_audit": {
+      "configuration": {
+        "status": "passed",
+        "checks": {
+          "num_labels": true,
+          "problem_type": true,
+          "id2label": true,
+          "label2id": true,
+          "top_level_pad_token_id": true,
+          "text_config_pad_token_id": true,
+          "top_level_use_cache": true,
+          "text_config_use_cache": true
+        },
+        "num_labels": 5,
+        "id2label": {
+          "0": "10",
+          "1": "20",
+          "2": "40",
+          "3": "80",
+          "4": "160"
+        },
+        "label2id": {
+          "10": 0,
+          "20": 1,
+          "40": 2,
+          "80": 3,
+          "160": 4
+        },
+        "pad_token_id": 248044
+      },
+      "classifier_head": {
+        "status": "passed",
+        "initial_base_load": true,
+        "seed_set_before_model_load": 42,
+        "head_parameter_name": "score.weight",
+        "head_shape": [
+          5,
+          1024
+        ],
+        "head_bias": false,
+        "head_weight_dtype": "torch.bfloat16",
+        "head_weight_sha256_float32": "09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5",
+        "loading_info": {
+          "missing_keys": [
+            "score.weight"
+          ],
+          "unexpected_keys": [],
+          "mismatched_keys": [],
+          "error_msgs": []
+        }
+      }
+    },
+    "environment": {
+      "python_version": "3.10.7",
+      "python_executable": "/workspace/thesis-granularity-router/.venv-fusion/bin/python",
+      "torch_version": "2.8.0+cu128",
+      "torch_cuda_version": "12.8",
+      "transformers_version": "5.15.0.dev0",
+      "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+      "gpu": "NVIDIA A100-SXM4-40GB",
+      "dtype": "torch.bfloat16"
+    },
+    "completed_at": "2026-08-23T17:39:51.020440+00:00"
+  },
+  "heldout_extraction": {
+    "examples": 449,
+    "wall_seconds": 5.085466483607888,
+    "batch_size": 16,
+    "minimum_token_count": 96,
+    "maximum_token_count": 119
+  },
+  "training_question_ids_sha256": "4c5ecd027ab8cc878c82572b502292032725133ccacf4980c005872c02e90bcc",
+  "heldout_question_ids_sha256": "f9ec12954d05f0c695e29585a0e9ce7b86962365f4043055e3105fa36b593844",
+  "training_document_ids_sha256": "4af99fc753376940fca8ad97c61c49c8f7b4adc9ce45699e9104f0bf8747fcb2",
+  "heldout_document_ids_sha256": "a8edacfce3446946195857e6dea1bb89df3c1527778a7de0aa4c67225feacea2",
+  "paper_overlap_count": 0,
+  "heldout_logits_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/qwen_oof/fold-1/heldout_logits.npz",
+  "heldout_logits_sha256": "73de31a1df329a8fb48c2dd0d0f709b63105971112ed309560cdd1a3a9375197",
+  "fold_model_retention": "not retained after held-out logit extraction; deterministic training configuration and history are retained",
+  "completed_at": "2026-08-23T17:39:56.290767+00:00"
+}
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s]Loading weights: 100%|██████████| 473/473 [00:00<00:00, 5437.06it/s]
+[transformers] [1mQwen3_5ForSequenceClassification LOAD REPORT[0m from: Qwen/Qwen3.5-0.8B-Base
+Key          | Status  | 
+-------------+---------+-
+score.weight | MISSING | 
+
+Notes:
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+{
+  "phase": "Phase 3C-OOF",
+  "fold": 2,
+  "status": "complete",
+  "training": {
+    "role": "outer_fold_2",
+    "status": "trained_fixed_final_epoch_endpoint",
+    "training_examples": 1796,
+    "training_documents": 676,
+    "training_distribution": {
+      "10": 44,
+      "20": 213,
+      "40": 469,
+      "80": 550,
+      "160": 520
+    },
+    "configuration": {
+      "model_id": "Qwen/Qwen3.5-0.8B-Base",
+      "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "architecture": "AutoModelForSequenceClassification",
+      "training_method": "full_parameter_sequence_classification",
+      "formulation_version": "qwen-phase2d-base-sequence-classifier-token-count-prompt-v1",
+      "objective": "uniform_five_class_cross_entropy",
+      "problem_type": "single_label_classification",
+      "dtype": "torch.bfloat16",
+      "device": "cuda",
+      "max_sequence_length": 128,
+      "per_device_batch_size": 4,
+      "gradient_accumulation_steps": 8,
+      "effective_batch_size": 32,
+      "learning_rate": 2e-05,
+      "weight_decay": 0.01,
+      "scheduler": "cosine",
+      "warmup_ratio": 0.05,
+      "epochs": 3,
+      "gradient_clipping": 1.0,
+      "seed": 42,
+      "logging_steps": 1,
+      "evaluation_frequency": "end_of_epoch",
+      "checkpoint_frequency": "end_of_epoch",
+      "checkpoint_retention_policy": "retain_current_and_best_during_training_selected_only_at_completion",
+      "checkpoint_selection_metric": "validation_macro_f1",
+      "checkpoint_tie_break": "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step",
+      "early_stopping": "none_fixed_three_epochs",
+      "quantization": null,
+      "class_weights": "uniform"
+    },
+    "active_evaluation_frequency": "none",
+    "active_checkpoint_selection": "none_fixed_epoch_3_endpoint",
+    "optimizer_steps_per_epoch": 57,
+    "total_optimizer_steps": 171,
+    "warmup_steps": 9,
+    "initial_step_loss": 1.9260533154010773,
+    "final_step_loss": 1.3055336475372314,
+    "training_wall_seconds": 1115.3998259305954,
+    "approximate_peak_process_rss_gib": 2.066120147705078,
+    "peak_cuda_allocated_gib": 9.0316162109375,
+    "peak_cuda_reserved_gib": 9.388671875,
+    "model_loading_audit": {
+      "configuration": {
+        "status": "passed",
+        "checks": {
+          "num_labels": true,
+          "problem_type": true,
+          "id2label": true,
+          "label2id": true,
+          "top_level_pad_token_id": true,
+          "text_config_pad_token_id": true,
+          "top_level_use_cache": true,
+          "text_config_use_cache": true
+        },
+        "num_labels": 5,
+        "id2label": {
+          "0": "10",
+          "1": "20",
+          "2": "40",
+          "3": "80",
+          "4": "160"
+        },
+        "label2id": {
+          "10": 0,
+          "20": 1,
+          "40": 2,
+          "80": 3,
+          "160": 4
+        },
+        "pad_token_id": 248044
+      },
+      "classifier_head": {
+        "status": "passed",
+        "initial_base_load": true,
+        "seed_set_before_model_load": 42,
+        "head_parameter_name": "score.weight",
+        "head_shape": [
+          5,
+          1024
+        ],
+        "head_bias": false,
+        "head_weight_dtype": "torch.bfloat16",
+        "head_weight_sha256_float32": "09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5",
+        "loading_info": {
+          "missing_keys": [
+            "score.weight"
+          ],
+          "unexpected_keys": [],
+          "mismatched_keys": [],
+          "error_msgs": []
+        }
+      }
+    },
+    "environment": {
+      "python_version": "3.10.7",
+      "python_executable": "/workspace/thesis-granularity-router/.venv-fusion/bin/python",
+      "torch_version": "2.8.0+cu128",
+      "torch_cuda_version": "12.8",
+      "transformers_version": "5.15.0.dev0",
+      "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+      "gpu": "NVIDIA A100-SXM4-40GB",
+      "dtype": "torch.bfloat16"
+    },
+    "completed_at": "2026-08-23T17:58:45.686345+00:00"
+  },
+  "heldout_extraction": {
+    "examples": 449,
+    "wall_seconds": 5.134356627240777,
+    "batch_size": 16,
+    "minimum_token_count": 96,
+    "maximum_token_count": 116
+  },
+  "training_question_ids_sha256": "9132b09daf2171b659928dfa72afd0e6b1d4b5efe3b3291e107585f1c1550e5e",
+  "heldout_question_ids_sha256": "4c8c1e3a78c57c2412eff02454eeea4b56ba94cedc8234b2219593b82e57b475",
+  "training_document_ids_sha256": "16ed16d9816e25b4d8c099199fc3315542ce0a2375046c0b72288ffb859bdcd3",
+  "heldout_document_ids_sha256": "4a36a6ecd0b613f90a74fa2a750084b171a260264e0f714750bc7e4d9c3270a3",
+  "paper_overlap_count": 0,
+  "heldout_logits_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/qwen_oof/fold-2/heldout_logits.npz",
+  "heldout_logits_sha256": "12788727e18dbc6c5f0cf1144ab597412cd1197d428c1f4bed9dbf38856cc3b3",
+  "fold_model_retention": "not retained after held-out logit extraction; deterministic training configuration and history are retained",
+  "completed_at": "2026-08-23T17:58:50.989718+00:00"
+}
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s]Loading weights: 100%|██████████| 473/473 [00:00<00:00, 6365.10it/s]
+[transformers] [1mQwen3_5ForSequenceClassification LOAD REPORT[0m from: Qwen/Qwen3.5-0.8B-Base
+Key          | Status  | 
+-------------+---------+-
+score.weight | MISSING | 
+
+Notes:
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+{
+  "phase": "Phase 3C-OOF",
+  "fold": 3,
+  "status": "complete",
+  "training": {
+    "role": "outer_fold_3",
+    "status": "trained_fixed_final_epoch_endpoint",
+    "training_examples": 1795,
+    "training_documents": 675,
+    "training_distribution": {
+      "10": 44,
+      "20": 213,
+      "40": 469,
+      "80": 549,
+      "160": 520
+    },
+    "configuration": {
+      "model_id": "Qwen/Qwen3.5-0.8B-Base",
+      "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "architecture": "AutoModelForSequenceClassification",
+      "training_method": "full_parameter_sequence_classification",
+      "formulation_version": "qwen-phase2d-base-sequence-classifier-token-count-prompt-v1",
+      "objective": "uniform_five_class_cross_entropy",
+      "problem_type": "single_label_classification",
+      "dtype": "torch.bfloat16",
+      "device": "cuda",
+      "max_sequence_length": 128,
+      "per_device_batch_size": 4,
+      "gradient_accumulation_steps": 8,
+      "effective_batch_size": 32,
+      "learning_rate": 2e-05,
+      "weight_decay": 0.01,
+      "scheduler": "cosine",
+      "warmup_ratio": 0.05,
+      "epochs": 3,
+      "gradient_clipping": 1.0,
+      "seed": 42,
+      "logging_steps": 1,
+      "evaluation_frequency": "end_of_epoch",
+      "checkpoint_frequency": "end_of_epoch",
+      "checkpoint_retention_policy": "retain_current_and_best_during_training_selected_only_at_completion",
+      "checkpoint_selection_metric": "validation_macro_f1",
+      "checkpoint_tie_break": "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step",
+      "early_stopping": "none_fixed_three_epochs",
+      "quantization": null,
+      "class_weights": "uniform"
+    },
+    "active_evaluation_frequency": "none",
+    "active_checkpoint_selection": "none_fixed_epoch_3_endpoint",
+    "optimizer_steps_per_epoch": 57,
+    "total_optimizer_steps": 171,
+    "warmup_steps": 9,
+    "initial_step_loss": 1.7948624640703201,
+    "final_step_loss": 1.1399383544921875,
+    "training_wall_seconds": 1304.0971037223935,
+    "approximate_peak_process_rss_gib": 2.0634002685546875,
+    "peak_cuda_allocated_gib": 9.024145603179932,
+    "peak_cuda_reserved_gib": 9.400390625,
+    "model_loading_audit": {
+      "configuration": {
+        "status": "passed",
+        "checks": {
+          "num_labels": true,
+          "problem_type": true,
+          "id2label": true,
+          "label2id": true,
+          "top_level_pad_token_id": true,
+          "text_config_pad_token_id": true,
+          "top_level_use_cache": true,
+          "text_config_use_cache": true
+        },
+        "num_labels": 5,
+        "id2label": {
+          "0": "10",
+          "1": "20",
+          "2": "40",
+          "3": "80",
+          "4": "160"
+        },
+        "label2id": {
+          "10": 0,
+          "20": 1,
+          "40": 2,
+          "80": 3,
+          "160": 4
+        },
+        "pad_token_id": 248044
+      },
+      "classifier_head": {
+        "status": "passed",
+        "initial_base_load": true,
+        "seed_set_before_model_load": 42,
+        "head_parameter_name": "score.weight",
+        "head_shape": [
+          5,
+          1024
+        ],
+        "head_bias": false,
+        "head_weight_dtype": "torch.bfloat16",
+        "head_weight_sha256_float32": "09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5",
+        "loading_info": {
+          "missing_keys": [
+            "score.weight"
+          ],
+          "unexpected_keys": [],
+          "mismatched_keys": [],
+          "error_msgs": []
+        }
+      }
+    },
+    "environment": {
+      "python_version": "3.10.7",
+      "python_executable": "/workspace/thesis-granularity-router/.venv-fusion/bin/python",
+      "torch_version": "2.8.0+cu128",
+      "torch_cuda_version": "12.8",
+      "transformers_version": "5.15.0.dev0",
+      "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+      "gpu": "NVIDIA A100-SXM4-40GB",
+      "dtype": "torch.bfloat16"
+    },
+    "completed_at": "2026-08-23T18:20:46.492127+00:00"
+  },
+  "heldout_extraction": {
+    "examples": 450,
+    "wall_seconds": 4.600976189598441,
+    "batch_size": 16,
+    "minimum_token_count": 96,
+    "maximum_token_count": 121
+  },
+  "training_question_ids_sha256": "5ed1e5a8f6a9dbab8b7856253c8342d24b49b8fe9a67172c6c3a76e0c435953e",
+  "heldout_question_ids_sha256": "a4a53475e5997355fed6c68cbe74a5bf40d8e3907843cfec5fa71769bf4aede1",
+  "training_document_ids_sha256": "3e716574bb1c2f8e8b1c7e558534d3e308d7077140d6ffbd31e4b2a53e8257d1",
+  "heldout_document_ids_sha256": "ec2ad0bcf9838e7f9ce8e94e33d98613e1ff9f2196971bf4890e53012bb4cdbe",
+  "paper_overlap_count": 0,
+  "heldout_logits_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/qwen_oof/fold-3/heldout_logits.npz",
+  "heldout_logits_sha256": "8c9d8ac355c6c17b73784733ba0e66890d8cc8f8afec2648e454f7c9b77cbbbd",
+  "fold_model_retention": "not retained after held-out logit extraction; deterministic training configuration and history are retained",
+  "completed_at": "2026-08-23T18:20:51.239764+00:00"
+}
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s]Loading weights:  31%|███       | 145/473 [00:00<00:00, 1442.06it/s]Loading weights:  61%|██████▏   | 290/473 [00:00<00:00, 1392.05it/s]Loading weights:  91%|█████████ | 430/473 [00:00<00:00, 1284.03it/s]Loading weights: 100%|██████████| 473/473 [00:00<00:00, 1239.66it/s]
+[transformers] [1mQwen3_5ForSequenceClassification LOAD REPORT[0m from: Qwen/Qwen3.5-0.8B-Base
+Key          | Status  | 
+-------------+---------+-
+score.weight | MISSING | 
+
+Notes:
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+{
+  "phase": "Phase 3C-OOF",
+  "fold": 4,
+  "status": "complete",
+  "training": {
+    "role": "outer_fold_4",
+    "status": "trained_fixed_final_epoch_endpoint",
+    "training_examples": 1797,
+    "training_documents": 675,
+    "training_distribution": {
+      "10": 44,
+      "20": 214,
+      "40": 469,
+      "80": 550,
+      "160": 520
+    },
+    "configuration": {
+      "model_id": "Qwen/Qwen3.5-0.8B-Base",
+      "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "architecture": "AutoModelForSequenceClassification",
+      "training_method": "full_parameter_sequence_classification",
+      "formulation_version": "qwen-phase2d-base-sequence-classifier-token-count-prompt-v1",
+      "objective": "uniform_five_class_cross_entropy",
+      "problem_type": "single_label_classification",
+      "dtype": "torch.bfloat16",
+      "device": "cuda",
+      "max_sequence_length": 128,
+      "per_device_batch_size": 4,
+      "gradient_accumulation_steps": 8,
+      "effective_batch_size": 32,
+      "learning_rate": 2e-05,
+      "weight_decay": 0.01,
+      "scheduler": "cosine",
+      "warmup_ratio": 0.05,
+      "epochs": 3,
+      "gradient_clipping": 1.0,
+      "seed": 42,
+      "logging_steps": 1,
+      "evaluation_frequency": "end_of_epoch",
+      "checkpoint_frequency": "end_of_epoch",
+      "checkpoint_retention_policy": "retain_current_and_best_during_training_selected_only_at_completion",
+      "checkpoint_selection_metric": "validation_macro_f1",
+      "checkpoint_tie_break": "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step",
+      "early_stopping": "none_fixed_three_epochs",
+      "quantization": null,
+      "class_weights": "uniform"
+    },
+    "active_evaluation_frequency": "none",
+    "active_checkpoint_selection": "none_fixed_epoch_3_endpoint",
+    "optimizer_steps_per_epoch": 57,
+    "total_optimizer_steps": 171,
+    "warmup_steps": 9,
+    "initial_step_loss": 1.512177713215351,
+    "final_step_loss": 0.8649989843368531,
+    "training_wall_seconds": 1293.795559739694,
+    "approximate_peak_process_rss_gib": 2.0648574829101562,
+    "peak_cuda_allocated_gib": 9.034448146820068,
+    "peak_cuda_reserved_gib": 9.591796875,
+    "model_loading_audit": {
+      "configuration": {
+        "status": "passed",
+        "checks": {
+          "num_labels": true,
+          "problem_type": true,
+          "id2label": true,
+          "label2id": true,
+          "top_level_pad_token_id": true,
+          "text_config_pad_token_id": true,
+          "top_level_use_cache": true,
+          "text_config_use_cache": true
+        },
+        "num_labels": 5,
+        "id2label": {
+          "0": "10",
+          "1": "20",
+          "2": "40",
+          "3": "80",
+          "4": "160"
+        },
+        "label2id": {
+          "10": 0,
+          "20": 1,
+          "40": 2,
+          "80": 3,
+          "160": 4
+        },
+        "pad_token_id": 248044
+      },
+      "classifier_head": {
+        "status": "passed",
+        "initial_base_load": true,
+        "seed_set_before_model_load": 42,
+        "head_parameter_name": "score.weight",
+        "head_shape": [
+          5,
+          1024
+        ],
+        "head_bias": false,
+        "head_weight_dtype": "torch.bfloat16",
+        "head_weight_sha256_float32": "09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5",
+        "loading_info": {
+          "missing_keys": [
+            "score.weight"
+          ],
+          "unexpected_keys": [],
+          "mismatched_keys": [],
+          "error_msgs": []
+        }
+      }
+    },
+    "environment": {
+      "python_version": "3.10.7",
+      "python_executable": "/workspace/thesis-granularity-router/.venv-fusion/bin/python",
+      "torch_version": "2.8.0+cu128",
+      "torch_cuda_version": "12.8",
+      "transformers_version": "5.15.0.dev0",
+      "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+      "gpu": "NVIDIA A100-SXM4-40GB",
+      "dtype": "torch.bfloat16"
+    },
+    "completed_at": "2026-08-23T18:42:39.591061+00:00"
+  },
+  "heldout_extraction": {
+    "examples": 448,
+    "wall_seconds": 9.0157332085073,
+    "batch_size": 16,
+    "minimum_token_count": 95,
+    "maximum_token_count": 115
+  },
+  "training_question_ids_sha256": "1dc1df2c6cb5c50728823f0d106794db04058cfe51eb01ff8d2db7fa62f7f975",
+  "heldout_question_ids_sha256": "8a4ba4889f017443d64f8cc0ba7092f52c8d0ac97bcb569180795cc8c7462407",
+  "training_document_ids_sha256": "8d087270ddc453b39697c61ae0ab91998a00b639e5d2ed7b44ea5941d595e5fc",
+  "heldout_document_ids_sha256": "ac9ac1451eaf1612e70dd93b4bb4cfc7b654d4ceb28e8f28a9d604f7dd00a878",
+  "paper_overlap_count": 0,
+  "heldout_logits_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/qwen_oof/fold-4/heldout_logits.npz",
+  "heldout_logits_sha256": "724dd509b38f244481dc4487f75266a3dfb095ac0e6cfe9d7bec0155dba271f8",
+  "fold_model_retention": "not retained after held-out logit extraction; deterministic training configuration and history are retained",
+  "completed_at": "2026-08-23T18:42:48.773820+00:00"
+}
+{
+  "status": "complete",
+  "examples": 2245,
+  "documents": 845,
+  "shape": [
+    2245,
+    5
+  ],
+  "exactly_once_oof_coverage": true,
+  "paper_grouped": true,
+  "paper_overlap_within_each_fit": 0,
+  "fold_assignment_sha256": "892a44f57a11c6fa9be7ec708df3355f4247555bde319c61325c0d201492ee62",
+  "fold_file_hashes": {
+    "0": "975b62def6cca7586466b5cde04ebc7765a54a4f9b6286d5abcf1ac1e1490276",
+    "1": "73de31a1df329a8fb48c2dd0d0f709b63105971112ed309560cdd1a3a9375197",
+    "2": "12788727e18dbc6c5f0cf1144ab597412cd1197d428c1f4bed9dbf38856cc3b3",
+    "3": "8c9d8ac355c6c17b73784733ba0e66890d8cc8f8afec2648e454f7c9b77cbbbd",
+    "4": "724dd509b38f244481dc4487f75266a3dfb095ac0e6cfe9d7bec0155dba271f8"
+  },
+  "assembled_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/qwen_features/train_oof_logits.npz",
+  "assembled_sha256": "ee73c962d45b86034da7dfa903f9ff9ce92abd5707c6cec3b49a6ca7d1f4115d",
+  "completed_at": "2026-08-23T18:42:51.565716+00:00"
+}
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s]Loading weights: 100%|██████████| 473/473 [00:00<00:00, 7621.20it/s]
+[transformers] [1mQwen3_5ForSequenceClassification LOAD REPORT[0m from: Qwen/Qwen3.5-0.8B-Base
+Key          | Status  | 
+-------------+---------+-
+score.weight | MISSING | 
+
+Notes:
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:02<00:00,  2.20s/it]Writing model shards: 100%|██████████| 1/1 [00:02<00:00,  2.20s/it]
+{
+  "phase": "Phase 3C-OOF",
+  "status": "complete",
+  "training": {
+    "role": "full_training_refit_for_frozen_validation_inference",
+    "status": "trained_fixed_final_epoch_endpoint",
+    "training_examples": 2245,
+    "training_documents": 845,
+    "training_distribution": {
+      "10": 55,
+      "20": 267,
+      "40": 586,
+      "80": 687,
+      "160": 650
+    },
+    "configuration": {
+      "model_id": "Qwen/Qwen3.5-0.8B-Base",
+      "model_revision": "dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68",
+      "architecture": "AutoModelForSequenceClassification",
+      "training_method": "full_parameter_sequence_classification",
+      "formulation_version": "qwen-phase2d-base-sequence-classifier-token-count-prompt-v1",
+      "objective": "uniform_five_class_cross_entropy",
+      "problem_type": "single_label_classification",
+      "dtype": "torch.bfloat16",
+      "device": "cuda",
+      "max_sequence_length": 128,
+      "per_device_batch_size": 4,
+      "gradient_accumulation_steps": 8,
+      "effective_batch_size": 32,
+      "learning_rate": 2e-05,
+      "weight_decay": 0.01,
+      "scheduler": "cosine",
+      "warmup_ratio": 0.05,
+      "epochs": 3,
+      "gradient_clipping": 1.0,
+      "seed": 42,
+      "logging_steps": 1,
+      "evaluation_frequency": "end_of_epoch",
+      "checkpoint_frequency": "end_of_epoch",
+      "checkpoint_retention_policy": "retain_current_and_best_during_training_selected_only_at_completion",
+      "checkpoint_selection_metric": "validation_macro_f1",
+      "checkpoint_tie_break": "accuracy, weighted_f1, balanced_accuracy, lower_validation_loss, earlier_step",
+      "early_stopping": "none_fixed_three_epochs",
+      "quantization": null,
+      "class_weights": "uniform"
+    },
+    "active_evaluation_frequency": "none",
+    "active_checkpoint_selection": "none_fixed_epoch_3_endpoint",
+    "optimizer_steps_per_epoch": 71,
+    "total_optimizer_steps": 213,
+    "warmup_steps": 11,
+    "initial_step_loss": 1.5487420707941055,
+    "final_step_loss": 1.5045942068099976,
+    "training_wall_seconds": 1433.617594877258,
+    "approximate_peak_process_rss_gib": 2.0747413635253906,
+    "peak_cuda_allocated_gib": 9.0316162109375,
+    "peak_cuda_reserved_gib": 9.6015625,
+    "model_loading_audit": {
+      "configuration": {
+        "status": "passed",
+        "checks": {
+          "num_labels": true,
+          "problem_type": true,
+          "id2label": true,
+          "label2id": true,
+          "top_level_pad_token_id": true,
+          "text_config_pad_token_id": true,
+          "top_level_use_cache": true,
+          "text_config_use_cache": true
+        },
+        "num_labels": 5,
+        "id2label": {
+          "0": "10",
+          "1": "20",
+          "2": "40",
+          "3": "80",
+          "4": "160"
+        },
+        "label2id": {
+          "10": 0,
+          "20": 1,
+          "40": 2,
+          "80": 3,
+          "160": 4
+        },
+        "pad_token_id": 248044
+      },
+      "classifier_head": {
+        "status": "passed",
+        "initial_base_load": true,
+        "seed_set_before_model_load": 42,
+        "head_parameter_name": "score.weight",
+        "head_shape": [
+          5,
+          1024
+        ],
+        "head_bias": false,
+        "head_weight_dtype": "torch.bfloat16",
+        "head_weight_sha256_float32": "09826669f451891218742ea86926e0b484d1696e57999276889d97b5ccdcbda5",
+        "loading_info": {
+          "missing_keys": [
+            "score.weight"
+          ],
+          "unexpected_keys": [],
+          "mismatched_keys": [],
+          "error_msgs": []
+        }
+      }
+    },
+    "environment": {
+      "python_version": "3.10.7",
+      "python_executable": "/workspace/thesis-granularity-router/.venv-fusion/bin/python",
+      "torch_version": "2.8.0+cu128",
+      "torch_cuda_version": "12.8",
+      "transformers_version": "5.15.0.dev0",
+      "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+      "gpu": "NVIDIA A100-SXM4-40GB",
+      "dtype": "torch.bfloat16"
+    },
+    "completed_at": "2026-08-23T19:06:53.938817+00:00"
+  },
+  "model_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/qwen_full_refit/model",
+  "model_sha256": "020af0a83af773239e7e60e9983afad29cae3f31493c7073e9162e040b732814",
+  "validation_rows_opened": false,
+  "checkpoint_selection": "none_fixed_epoch_3_endpoint",
+  "completed_at": "2026-08-23T19:06:57.509016+00:00"
+}
+{
+  "phase": "Phase 3C-OOF",
+  "status": "frozen_before_validation_evaluation",
+  "locked_at": "2026-08-23T19:06:59.732303+00:00",
+  "selection_data": "2,245-question preserved training split only",
+  "validation_used_for_any_decision": false,
+  "base_model_protocol": {
+    "outer_folds": 5,
+    "paper_grouped": true,
+    "seed": 42,
+    "each_training_logit_from_model_excluding_question_and_source_paper": true,
+    "validation_model": "fixed third-epoch full-training refit",
+    "checkpoint_selection": "none"
+  },
+  "fusion_protocol": {
+    "variant": "qwen_oof_logits_tree",
+    "features": [
+      "five_oof_Qwen_logits",
+      "173_Phase3B_tree_features"
+    ],
+    "feature_count": 178,
+    "preprocessing": "raw concatenation; no scaling or thresholding",
+    "fixed_candidate_source": "original Phase 3C primary qwen_logits_tree",
+    "fixed_candidate": {
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    "class_weighting": "square-root inverse frequency",
+    "seed": 42
+  },
+  "fold_assignment_sha256": "892a44f57a11c6fa9be7ec708df3355f4247555bde319c61325c0d201492ee62",
+  "train_oof_logits_sha256": "ee73c962d45b86034da7dfa903f9ff9ce92abd5707c6cec3b49a6ca7d1f4115d",
+  "full_refit_model_sha256": "020af0a83af773239e7e60e9983afad29cae3f31493c7073e9162e040b732814",
+  "source_train_features_sha256": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+  "procedure_script_sha256": "851a6d24eb575d785a2d317c755344dfb63dfcf77cc79008450ef74d20fda4d9"
+}
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/474 [00:00<?, ?it/s]Loading weights: 100%|██████████| 474/474 [00:00<00:00, 6415.36it/s]
+{
+  "phase": "Phase 3C-OOF",
+  "status": "complete",
+  "validation_examples": 924,
+  "validation_logits_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/qwen_features/validation_logits.npz",
+  "validation_logits_sha256": "721e9bcdcf2f026e458e504ced14ccfc52d3031c2694b5e4e4717c146c731233",
+  "frozen_selection_lock_sha256": "c5f88c346fdbf84e5177e11359ff071341fc510b6bb64e0753f9f2a32cde3935",
+  "extraction": {
+    "examples": 924,
+    "wall_seconds": 8.11124730668962,
+    "batch_size": 16,
+    "minimum_token_count": 96,
+    "maximum_token_count": 124
+  },
+  "model_loading_audit": {
+    "configuration": {
+      "status": "passed",
+      "checks": {
+        "num_labels": true,
+        "problem_type": true,
+        "id2label": true,
+        "label2id": true,
+        "top_level_pad_token_id": true,
+        "text_config_pad_token_id": true,
+        "top_level_use_cache": true,
+        "text_config_use_cache": true
+      },
+      "num_labels": 5,
+      "id2label": {
+        "0": "10",
+        "1": "20",
+        "2": "40",
+        "3": "80",
+        "4": "160"
+      },
+      "label2id": {
+        "10": 0,
+        "20": 1,
+        "40": 2,
+        "80": 3,
+        "160": 4
+      },
+      "pad_token_id": 248044
+    },
+    "classifier_head": {
+      "status": "passed",
+      "initial_base_load": false,
+      "seed_set_before_model_load": 42,
+      "head_parameter_name": "score.weight",
+      "head_shape": [
+        5,
+        1024
+      ],
+      "head_bias": false,
+      "head_weight_dtype": "torch.bfloat16",
+      "head_weight_sha256_float32": "cbc44bdd71b91be4a7f97c19f87651003eac05b292eb61ea5634dee0cb351025",
+      "loading_info": {
+        "missing_keys": [],
+        "unexpected_keys": [],
+        "mismatched_keys": [],
+        "error_msgs": []
+      }
+    }
+  },
+  "validation_used_for_training_or_selection": false,
+  "completed_at": "2026-08-23T19:07:17.745010+00:00"
+}
+{
+  "phase": "Phase 3C-OOF",
+  "formulation_version": "qwen-phase2d-paper-oof-logits-plus-phase3b-tree-xgboost-v1",
+  "status": "classification_complete",
+  "completed_at": "2026-08-23T19:07:28.747561+00:00",
+  "primary_variant": "qwen_oof_logits_tree",
+  "selection": "Original Phase 3C primary architecture and hyperparameters frozen before validation; no validation-based selection in this rerun",
+  "dataset": {
+    "train_examples": 2245,
+    "train_documents": 845,
+    "validation_examples": 924,
+    "validation_documents": 277
+  },
+  "features": {
+    "qwen_logit_count": 5,
+    "tree_feature_count": 173,
+    "total_feature_count": 178,
+    "training_qwen_logits": "strict paper-grouped OOF",
+    "validation_qwen_logits": "frozen all-training-data Qwen refit"
+  },
+  "classification": {
+    "accuracy": 0.3225108225108225,
+    "macro_f1": 0.20998522506102316,
+    "weighted_f1": 0.32674104553954336,
+    "balanced_accuracy": 0.21785914500689135,
+    "top_2_accuracy": 0.6103896103896104,
+    "per_class": {
+      "10": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13
+      },
+      "20": {
+        "precision": 0.10526315789473684,
+        "recall": 0.04938271604938271,
+        "f1": 0.06722689075630252,
+        "support": 81
+      },
+      "40": {
+        "precision": 0.20909090909090908,
+        "recall": 0.25842696629213485,
+        "f1": 0.2311557788944724,
+        "support": 178
+      },
+      "80": {
+        "precision": 0.2571428571428571,
+        "recall": 0.4267241379310345,
+        "f1": 0.32090761750405183,
+        "support": 232
+      },
+      "160": {
+        "precision": 0.5477941176470589,
+        "recall": 0.3547619047619048,
+        "f1": 0.43063583815028905,
+        "support": 420
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        1,
+        5,
+        6,
+        1
+      ],
+      [
+        2,
+        4,
+        27,
+        28,
+        20
+      ],
+      [
+        4,
+        10,
+        46,
+        77,
+        41
+      ],
+      [
+        2,
+        11,
+        59,
+        99,
+        61
+      ],
+      [
+        1,
+        12,
+        83,
+        175,
+        149
+      ]
+    ],
+    "class_distribution": {
+      "10": 13,
+      "20": 81,
+      "40": 178,
+      "80": 232,
+      "160": 420
+    },
+    "predicted_distribution": {
+      "10": 9,
+      "20": 38,
+      "40": 220,
+      "80": 385,
+      "160": 272
+    },
+    "top_2_accuracy_status": "available",
+    "mean_absolute_class_distance": 0.9567099567099567,
+    "within_one_level_accuracy": 0.7683982683982684,
+    "mean_absolute_token_distance": 51.86147186147186,
+    "quadratic_weighted_kappa": 0.1563595774601344,
+    "correct_count": 298,
+    "example_count": 924
+  },
+  "model": {
+    "variant": "qwen_oof_logits_tree",
+    "architecture": "XGBoost multi:softprob",
+    "feature_sources": [
+      "five_paper_grouped_OOF_Qwen_logits",
+      "tree_features"
+    ],
+    "feature_count": 178,
+    "fixed_candidate": {
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    "class_weights": {
+      "10": 3.534248023400323,
+      "20": 1.6040678626121678,
+      "40": 1.0827534108953252,
+      "80": 1.0,
+      "160": 1.0280676421924175
+    },
+    "meta_oof_diagnostic": {
+      "status": "complete_fixed_candidate_diagnostic_not_model_selection",
+      "candidate": {
+        "max_depth": 2,
+        "learning_rate": 0.05,
+        "n_estimators": 200,
+        "min_child_weight": 5.0,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
+        "reg_lambda": 1.0,
+        "reg_alpha": 0.0
+      },
+      "metrics": {
+        "accuracy": 0.3042316258351893,
+        "macro_f1": 0.23167917059670948,
+        "weighted_f1": 0.29370100473815786,
+        "balanced_accuracy": 0.2305347288509214,
+        "top_2_accuracy": 0.5861915367483296,
+        "per_class": {
+          "10": {
+            "precision": 0.125,
+            "recall": 0.05454545454545454,
+            "f1": 0.0759493670886076,
+            "support": 55
+          },
+          "20": {
+            "precision": 0.19130434782608696,
+            "recall": 0.08239700374531835,
+            "f1": 0.11518324607329843,
+            "support": 267
+          },
+          "40": {
+            "precision": 0.28233151183970856,
+            "recall": 0.2645051194539249,
+            "f1": 0.27312775330396477,
+            "support": 586
+          },
+          "80": {
+            "precision": 0.3230769230769231,
+            "recall": 0.39737991266375544,
+            "f1": 0.356396866840731,
+            "support": 687
+          },
+          "160": {
+            "precision": 0.32303370786516855,
+            "recall": 0.35384615384615387,
+            "f1": 0.3377386196769457,
+            "support": 650
+          }
+        },
+        "confusion_matrix": [
+          [
+            3,
+            6,
+            15,
+            24,
+            7
+          ],
+          [
+            5,
+            22,
+            83,
+            91,
+            66
+          ],
+          [
+            5,
+            36,
+            155,
+            219,
+            171
+          ],
+          [
+            3,
+            28,
+            145,
+            273,
+            238
+          ],
+          [
+            8,
+            23,
+            151,
+            238,
+            230
+          ]
+        ],
+        "class_distribution": {
+          "10": 55,
+          "20": 267,
+          "40": 586,
+          "80": 687,
+          "160": 650
+        },
+        "predicted_distribution": {
+          "10": 24,
+          "20": 115,
+          "40": 549,
+          "80": 845,
+          "160": 712
+        },
+        "top_2_accuracy_status": "available",
+        "mean_absolute_class_distance": 1.024498886414254,
+        "within_one_level_accuracy": 0.7363028953229399,
+        "mean_absolute_token_distance": 52.610244988864146,
+        "quadratic_weighted_kappa": 0.12010378938368105,
+        "correct_count": 683,
+        "example_count": 2245
+      },
+      "folds": [
+        {
+          "fold": 0,
+          "train_examples": 1796,
+          "heldout_examples": 449,
+          "class_weights": {
+            "10": 3.5355339059327378,
+            "20": 1.6031511026549947,
+            "40": 1.0840727259799847,
+            "80": 1.0,
+            "160": 1.0284416890093029
+          },
+          "metrics": {
+            "accuracy": 0.32962138084632514,
+            "macro_f1": 0.2305380498783797,
+            "weighted_f1": 0.3173970835874851,
+            "balanced_accuracy": 0.2360195051809178,
+            "top_2_accuracy": 0.6013363028953229,
+            "per_class": {
+              "10": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 11
+              },
+              "20": {
+                "precision": 0.125,
+                "recall": 0.05660377358490566,
+                "f1": 0.07792207792207793,
+                "support": 53
+              },
+              "40": {
+                "precision": 0.3333333333333333,
+                "recall": 0.3220338983050847,
+                "f1": 0.3275862068965517,
+                "support": 118
+              },
+              "80": {
+                "precision": 0.34375,
+                "recall": 0.40145985401459855,
+                "f1": 0.37037037037037035,
+                "support": 137
+              },
+              "160": {
+                "precision": 0.3561643835616438,
+                "recall": 0.4,
+                "f1": 0.37681159420289856,
+                "support": 130
+              }
+            },
+            "confusion_matrix": [
+              [
+                0,
+                3,
+                1,
+                4,
+                3
+              ],
+              [
+                2,
+                3,
+                22,
+                17,
+                9
+              ],
+              [
+                1,
+                4,
+                38,
+                41,
+                34
+              ],
+              [
+                2,
+                8,
+                24,
+                55,
+                48
+              ],
+              [
+                0,
+                6,
+                29,
+                43,
+                52
+              ]
+            ],
+            "class_distribution": {
+              "10": 11,
+              "20": 53,
+              "40": 118,
+              "80": 137,
+              "160": 130
+            },
+            "predicted_distribution": {
+              "10": 5,
+              "20": 24,
+              "40": 114,
+              "80": 160,
+              "160": 146
+            },
+            "top_2_accuracy_status": "available",
+            "mean_absolute_class_distance": 0.9844097995545658,
+            "within_one_level_accuracy": 0.7461024498886414,
+            "mean_absolute_token_distance": 50.200445434298445,
+            "quadratic_weighted_kappa": 0.16813732672284643,
+            "correct_count": 148,
+            "example_count": 449
+          }
+        },
+        {
+          "fold": 1,
+          "train_examples": 1796,
+          "heldout_examples": 449,
+          "class_weights": {
+            "10": 3.532318321905987,
+            "20": 1.6016930294996177,
+            "40": 1.0819314640788265,
+            "80": 1.0,
+            "160": 1.0275063166566085
+          },
+          "metrics": {
+            "accuracy": 0.30957683741648107,
+            "macro_f1": 0.22209408647333104,
+            "weighted_f1": 0.2950348726693194,
+            "balanced_accuracy": 0.22581505086837325,
+            "top_2_accuracy": 0.579064587973274,
+            "per_class": {
+              "10": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 11
+              },
+              "20": {
+                "precision": 0.23076923076923078,
+                "recall": 0.11320754716981132,
+                "f1": 0.15189873417721517,
+                "support": 53
+              },
+              "40": {
+                "precision": 0.3058823529411765,
+                "recall": 0.2222222222222222,
+                "f1": 0.25742574257425743,
+                "support": 117
+              },
+              "80": {
+                "precision": 0.3350253807106599,
+                "recall": 0.4782608695652174,
+                "f1": 0.3940298507462687,
+                "support": 138
+              },
+              "160": {
+                "precision": 0.29927007299270075,
+                "recall": 0.3153846153846154,
+                "f1": 0.3071161048689139,
+                "support": 130
+              }
+            },
+            "confusion_matrix": [
+              [
+                0,
+                1,
+                4,
+                4,
+                2
+              ],
+              [
+                0,
+                6,
+                12,
+                22,
+                13
+              ],
+              [
+                2,
+                7,
+                26,
+                46,
+                36
+              ],
+              [
+                1,
+                9,
+                17,
+                66,
+                45
+              ],
+              [
+                1,
+                3,
+                26,
+                59,
+                41
+              ]
+            ],
+            "class_distribution": {
+              "10": 11,
+              "20": 53,
+              "40": 117,
+              "80": 138,
+              "160": 130
+            },
+            "predicted_distribution": {
+              "10": 4,
+              "20": 26,
+              "40": 85,
+              "80": 197,
+              "160": 137
+            },
+            "top_2_accuracy_status": "available",
+            "mean_absolute_class_distance": 1.024498886414254,
+            "within_one_level_accuracy": 0.7260579064587973,
+            "mean_absolute_token_distance": 52.89532293986637,
+            "quadratic_weighted_kappa": 0.10212263690812973,
+            "correct_count": 139,
+            "example_count": 449
+          }
+        },
+        {
+          "fold": 2,
+          "train_examples": 1796,
+          "heldout_examples": 449,
+          "class_weights": {
+            "10": 3.5355339059327378,
+            "20": 1.6069099615140687,
+            "40": 1.0829163814098481,
+            "80": 1.0,
+            "160": 1.0284416890093029
+          },
+          "metrics": {
+            "accuracy": 0.31625835189309576,
+            "macro_f1": 0.26356142783351005,
+            "weighted_f1": 0.30086575895335593,
+            "balanced_accuracy": 0.25927294657221667,
+            "top_2_accuracy": 0.5746102449888641,
+            "per_class": {
+              "10": {
+                "precision": 0.4,
+                "recall": 0.18181818181818182,
+                "f1": 0.25000000000000006,
+                "support": 11
+              },
+              "20": {
+                "precision": 0.15384615384615385,
+                "recall": 0.037037037037037035,
+                "f1": 0.05970149253731343,
+                "support": 54
+              },
+              "40": {
+                "precision": 0.3089430894308943,
+                "recall": 0.3247863247863248,
+                "f1": 0.31666666666666665,
+                "support": 117
+              },
+              "80": {
+                "precision": 0.3157894736842105,
+                "recall": 0.30656934306569344,
+                "f1": 0.3111111111111111,
+                "support": 137
+              },
+              "160": {
+                "precision": 0.3314285714285714,
+                "recall": 0.4461538461538462,
+                "f1": 0.380327868852459,
+                "support": 130
+              }
+            },
+            "confusion_matrix": [
+              [
+                2,
+                1,
+                3,
+                5,
+                0
+              ],
+              [
+                1,
+                2,
+                21,
+                9,
+                21
+              ],
+              [
+                0,
+                6,
+                38,
+                36,
+                37
+              ],
+              [
+                0,
+                1,
+                35,
+                42,
+                59
+              ],
+              [
+                2,
+                3,
+                26,
+                41,
+                58
+              ]
+            ],
+            "class_distribution": {
+              "10": 11,
+              "20": 54,
+              "40": 117,
+              "80": 137,
+              "160": 130
+            },
+            "predicted_distribution": {
+              "10": 5,
+              "20": 13,
+              "40": 123,
+              "80": 133,
+              "160": 175
+            },
+            "top_2_accuracy_status": "available",
+            "mean_absolute_class_distance": 0.9955456570155902,
+            "within_one_level_accuracy": 0.7616926503340757,
+            "mean_absolute_token_distance": 52.69487750556793,
+            "quadratic_weighted_kappa": 0.17261143698743842,
+            "correct_count": 142,
+            "example_count": 449
+          }
+        },
+        {
+          "fold": 3,
+          "train_examples": 1795,
+          "heldout_examples": 450,
+          "class_weights": {
+            "10": 3.532318321905987,
+            "20": 1.6054484696596134,
+            "40": 1.0819314640788265,
+            "80": 1.0,
+            "160": 1.0275063166566085
+          },
+          "metrics": {
+            "accuracy": 0.2822222222222222,
+            "macro_f1": 0.20839453195099913,
+            "weighted_f1": 0.2746968509184253,
+            "balanced_accuracy": 0.20886659234485322,
+            "top_2_accuracy": 0.6044444444444445,
+            "per_class": {
+              "10": {
+                "precision": 0.0,
+                "recall": 0.0,
+                "f1": 0.0,
+                "support": 11
+              },
+              "20": {
+                "precision": 0.23076923076923078,
+                "recall": 0.1111111111111111,
+                "f1": 0.15,
+                "support": 54
+              },
+              "40": {
+                "precision": 0.23255813953488372,
+                "recall": 0.2564102564102564,
+                "f1": 0.24390243902439024,
+                "support": 117
+              },
+              "80": {
+                "precision": 0.31137724550898205,
+                "recall": 0.37681159420289856,
+                "f1": 0.3409836065573771,
+                "support": 138
+              },
+              "160": {
+                "precision": 0.31451612903225806,
+                "recall": 0.3,
+                "f1": 0.3070866141732283,
+                "support": 130
+              }
+            },
+            "confusion_matrix": [
+              [
+                0,
+                1,
+                4,
+                5,
+                1
+              ],
+              [
+                1,
+                6,
+                18,
+                20,
+                9
+              ],
+              [
+                1,
+                10,
+                30,
+                47,
+                29
+              ],
+              [
+                0,
+                5,
+                35,
+                52,
+                46
+              ],
+              [
+                2,
+                4,
+                42,
+                43,
+                39
+              ]
+            ],
+            "class_distribution": {
+              "10": 11,
+              "20": 54,
+              "40": 117,
+              "80": 138,
+              "160": 130
+            },
+            "predicted_distribution": {
+              "10": 4,
+              "20": 26,
+              "40": 129,
+              "80": 167,
+              "160": 124
+            },
+            "top_2_accuracy_status": "available",
+            "mean_absolute_class_distance": 1.0422222222222222,
+            "within_one_level_accuracy": 0.7288888888888889,
+            "mean_absolute_token_distance": 52.82222222222222,
+            "quadratic_weighted_kappa": 0.11001587047363903,
+            "correct_count": 127,
+            "example_count": 450
+          }
+        },
+        {
+          "fold": 4,
+          "train_examples": 1797,
+          "heldout_examples": 448,
+          "class_weights": {
+            "10": 3.5355339059327378,
+            "20": 1.6031511026549947,
+            "40": 1.0829163814098481,
+            "80": 1.0,
+            "160": 1.0284416890093029
+          },
+          "metrics": {
+            "accuracy": 0.28348214285714285,
+            "macro_f1": 0.22455964205840395,
+            "weighted_f1": 0.27217410286729665,
+            "balanced_accuracy": 0.22257597641153626,
+            "top_2_accuracy": 0.5714285714285714,
+            "per_class": {
+              "10": {
+                "precision": 0.16666666666666666,
+                "recall": 0.09090909090909091,
+                "f1": 0.11764705882352942,
+                "support": 11
+              },
+              "20": {
+                "precision": 0.19230769230769232,
+                "recall": 0.09433962264150944,
+                "f1": 0.12658227848101267,
+                "support": 53
+              },
+              "40": {
+                "precision": 0.23469387755102042,
+                "recall": 0.19658119658119658,
+                "f1": 0.21395348837209302,
+                "support": 117
+              },
+              "80": {
+                "precision": 0.30851063829787234,
+                "recall": 0.4233576642335766,
+                "f1": 0.3569230769230769,
+                "support": 137
+              },
+              "160": {
+                "precision": 0.3076923076923077,
+                "recall": 0.3076923076923077,
+                "f1": 0.3076923076923077,
+                "support": 130
+              }
+            },
+            "confusion_matrix": [
+              [
+                1,
+                0,
+                3,
+                6,
+                1
+              ],
+              [
+                1,
+                5,
+                10,
+                23,
+                14
+              ],
+              [
+                1,
+                9,
+                23,
+                49,
+                35
+              ],
+              [
+                0,
+                5,
+                34,
+                58,
+                40
+              ],
+              [
+                3,
+                7,
+                28,
+                52,
+                40
+              ]
+            ],
+            "class_distribution": {
+              "10": 11,
+              "20": 53,
+              "40": 117,
+              "80": 137,
+              "160": 130
+            },
+            "predicted_distribution": {
+              "10": 6,
+              "20": 26,
+              "40": 98,
+              "80": 188,
+              "160": 130
+            },
+            "top_2_accuracy_status": "available",
+            "mean_absolute_class_distance": 1.0758928571428572,
+            "within_one_level_accuracy": 0.71875,
+            "mean_absolute_token_distance": 54.441964285714285,
+            "quadratic_weighted_kappa": 0.04403197398726455,
+            "correct_count": 127,
+            "example_count": 448
+          }
+        }
+      ],
+      "wall_seconds": 7.393427107483149,
+      "dependency_caveat": "This meta-level grouped-CV diagnostic uses cross-fitted base logits, but base fits used for other meta-training rows may have seen papers in the current meta held-out fold. It is descriptive only and did not select hyperparameters; the untouched validation evaluation is definitive."
+    },
+    "validation_metrics": {
+      "accuracy": 0.3225108225108225,
+      "macro_f1": 0.20998522506102316,
+      "weighted_f1": 0.32674104553954336,
+      "balanced_accuracy": 0.21785914500689135,
+      "top_2_accuracy": 0.6103896103896104,
+      "per_class": {
+        "10": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 13
+        },
+        "20": {
+          "precision": 0.10526315789473684,
+          "recall": 0.04938271604938271,
+          "f1": 0.06722689075630252,
+          "support": 81
+        },
+        "40": {
+          "precision": 0.20909090909090908,
+          "recall": 0.25842696629213485,
+          "f1": 0.2311557788944724,
+          "support": 178
+        },
+        "80": {
+          "precision": 0.2571428571428571,
+          "recall": 0.4267241379310345,
+          "f1": 0.32090761750405183,
+          "support": 232
+        },
+        "160": {
+          "precision": 0.5477941176470589,
+          "recall": 0.3547619047619048,
+          "f1": 0.43063583815028905,
+          "support": 420
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          1,
+          5,
+          6,
+          1
+        ],
+        [
+          2,
+          4,
+          27,
+          28,
+          20
+        ],
+        [
+          4,
+          10,
+          46,
+          77,
+          41
+        ],
+        [
+          2,
+          11,
+          59,
+          99,
+          61
+        ],
+        [
+          1,
+          12,
+          83,
+          175,
+          149
+        ]
+      ],
+      "class_distribution": {
+        "10": 13,
+        "20": 81,
+        "40": 178,
+        "80": 232,
+        "160": 420
+      },
+      "predicted_distribution": {
+        "10": 9,
+        "20": 38,
+        "40": 220,
+        "80": 385,
+        "160": 272
+      },
+      "top_2_accuracy_status": "available",
+      "mean_absolute_class_distance": 0.9567099567099567,
+      "within_one_level_accuracy": 0.7683982683982684,
+      "mean_absolute_token_distance": 51.86147186147186,
+      "quadratic_weighted_kappa": 0.1563595774601344,
+      "correct_count": 298,
+      "example_count": 924
+    },
+    "model_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/models/qwen_oof_logits_tree.json",
+    "model_sha256": "ea2b57345bac9265499faf6bb81609749e32d967dec4568feb1ce9dbdae3404f",
+    "prediction_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/validation/predictions.jsonl",
+    "prediction_sha256": "2d75d2dead6a67d7e25bf7d41c95eed0b09a165c0fd798ac901f9a48a65d21cc",
+    "fit_seconds": 1.281602879986167,
+    "prediction_seconds": 0.005073588341474533,
+    "top_feature_importance_by_gain": [
+      {
+        "feature": "tree__level_10_top10_mean",
+        "gain": 16.617517471313477,
+        "split_count": 9.0
+      },
+      {
+        "feature": "tree__level_20_max",
+        "gain": 13.260936737060547,
+        "split_count": 6.0
+      },
+      {
+        "feature": "tree__level_40_top5_mean",
+        "gain": 13.001216888427734,
+        "split_count": 3.0
+      },
+      {
+        "feature": "tree__edge_40_to_20_sibling_abs_gap_mean",
+        "gain": 12.838014602661133,
+        "split_count": 4.0
+      },
+      {
+        "feature": "tree__level_40_max",
+        "gain": 11.793493270874023,
+        "split_count": 10.0
+      },
+      {
+        "feature": "tree__edge_160_to_80_sibling_abs_gap_mean",
+        "gain": 11.658843994140625,
+        "split_count": 9.0
+      },
+      {
+        "feature": "tree__level_160_q75",
+        "gain": 11.239368438720703,
+        "split_count": 3.0
+      },
+      {
+        "feature": "tree__level_10_q95",
+        "gain": 11.140430450439453,
+        "split_count": 21.0
+      },
+      {
+        "feature": "tree__level_40_top10_mean",
+        "gain": 10.82114028930664,
+        "split_count": 2.0
+      },
+      {
+        "feature": "tree__level_20_max_mean_gap",
+        "gain": 10.588460922241211,
+        "split_count": 6.0
+      },
+      {
+        "feature": "tree__edge_20_to_10_child_mean_minus_parent_mean",
+        "gain": 10.078761100769043,
+        "split_count": 2.0
+      },
+      {
+        "feature": "tree__edge_80_to_40_near_equal_002_fraction",
+        "gain": 10.046509742736816,
+        "split_count": 43.0
+      },
+      {
+        "feature": "tree__edge_80_to_40_argmax_alignment",
+        "gain": 10.034486770629883,
+        "split_count": 8.0
+      },
+      {
+        "feature": "tree__edge_80_to_40_child_mean_minus_parent_q90",
+        "gain": 9.925249099731445,
+        "split_count": 30.0
+      },
+      {
+        "feature": "tree__edge_40_to_20_child_max_minus_parent_q10",
+        "gain": 9.59103775024414,
+        "split_count": 11.0
+      },
+      {
+        "feature": "tree__level_10_near_max_002_fraction",
+        "gain": 9.479069709777832,
+        "split_count": 21.0
+      },
+      {
+        "feature": "qwen_logit_160",
+        "gain": 9.320046424865723,
+        "split_count": 71.0
+      },
+      {
+        "feature": "tree__edge_20_to_10_parent_child_max_correlation",
+        "gain": 9.206317901611328,
+        "split_count": 8.0
+      },
+      {
+        "feature": "tree__level_20_top2_mean",
+        "gain": 9.171735763549805,
+        "split_count": 14.0
+      },
+      {
+        "feature": "tree__level_10_top2_mean",
+        "gain": 9.029518127441406,
+        "split_count": 18.0
+      },
+      {
+        "feature": "tree__edge_80_to_40_sibling_abs_gap_q50",
+        "gain": 8.912908554077148,
+        "split_count": 20.0
+      },
+      {
+        "feature": "qwen_logit_10",
+        "gain": 8.912789344787598,
+        "split_count": 50.0
+      },
+      {
+        "feature": "tree__level_20_margin_top1_top2",
+        "gain": 8.891738891601562,
+        "split_count": 36.0
+      },
+      {
+        "feature": "tree__edge_80_to_40_child_max_minus_parent_std",
+        "gain": 8.80964469909668,
+        "split_count": 25.0
+      },
+      {
+        "feature": "tree__edge_160_to_80_child_mean_minus_parent_q10",
+        "gain": 8.726192474365234,
+        "split_count": 13.0
+      },
+      {
+        "feature": "tree__level_20_q95",
+        "gain": 8.722225189208984,
+        "split_count": 4.0
+      },
+      {
+        "feature": "tree__level_20_near_max_002_fraction",
+        "gain": 8.46702766418457,
+        "split_count": 54.0
+      },
+      {
+        "feature": "tree__edge_40_to_20_sibling_abs_gap_q10",
+        "gain": 8.316903114318848,
+        "split_count": 40.0
+      },
+      {
+        "feature": "tree__level_80_q95",
+        "gain": 8.201946258544922,
+        "split_count": 2.0
+      },
+      {
+        "feature": "tree__level_20_log_count",
+        "gain": 8.194962501525879,
+        "split_count": 4.0
+      }
+    ]
+  },
+  "selection_lock_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/selection/selection_lock.json",
+  "validation_prediction_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/validation/predictions.jsonl",
+  "validation_prediction_sha256": "2d75d2dead6a67d7e25bf7d41c95eed0b09a165c0fd798ac901f9a48a65d21cc",
+  "training_and_validation_wall_seconds": 9.938012402504683
+}

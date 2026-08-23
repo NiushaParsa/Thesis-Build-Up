@@ -1,0 +1,23 @@
+{
+  "status": "complete",
+  "examples": 2245,
+  "documents": 845,
+  "shape": [
+    2245,
+    5
+  ],
+  "exactly_once_oof_coverage": true,
+  "paper_grouped": true,
+  "paper_overlap_within_each_fit": 0,
+  "fold_assignment_sha256": "892a44f57a11c6fa9be7ec708df3355f4247555bde319c61325c0d201492ee62",
+  "fold_file_hashes": {
+    "0": "975b62def6cca7586466b5cde04ebc7765a54a4f9b6286d5abcf1ac1e1490276",
+    "1": "73de31a1df329a8fb48c2dd0d0f709b63105971112ed309560cdd1a3a9375197",
+    "2": "12788727e18dbc6c5f0cf1144ab597412cd1197d428c1f4bed9dbf38856cc3b3",
+    "3": "8c9d8ac355c6c17b73784733ba0e66890d8cc8f8afec2648e454f7c9b77cbbbd",
+    "4": "724dd509b38f244481dc4487f75266a3dfb095ac0e6cfe9d7bec0155dba271f8"
+  },
+  "assembled_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/qwen_features/train_oof_logits.npz",
+  "assembled_sha256": "ee73c962d45b86034da7dfa903f9ff9ce92abd5707c6cec3b49a6ca7d1f4115d",
+  "completed_at": "2026-08-23T18:42:51.565716+00:00"
+}

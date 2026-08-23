@@ -1,0 +1,645 @@
+{
+  "phase": "Phase 3C-OOF",
+  "formulation_version": "qwen-phase2d-paper-oof-logits-plus-phase3b-tree-xgboost-v1",
+  "status": "complete",
+  "completed_at": "2026-08-23T19:25:51.548085+00:00",
+  "methodology": {
+    "training_qwen_logits": "five-fold paper-grouped OOF",
+    "validation_qwen_logits": "training-only full Qwen refit frozen before validation",
+    "fusion": "same original Phase 3C primary five-logit-plus-173-tree-feature XGBoost",
+    "fixed_candidate": {
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    "validation_model_selection": false
+  },
+  "classification": {
+    "accuracy": 0.3225108225108225,
+    "macro_f1": 0.20998522506102316,
+    "weighted_f1": 0.32674104553954336,
+    "balanced_accuracy": 0.21785914500689135,
+    "top_2_accuracy": 0.6103896103896104,
+    "per_class": {
+      "10": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 13
+      },
+      "20": {
+        "precision": 0.10526315789473684,
+        "recall": 0.04938271604938271,
+        "f1": 0.06722689075630252,
+        "support": 81
+      },
+      "40": {
+        "precision": 0.20909090909090908,
+        "recall": 0.25842696629213485,
+        "f1": 0.2311557788944724,
+        "support": 178
+      },
+      "80": {
+        "precision": 0.2571428571428571,
+        "recall": 0.4267241379310345,
+        "f1": 0.32090761750405183,
+        "support": 232
+      },
+      "160": {
+        "precision": 0.5477941176470589,
+        "recall": 0.3547619047619048,
+        "f1": 0.43063583815028905,
+        "support": 420
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        1,
+        5,
+        6,
+        1
+      ],
+      [
+        2,
+        4,
+        27,
+        28,
+        20
+      ],
+      [
+        4,
+        10,
+        46,
+        77,
+        41
+      ],
+      [
+        2,
+        11,
+        59,
+        99,
+        61
+      ],
+      [
+        1,
+        12,
+        83,
+        175,
+        149
+      ]
+    ],
+    "class_distribution": {
+      "10": 13,
+      "20": 81,
+      "40": 178,
+      "80": 232,
+      "160": 420
+    },
+    "predicted_distribution": {
+      "10": 9,
+      "20": 38,
+      "40": 220,
+      "80": 385,
+      "160": 272
+    },
+    "top_2_accuracy_status": "available",
+    "mean_absolute_class_distance": 0.9567099567099567,
+    "within_one_level_accuracy": 0.7683982683982684,
+    "mean_absolute_token_distance": 51.86147186147186,
+    "quadratic_weighted_kappa": 0.1563595774601344,
+    "correct_count": 298,
+    "example_count": 924
+  },
+  "retrieval": {
+    "phase": "Phase 3C-OOF",
+    "formulation_version": "qwen-phase2d-paper-oof-logits-plus-phase3b-tree-xgboost-v1",
+    "router_model": "qwen_oof_logits_tree",
+    "evaluated_examples": 924,
+    "valid_prediction_retrievals": 924,
+    "retrieval_coverage": 1.0,
+    "mean_joined_retrieval_f1": 0.27830322619047615,
+    "median_joined_retrieval_f1": 0.255051,
+    "coverage_adjusted_full_set_mean_joined_retrieval_f1": 0.27830322619047654,
+    "top_k": 5,
+    "paper_restricted": true,
+    "embedding_model": "text-embedding-3-small",
+    "embedding_dimension": 1536,
+    "similarity": "cosine",
+    "retrieval_wall_seconds_this_invocation": 372.00730140000815,
+    "qdrant_collections_unchanged": true,
+    "qdrant_snapshot_before": {
+      "Stage4VerifyRouterDataset": {
+        "status": "green",
+        "points_count": 2,
+        "indexed_vectors_count": 0,
+        "vector_size": 1536,
+        "distance": "Cosine"
+      },
+      "PaperChunk": {
+        "status": "green",
+        "points_count": 1701822,
+        "indexed_vectors_count": 1701822,
+        "vector_size": 1536,
+        "distance": "Cosine"
+      },
+      "Stage4VerifyRetrievalEval": {
+        "status": "green",
+        "points_count": 10,
+        "indexed_vectors_count": 0,
+        "vector_size": null,
+        "distance": null
+      },
+      "Stage5MixedEvaluation": {
+        "status": "green",
+        "points_count": 2,
+        "indexed_vectors_count": 0,
+        "vector_size": null,
+        "distance": null
+      },
+      "RetrievalEvaluation": {
+        "status": "green",
+        "points_count": 18622,
+        "indexed_vectors_count": 0,
+        "vector_size": null,
+        "distance": null
+      },
+      "RouterDataset": {
+        "status": "green",
+        "points_count": 3170,
+        "indexed_vectors_count": 0,
+        "vector_size": 1536,
+        "distance": "Cosine"
+      },
+      "PaperQuestion": {
+        "status": "green",
+        "points_count": 4526,
+        "indexed_vectors_count": 0,
+        "vector_size": 1536,
+        "distance": "Cosine"
+      },
+      "PaperEvidence": {
+        "status": "green",
+        "points_count": 9522,
+        "indexed_vectors_count": 0,
+        "vector_size": 1536,
+        "distance": "Cosine"
+      }
+    },
+    "qdrant_snapshot_after": {
+      "Stage4VerifyRouterDataset": {
+        "status": "green",
+        "points_count": 2,
+        "indexed_vectors_count": 0,
+        "vector_size": 1536,
+        "distance": "Cosine"
+      },
+      "PaperChunk": {
+        "status": "green",
+        "points_count": 1701822,
+        "indexed_vectors_count": 1701822,
+        "vector_size": 1536,
+        "distance": "Cosine"
+      },
+      "Stage4VerifyRetrievalEval": {
+        "status": "green",
+        "points_count": 10,
+        "indexed_vectors_count": 0,
+        "vector_size": null,
+        "distance": null
+      },
+      "Stage5MixedEvaluation": {
+        "status": "green",
+        "points_count": 2,
+        "indexed_vectors_count": 0,
+        "vector_size": null,
+        "distance": null
+      },
+      "RetrievalEvaluation": {
+        "status": "green",
+        "points_count": 18622,
+        "indexed_vectors_count": 0,
+        "vector_size": null,
+        "distance": null
+      },
+      "RouterDataset": {
+        "status": "green",
+        "points_count": 3170,
+        "indexed_vectors_count": 0,
+        "vector_size": 1536,
+        "distance": "Cosine"
+      },
+      "PaperQuestion": {
+        "status": "green",
+        "points_count": 4526,
+        "indexed_vectors_count": 0,
+        "vector_size": 1536,
+        "distance": "Cosine"
+      },
+      "PaperEvidence": {
+        "status": "green",
+        "points_count": 9522,
+        "indexed_vectors_count": 0,
+        "vector_size": 1536,
+        "distance": "Cosine"
+      }
+    },
+    "result_path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\retrieval\\results.jsonl",
+    "result_sha256": "510443dfd9c965f3148697562894e770fb60bd6f70a3e58bb219c8fb1aa8f844"
+  },
+  "comparisons": {
+    "clean_phase3c_oof": {
+      "classification_accuracy": 0.3225108225108225,
+      "classification_macro_f1": 0.20998522506102316,
+      "classification_weighted_f1": 0.32674104553954336,
+      "classification_balanced_accuracy": 0.21785914500689135,
+      "mean_joined_retrieval_f1": 0.27830322619047615
+    },
+    "original_phase3c": {
+      "classification_accuracy": 0.31926406926406925,
+      "classification_macro_f1": 0.2306766979333351,
+      "classification_weighted_f1": 0.33398724658349993,
+      "classification_balanced_accuracy": 0.2358503567311523,
+      "mean_joined_retrieval_f1": 0.2872016341991342,
+      "delta_clean_minus_reference_accuracy": 0.0032467532467532756,
+      "delta_clean_minus_reference_macro_f1": -0.020691472872311933,
+      "delta_clean_minus_reference_retrieval_f1": -0.008898408008658043
+    },
+    "phase2d": {
+      "classification_accuracy": 0.36904761904761907,
+      "classification_macro_f1": 0.22994524079282935,
+      "classification_weighted_f1": 0.3644656337102369,
+      "classification_balanced_accuracy": 0.2391812745015638,
+      "mean_joined_retrieval_f1": 0.2767166677489178,
+      "delta_clean_minus_reference_accuracy": -0.04653679653679654,
+      "delta_clean_minus_reference_macro_f1": -0.019960015731806197,
+      "delta_clean_minus_reference_retrieval_f1": 0.0015865584415583611
+    },
+    "phase3b": {
+      "classification_accuracy": 0.329004329004329,
+      "classification_macro_f1": 0.2246699873714014,
+      "classification_weighted_f1": 0.329619858512113,
+      "classification_balanced_accuracy": 0.2327228358766522,
+      "mean_joined_retrieval_f1": 0.27172125974025974,
+      "delta_clean_minus_reference_accuracy": -0.006493506493506496,
+      "delta_clean_minus_reference_macro_f1": -0.014684762310378241,
+      "delta_clean_minus_reference_retrieval_f1": 0.006581966450216414
+    },
+    "fixed_granularity_baselines": {
+      "fixed_10": {
+        "mean_joined_retrieval_f1": 0.22111944047619048,
+        "median_joined_retrieval_f1": 0.207362
+      },
+      "fixed_20": {
+        "mean_joined_retrieval_f1": 0.28874969588744587,
+        "median_joined_retrieval_f1": 0.28091750000000004
+      },
+      "fixed_40": {
+        "mean_joined_retrieval_f1": 0.3158559274891775,
+        "median_joined_retrieval_f1": 0.3091675
+      },
+      "fixed_80": {
+        "mean_joined_retrieval_f1": 0.2857245205627706,
+        "median_joined_retrieval_f1": 0.2665675
+      },
+      "fixed_160": {
+        "mean_joined_retrieval_f1": 0.21679366125541125,
+        "median_joined_retrieval_f1": 0.183777
+      }
+    },
+    "fixed_granularity_deltas": {
+      "fixed_10": 0.05718378571428567,
+      "fixed_20": -0.010446469696969718,
+      "fixed_40": -0.03755270129870136,
+      "fixed_80": -0.00742129437229444,
+      "fixed_160": 0.0615095649350649
+    }
+  },
+  "runtime": {
+    "outer_qwen_folds": {
+      "0": 1081.676607036963,
+      "1": 1093.4879636038095,
+      "2": 1115.3998259305954,
+      "3": 1304.0971037223935,
+      "4": 1293.795559739694
+    },
+    "full_qwen_refit_seconds": 1433.617594877258,
+    "validation_qwen_extraction_seconds": 8.11124730668962,
+    "meta_training_and_validation_seconds": 9.938012402504683,
+    "retrieval_seconds": 372.00730140000815,
+    "known_sequential_stage_seconds": 7712.131216019916
+  },
+  "integrity": {
+    "status": "passed",
+    "verified_at": "2026-08-23T19:25:41.526581+00:00",
+    "prediction_rows": 924,
+    "retrieval_rows": 924,
+    "qdrant_collections_unchanged": true,
+    "training_oof_logit_rows": 2245,
+    "paper_grouped_oof": true,
+    "validation_used_for_training_or_selection": false,
+    "fixed_candidate_matches_original_phase3c": true
+  },
+  "artifacts": [
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\classification\\confusion_matrix.csv",
+      "bytes": 122,
+      "sha256": "67dd1df61e70a4fd43b9eb1a1e5105698e7326fd877bb92dbae8ad799f3539ba"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\classification\\metrics.json",
+      "bytes": 1748,
+      "sha256": "b5183db8f3ef9a1cc2a996192d625a3fa2db6db1342f3a5197e387c71c55e9a3"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\classification\\predicted_vs_oracle.svg",
+      "bytes": 2270,
+      "sha256": "8a4ed4ed737d25e115409da7ca649c00ee855eb258c35d59247f72f79e697011"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\classification_summary.json",
+      "bytes": 29023,
+      "sha256": "0625aa8070ab228353ba841ce9264484823cbb6d2239b6caef3748d41c8f1252"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\comparison\\baselines.json",
+      "bytes": 2759,
+      "sha256": "3b57b76062a1c2c2f7972b6e5f3fd90dcc516c901bfbc0317942aa939b4ff218"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\cross_validation\\fixed_candidate_diagnostic.json",
+      "bytes": 15729,
+      "sha256": "dfddbb99b996859149b05e2439dc9394653ff71453b716c0647049644c0bbe12"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\cross_validation\\paper_grouped_folds.json",
+      "bytes": 1184,
+      "sha256": "f37994fbfd4f129825be4995ca43ca40f2f18c225f6c75c47a6974de91b5dcfb"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\execution.log",
+      "bytes": 72590,
+      "sha256": "13c420a1e4c92be40d3f2ebe158fc2b9293dedca4ada390189caf01cacf9c9e7"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\feature_importance\\qwen_oof_logits_tree.csv",
+      "bytes": 10513,
+      "sha256": "7e1f5c9dedea710de458a32402317db4dfd748bdc6d4267b3699644cf9db5159"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\integrity\\final_audit.json",
+      "bytes": 350,
+      "sha256": "5cbb8f9b5313226f2b5816b988613b73153a2387bb2cb114f0fb6d7ed9f962c5"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\integrity\\preflight_audit.json",
+      "bytes": 3742,
+      "sha256": "6392bd32994033b7555bb5529b69bb75743cb45eeec09777271462a4316cbd57"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\models\\qwen_oof_logits_tree.json",
+      "bytes": 775126,
+      "sha256": "ea2b57345bac9265499faf6bb81609749e32d967dec4568feb1ce9dbdae3404f"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\models\\qwen_oof_logits_tree_metadata.json",
+      "bytes": 23926,
+      "sha256": "41a5645c2291e00d179fbb44be2748317de64511eb930be3546f889f743d0f29"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_features\\train_oof_logits.npz",
+      "bytes": 98499,
+      "sha256": "ee73c962d45b86034da7dfa903f9ff9ce92abd5707c6cec3b49a6ca7d1f4115d"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_features\\train_oof_manifest.json",
+      "bytes": 1004,
+      "sha256": "2a8caa19f6e4922698a8914a4453bcb40333f6a28559dcec92cc31a62cb140c6"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_features\\validation_logits.npz",
+      "bytes": 40137,
+      "sha256": "721e9bcdcf2f026e458e504ced14ccfc52d3031c2694b5e4e4717c146c731233"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_features\\validation_manifest.json",
+      "bytes": 1942,
+      "sha256": "c4cdbf100d85bbe8314e044b1bc9a16be4c6b909f4c0b10f1e01ffc2b12d3e98"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_full_refit\\complete.json",
+      "bytes": 4425,
+      "sha256": "0e1f9541e7f1e5ef683d73c24518706f4f9c5351b73426e085ed89fd84cdd0dc"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_full_refit\\model\\chat_template.jinja",
+      "bytes": 7755,
+      "sha256": "273d8e0e683b885071fb17e08d71e5f2a5ddfb5309756181681de4f5a1822d80"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_full_refit\\model\\config.json",
+      "bytes": 2911,
+      "sha256": "673afcf342eaf36ad7199497c41096e6c708cf507cd9b9bb2ae39021b936e99d"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_full_refit\\model\\model.safetensors",
+      "bytes": 1706040856,
+      "sha256": "020af0a83af773239e7e60e9983afad29cae3f31493c7073e9162e040b732814"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_full_refit\\model\\tokenizer.json",
+      "bytes": 19989325,
+      "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_full_refit\\model\\tokenizer_config.json",
+      "bytes": 1128,
+      "sha256": "8671bed7c852ce9e661be94f179a7b4ffd091c2a65aea0363e5501c20318ee45"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_full_refit\\training_history.jsonl",
+      "bytes": 77602,
+      "sha256": "8b031b484f05ada69fc5fef9000562cdc1ad0968ca37811f02566007bc6cfa0e"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-0\\complete.json",
+      "bytes": 5084,
+      "sha256": "1aea24c08297313e0542892f3c52098fdb02191f835f1e8e3a97a3097a3c7b8c"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-0\\heldout_document_ids.txt",
+      "bytes": 1859,
+      "sha256": "8ec6a1e28f466dec5587e36ea6c061cbd2622f4441865de18f692054cbf937da"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-0\\heldout_logits.npz",
+      "bytes": 20670,
+      "sha256": "975b62def6cca7586466b5cde04ebc7765a54a4f9b6286d5abcf1ac1e1490276"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-0\\heldout_question_ids.txt",
+      "bytes": 16613,
+      "sha256": "884598b3093fcfb92195cf66973bbc38b2e7d855d0dd1ec0bedda480d57d7eb0"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-0\\train_document_ids.txt",
+      "bytes": 7436,
+      "sha256": "9c441d5eb1f39d67f36609735fd0572bff013e2e654fbb10fd1cb93c823f7c7f"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-0\\training_history.jsonl",
+      "bytes": 55538,
+      "sha256": "86f18cd154bc9615b67f03fc396af634dabeaba792818a6defa0db5de21cbe69"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-1\\complete.json",
+      "bytes": 5088,
+      "sha256": "8359307bcad7b87e307d3f3ebf8ee47d021c8d49d10f70ff1d8af6d16c923bf5"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-1\\heldout_document_ids.txt",
+      "bytes": 1837,
+      "sha256": "041df313d8693fb2d530f4ef9abac967515a15be727d1e46bc1a7031b54f96ef"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-1\\heldout_logits.npz",
+      "bytes": 20834,
+      "sha256": "73de31a1df329a8fb48c2dd0d0f709b63105971112ed309560cdd1a3a9375197"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-1\\heldout_question_ids.txt",
+      "bytes": 16613,
+      "sha256": "efeb5ca7e603e941fa01cd22c37e69d66f5c2a8070d8b4858c7cd37f12c0613c"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-1\\train_document_ids.txt",
+      "bytes": 7458,
+      "sha256": "6c41d4133cd0d3eed08c8e853a600ea1119abc3e46099e0e633a506cd55b9c5e"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-1\\training_history.jsonl",
+      "bytes": 55555,
+      "sha256": "5bfbdb802260c24be793d3c2734215d0aa76b114efa1927023175f85a69a2f4b"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-2\\complete.json",
+      "bytes": 5085,
+      "sha256": "9a6edf945fb77c09411a8b77d3b98ee1d41c1c095b2acc5bcbcc929d9144a97d"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-2\\heldout_document_ids.txt",
+      "bytes": 1859,
+      "sha256": "ae0f7d988b7592242a1eb6f8d28323745e55d3fcbc15f871871467f194ba38ac"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-2\\heldout_logits.npz",
+      "bytes": 20795,
+      "sha256": "12788727e18dbc6c5f0cf1144ab597412cd1197d428c1f4bed9dbf38856cc3b3"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-2\\heldout_question_ids.txt",
+      "bytes": 16613,
+      "sha256": "efd4d691cedfa4be1a640875a16b26e599f41727fbfcf9aed42b35f605ae252f"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-2\\train_document_ids.txt",
+      "bytes": 7436,
+      "sha256": "0d0c6d2465bb22e7df2a3f8c7bfc544acb68032509037bb52022f850837f5659"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-2\\training_history.jsonl",
+      "bytes": 55552,
+      "sha256": "23a185a4912f2e8f3e0fab4d0b5300ec0fff38830781f275fec0a1f1bbd8559f"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-3\\complete.json",
+      "bytes": 5088,
+      "sha256": "382cb275f6ab336a9cad6e6ac740362ec1b908904438bd1dfd5635322b34af92"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-3\\heldout_document_ids.txt",
+      "bytes": 1870,
+      "sha256": "7992720c1194c238317ddd1e82819687943b599cea542fe022ea87a7922dad11"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-3\\heldout_logits.npz",
+      "bytes": 20797,
+      "sha256": "8c9d8ac355c6c17b73784733ba0e66890d8cc8f8afec2648e454f7c9b77cbbbd"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-3\\heldout_question_ids.txt",
+      "bytes": 16650,
+      "sha256": "45aca93ac7830b2c419498e0894fc6f95a7abcad5e004b8aa4a55d78afd55c3e"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-3\\train_document_ids.txt",
+      "bytes": 7425,
+      "sha256": "0a552408a7ab660f7c025b4636c9ba137c665aaf47f3cf107727ef4e755fad36"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-3\\training_history.jsonl",
+      "bytes": 55578,
+      "sha256": "969f78d2b3f1235638119e1e220de1fff180996fae013467a91cdb85d2a3599f"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-4\\complete.json",
+      "bytes": 5084,
+      "sha256": "06d39c64a0f2a9ff5dc79f5b8bffda3bb2dfd20faaaf8943cb05f127721c82aa"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-4\\heldout_document_ids.txt",
+      "bytes": 1870,
+      "sha256": "6315df737488f3024282e9657b3f937e5d67870fc25ae51691d76baa06cb1cca"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-4\\heldout_logits.npz",
+      "bytes": 20703,
+      "sha256": "724dd509b38f244481dc4487f75266a3dfb095ac0e6cfe9d7bec0155dba271f8"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-4\\heldout_question_ids.txt",
+      "bytes": 16576,
+      "sha256": "1d4a89fe2b0b974283d093cf1af9d4900c6183e6d1a2419be2d0fdd7db789776"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-4\\train_document_ids.txt",
+      "bytes": 7425,
+      "sha256": "9063b51e2372374aa115dd98fe056ce77aa670290ce0d18c9eef5eb057c7c28a"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\qwen_oof\\fold-4\\training_history.jsonl",
+      "bytes": 55347,
+      "sha256": "3b6b22b7d7cc064d97da5e2b32e5d8be2ab0214525623de48eaedbf9b7623807"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\retrieval\\results.jsonl",
+      "bytes": 6984748,
+      "sha256": "510443dfd9c965f3148697562894e770fb60bd6f70a3e58bb219c8fb1aa8f844"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\retrieval\\summary.json",
+      "bytes": 3896,
+      "sha256": "a00931388e58aee4bcf12c4b98bd0ada8ef2973b6f966e53b3df117d488c987c"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\runtime\\summary.json",
+      "bytes": 453,
+      "sha256": "fb4a3df8694722157be92d1485a2705dda5f07a50d29ccb9f6a2b1d426b65eba"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\selection\\selection_lock.json",
+      "bytes": 1654,
+      "sha256": "c5f88c346fdbf84e5177e11359ff071341fc510b6bb64e0753f9f2a32cde3935"
+    },
+    {
+      "path": "C:\\Users\\behno\\Repos\\Thesis Build Up\\outputs\\qwen_phase3c_oof_fusion_evidence_length_oracle\\validation\\predictions.jsonl",
+      "bytes": 600574,
+      "sha256": "2d75d2dead6a67d7e25bf7d41c95eed0b09a165c0fd798ac901f9a48a65d21cc"
+    }
+  ]
+}

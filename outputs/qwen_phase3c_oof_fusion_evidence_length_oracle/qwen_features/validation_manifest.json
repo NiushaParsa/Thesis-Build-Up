@@ -1,0 +1,67 @@
+{
+  "phase": "Phase 3C-OOF",
+  "status": "complete",
+  "validation_examples": 924,
+  "validation_logits_path": "/workspace/thesis-granularity-router/outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/qwen_features/validation_logits.npz",
+  "validation_logits_sha256": "721e9bcdcf2f026e458e504ced14ccfc52d3031c2694b5e4e4717c146c731233",
+  "frozen_selection_lock_sha256": "c5f88c346fdbf84e5177e11359ff071341fc510b6bb64e0753f9f2a32cde3935",
+  "extraction": {
+    "examples": 924,
+    "wall_seconds": 8.11124730668962,
+    "batch_size": 16,
+    "minimum_token_count": 96,
+    "maximum_token_count": 124
+  },
+  "model_loading_audit": {
+    "configuration": {
+      "status": "passed",
+      "checks": {
+        "num_labels": true,
+        "problem_type": true,
+        "id2label": true,
+        "label2id": true,
+        "top_level_pad_token_id": true,
+        "text_config_pad_token_id": true,
+        "top_level_use_cache": true,
+        "text_config_use_cache": true
+      },
+      "num_labels": 5,
+      "id2label": {
+        "0": "10",
+        "1": "20",
+        "2": "40",
+        "3": "80",
+        "4": "160"
+      },
+      "label2id": {
+        "10": 0,
+        "20": 1,
+        "40": 2,
+        "80": 3,
+        "160": 4
+      },
+      "pad_token_id": 248044
+    },
+    "classifier_head": {
+      "status": "passed",
+      "initial_base_load": false,
+      "seed_set_before_model_load": 42,
+      "head_parameter_name": "score.weight",
+      "head_shape": [
+        5,
+        1024
+      ],
+      "head_bias": false,
+      "head_weight_dtype": "torch.bfloat16",
+      "head_weight_sha256_float32": "cbc44bdd71b91be4a7f97c19f87651003eac05b292eb61ea5634dee0cb351025",
+      "loading_info": {
+        "missing_keys": [],
+        "unexpected_keys": [],
+        "mismatched_keys": [],
+        "error_msgs": []
+      }
+    }
+  },
+  "validation_used_for_training_or_selection": false,
+  "completed_at": "2026-08-23T19:07:17.745010+00:00"
+}
