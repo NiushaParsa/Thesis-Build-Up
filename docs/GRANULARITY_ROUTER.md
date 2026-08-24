@@ -895,3 +895,24 @@ This is a development-set result because the frozen Phase 2D checkpoint was
 previously selected on the same validation set. See
 `docs/QWEN_PHASE3C_FUSION_RESULTS.md` and
 `outputs/qwen_phase3c_fusion_evidence_length_oracle/final_summary.json`.
+
+## Phase 4 expected-regret routing
+
+Phase 4 changes the supervised objective from exact evidence-length-label
+prediction to downstream retrieval utility. Its input remains inference-safe:
+five clean Phase 3C-OOF Qwen logits and 173 same-paper similarity-tree features.
+For each training question, the frozen joined top-5 F1 values for all five
+actions define regret `max(U)-U(g)`. Five shallow XGBoost regressors estimate
+conditional action regret, and the router chooses the lowest predicted value.
+
+The frozen development result is mean joined retrieval F1 0.307506 and mean
+regret 0.074567. It improves over clean Phase 3C-OOF (0.278303 mean F1) but is
+below fixed 40 (0.315856). A paired paper-cluster bootstrap gives Phase 4 minus
+fixed 40 as -0.008350, 95% CI [-0.012661, -0.004156]. Predictions concentrate
+on 20 and 40 (359 and 561 of 924), with four selections of 10 and none of 80 or
+160. Evidence-length classification metrics are secondary and must not be
+treated as the Phase 4 objective.
+
+The complete method and artifacts are documented in
+`docs/QWEN_PHASE4_RESULTS.md` and
+`outputs/qwen_phase4_expected_regret_retrieval_utility/final_summary.json`.

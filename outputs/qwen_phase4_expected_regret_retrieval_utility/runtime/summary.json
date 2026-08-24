@@ -1,0 +1,10 @@
+{
+  "fit_seconds": 12.166271900001448,
+  "validation_prediction_seconds": 0.06314530002418905,
+  "cross_validation_diagnostic_seconds": 52.03003979998175,
+  "total_wall_seconds": 94.02703080000356,
+  "device": "CPU",
+  "gpu_used": false,
+  "qdrant_used": false,
+  "retrieval_rerun": false
+}

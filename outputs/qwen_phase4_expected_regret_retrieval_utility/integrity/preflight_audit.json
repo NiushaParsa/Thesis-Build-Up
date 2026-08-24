@@ -1,0 +1,50 @@
+{
+  "phase": "Phase 4",
+  "status": "passed",
+  "completed_at": "2026-08-23T23:47:30.279602+00:00",
+  "gpu_required": false,
+  "qdrant_required": false,
+  "retrieval_rerun_required": false,
+  "train_examples": 2245,
+  "train_documents": 845,
+  "feature_shape": [
+    2245,
+    178
+  ],
+  "feature_count": 178,
+  "utility_shape": [
+    2245,
+    5
+  ],
+  "utility_source_rows": {
+    "main": 2223,
+    "recovery": 22,
+    "combined": 2245
+  },
+  "fold_count": 5,
+  "paper_grouping_verified": true,
+  "qwen_oof_exactly_once": true,
+  "source_hashes": {
+    "train_features": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+    "validation_features": "548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893",
+    "train_oof_qwen_logits": "ee73c962d45b86034da7dfa903f9ff9ce92abd5707c6cec3b49a6ca7d1f4115d",
+    "validation_qwen_logits": "721e9bcdcf2f026e458e504ced14ccfc52d3031c2694b5e4e4717c146c731233",
+    "train_utilities_main": "1308a4188965e7afa6d84820c8f3be5dd83acb7998e9cf4af4876321519f9da6",
+    "train_utilities_recovery": "53cc9375d3e5b934a396fee6be2e407dee63b2350e7b05d0f3a0ca66454e9c71",
+    "validation_utilities": "92fffae69b6e33f37ea55f2d05593eccd7045797603bd3131ca47c7cd5de7bed"
+  },
+  "mean_train_utility_by_granularity": {
+    "10": 0.22554925790645877,
+    "20": 0.2776591051224944,
+    "40": 0.283775489532294,
+    "80": 0.23903985256124724,
+    "160": 0.17065452204899775
+  },
+  "train_retrieval_optimal_distribution_smaller_tie": {
+    "10": 463,
+    "20": 672,
+    "40": 686,
+    "80": 343,
+    "160": 81
+  }
+}

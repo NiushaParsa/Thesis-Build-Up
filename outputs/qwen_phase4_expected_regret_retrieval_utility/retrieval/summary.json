@@ -1,0 +1,25 @@
+{
+  "examples": 924,
+  "mean_joined_retrieval_f1": 0.3075063127705628,
+  "median_joined_retrieval_f1": 0.30084900000000003,
+  "mean_regret": 0.07456701298701299,
+  "median_regret": 0.0476235,
+  "zero_regret_rate": 0.30303030303030304,
+  "retrieval_optimal_any_tie_accuracy": 0.30303030303030304,
+  "retrieval_optimal_smaller_tie_accuracy": 0.30194805194805197,
+  "oracle_upper_bound_mean_joined_retrieval_f1": 0.38207332575757574,
+  "selected_distribution": {
+    "10": 4,
+    "20": 359,
+    "40": 561,
+    "80": 0,
+    "160": 0
+  },
+  "retrieval_optimal_smaller_tie_distribution": {
+    "10": 138,
+    "20": 235,
+    "40": 282,
+    "80": 187,
+    "160": 82
+  }
+}

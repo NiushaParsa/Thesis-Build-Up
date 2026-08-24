@@ -1017,3 +1017,28 @@ Phase 3C is therefore a development result, not an unbiased final test
 estimate. Full results are in `docs/QWEN_PHASE3C_FUSION_RESULTS.md`,
 `reports/qwen_phase3c_fusion_evidence_length_oracle/experiment_report.md`, and
 `outputs/qwen_phase3c_fusion_evidence_length_oracle/final_summary.json`.
+
+### Phase 4 retrieval-utility-aware expected-regret router
+
+Phase 4 is complete. It replaces the hard evidence-length target with the full
+five-action retrieval-utility vector from the frozen same-paper top-5 joined-F1
+evaluation. Five fixed XGBoost regressors estimate action regret from the five
+clean Phase 3C-OOF Qwen logits plus 173 Phase 3B tree features; the action with
+minimum predicted regret is selected. No Phase 4 hyperparameter search,
+retrieval rerun, Qdrant access, or GPU inference occurred. Validation
+predictions were frozen and hashed before validation gold utilities were
+joined for evaluation.
+
+Phase 4 reaches mean/median joined retrieval F1 0.3075063127705628/
+0.30084900000000003 and mean/median regret 0.07456701298701299/0.0476235.
+It improves over clean Phase 3C-OOF by 0.02920308658008658 mean F1, with paired
+paper-cluster 95% CI [0.01987252166566269, 0.03863994560447909]. It remains
+below fixed 40 by -0.008349614718614718, with CI
+[-0.012661404097343329, -0.0041564583033906685]. The selected distribution is
+4/359/561/0/0 for 10/20/40/80/160. The operational conclusion is that direct
+utility-aware learning substantially improves the learned router but does not
+yet outperform the strongest fixed policy.
+
+See `docs/QWEN_PHASE4_RESULTS.md`,
+`reports/qwen_phase4_expected_regret_retrieval_utility/experiment_report.md`,
+and `outputs/qwen_phase4_expected_regret_retrieval_utility/final_summary.json`.

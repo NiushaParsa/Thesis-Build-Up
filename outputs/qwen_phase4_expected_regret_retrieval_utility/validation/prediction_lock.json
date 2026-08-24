@@ -1,0 +1,9 @@
+{
+  "status": "frozen_before_validation_gold_utility_join",
+  "frozen_at": "2026-08-23T23:48:43.872709+00:00",
+  "prediction_path": "outputs\\qwen_phase4_expected_regret_retrieval_utility\\validation\\predictions_pre_evaluation.jsonl",
+  "prediction_sha256": "6232d001e571ef49080a47b46db2a4c9544801eddbdfbfcb7811f7b0c5d3ac26",
+  "selection_lock_sha256": "cf77656ba36b28f4899e2013869b18658b6e6b0bb56b64b2f941f2f7659263ee",
+  "examples": 924,
+  "gold_utility_fields_in_prediction_artifact": false
+}

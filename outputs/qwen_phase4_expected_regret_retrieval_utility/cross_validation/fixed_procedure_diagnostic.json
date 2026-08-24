@@ -1,0 +1,188 @@
+{
+  "status": "descriptive_only_not_used_for_model_selection",
+  "metrics": {
+    "examples": 2245,
+    "mean_joined_retrieval_f1": 0.2833259144766147,
+    "median_joined_retrieval_f1": 0.274419,
+    "mean_regret": 0.06354144365256124,
+    "median_regret": 0.035164,
+    "zero_regret_rate": 0.31625835189309576,
+    "retrieval_optimal_any_tie_accuracy": 0.31625835189309576,
+    "retrieval_optimal_smaller_tie_accuracy": 0.31447661469933186,
+    "oracle_upper_bound_mean_joined_retrieval_f1": 0.34686735812917596,
+    "selected_distribution": {
+      "10": 16,
+      "20": 944,
+      "40": 1275,
+      "80": 10,
+      "160": 0
+    },
+    "retrieval_optimal_smaller_tie_distribution": {
+      "10": 463,
+      "20": 672,
+      "40": 686,
+      "80": 343,
+      "160": 81
+    }
+  },
+  "regret_rmse": 0.09812382784614232,
+  "folds": [
+    {
+      "fold": 0,
+      "train_examples": 1796,
+      "heldout_examples": 449,
+      "metrics": {
+        "examples": 449,
+        "mean_joined_retrieval_f1": 0.2820356347438753,
+        "median_joined_retrieval_f1": 0.269663,
+        "mean_regret": 0.0700072271714922,
+        "median_regret": 0.03494699999999995,
+        "zero_regret_rate": 0.30957683741648107,
+        "retrieval_optimal_any_tie_accuracy": 0.30957683741648107,
+        "retrieval_optimal_smaller_tie_accuracy": 0.30734966592427615,
+        "oracle_upper_bound_mean_joined_retrieval_f1": 0.3520428619153675,
+        "selected_distribution": {
+          "10": 2,
+          "20": 182,
+          "40": 265,
+          "80": 0,
+          "160": 0
+        },
+        "retrieval_optimal_smaller_tie_distribution": {
+          "10": 96,
+          "20": 133,
+          "40": 132,
+          "80": 68,
+          "160": 20
+        }
+      },
+      "regret_rmse": 0.10293003255106202
+    },
+    {
+      "fold": 1,
+      "train_examples": 1796,
+      "heldout_examples": 449,
+      "metrics": {
+        "examples": 449,
+        "mean_joined_retrieval_f1": 0.28532768151447657,
+        "median_joined_retrieval_f1": 0.275862,
+        "mean_regret": 0.058428198218262804,
+        "median_regret": 0.03617900000000002,
+        "zero_regret_rate": 0.311804008908686,
+        "retrieval_optimal_any_tie_accuracy": 0.311804008908686,
+        "retrieval_optimal_smaller_tie_accuracy": 0.30734966592427615,
+        "oracle_upper_bound_mean_joined_retrieval_f1": 0.34375587973273947,
+        "selected_distribution": {
+          "10": 3,
+          "20": 172,
+          "40": 274,
+          "80": 0,
+          "160": 0
+        },
+        "retrieval_optimal_smaller_tie_distribution": {
+          "10": 101,
+          "20": 127,
+          "40": 142,
+          "80": 65,
+          "160": 14
+        }
+      },
+      "regret_rmse": 0.09551951211031906
+    },
+    {
+      "fold": 2,
+      "train_examples": 1796,
+      "heldout_examples": 449,
+      "metrics": {
+        "examples": 449,
+        "mean_joined_retrieval_f1": 0.28284307126948777,
+        "median_joined_retrieval_f1": 0.270677,
+        "mean_regret": 0.061048360801781734,
+        "median_regret": 0.03267300000000001,
+        "zero_regret_rate": 0.31625835189309576,
+        "retrieval_optimal_any_tie_accuracy": 0.31625835189309576,
+        "retrieval_optimal_smaller_tie_accuracy": 0.31625835189309576,
+        "oracle_upper_bound_mean_joined_retrieval_f1": 0.3438914320712695,
+        "selected_distribution": {
+          "10": 5,
+          "20": 166,
+          "40": 269,
+          "80": 9,
+          "160": 0
+        },
+        "retrieval_optimal_smaller_tie_distribution": {
+          "10": 83,
+          "20": 143,
+          "40": 147,
+          "80": 62,
+          "160": 14
+        }
+      },
+      "regret_rmse": 0.096614520231625
+    },
+    {
+      "fold": 3,
+      "train_examples": 1795,
+      "heldout_examples": 450,
+      "metrics": {
+        "examples": 450,
+        "mean_joined_retrieval_f1": 0.28563215999999997,
+        "median_joined_retrieval_f1": 0.27890550000000003,
+        "mean_regret": 0.06461237111111111,
+        "median_regret": 0.036324999999999996,
+        "zero_regret_rate": 0.3288888888888889,
+        "retrieval_optimal_any_tie_accuracy": 0.3288888888888889,
+        "retrieval_optimal_smaller_tie_accuracy": 0.32666666666666666,
+        "oracle_upper_bound_mean_joined_retrieval_f1": 0.3502445311111112,
+        "selected_distribution": {
+          "10": 4,
+          "20": 217,
+          "40": 229,
+          "80": 0,
+          "160": 0
+        },
+        "retrieval_optimal_smaller_tie_distribution": {
+          "10": 94,
+          "20": 135,
+          "40": 129,
+          "80": 78,
+          "160": 14
+        }
+      },
+      "regret_rmse": 0.09750072597753255
+    },
+    {
+      "fold": 4,
+      "train_examples": 1797,
+      "heldout_examples": 448,
+      "metrics": {
+        "examples": 448,
+        "mean_joined_retrieval_f1": 0.28078021875,
+        "median_joined_retrieval_f1": 0.2766045,
+        "mean_regret": 0.06360882589285714,
+        "median_regret": 0.03742499999999996,
+        "zero_regret_rate": 0.31473214285714285,
+        "retrieval_optimal_any_tie_accuracy": 0.31473214285714285,
+        "retrieval_optimal_smaller_tie_accuracy": 0.31473214285714285,
+        "oracle_upper_bound_mean_joined_retrieval_f1": 0.34438904464285713,
+        "selected_distribution": {
+          "10": 2,
+          "20": 207,
+          "40": 238,
+          "80": 1,
+          "160": 0
+        },
+        "retrieval_optimal_smaller_tie_distribution": {
+          "10": 89,
+          "20": 134,
+          "40": 136,
+          "80": 70,
+          "160": 19
+        }
+      },
+      "regret_rmse": 0.09788907534592553
+    }
+  ],
+  "wall_seconds": 52.03003979998175,
+  "dependency_caveat": "The meta-level grouped diagnostic uses globally cross-fitted Qwen features. Some Qwen fits producing meta-training features may have seen papers in the current meta-held-out fold. Therefore this result is descriptive only and selected no Phase 4 setting."
+}

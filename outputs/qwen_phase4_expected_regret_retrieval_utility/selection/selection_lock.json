@@ -1,0 +1,67 @@
+{
+  "phase": "Phase 4",
+  "formulation_version": "retrieval-utility-expected-regret-xgboost-v1",
+  "status": "frozen_before_validation_utility_access",
+  "locked_at": "2026-08-23T23:47:31.744176+00:00",
+  "objective": "Estimate conditional retrieval regret for each of five actions and select the action with minimum predicted regret.",
+  "cost_definition": "C(q,g)=max_h U(q,h)-U(q,g)",
+  "utility_definition": "joined token-level F1 of unchanged paper-restricted top-5 retrieval",
+  "decision_rule": "argmin_g predicted_E[C(q,g)|x]",
+  "tie_rule": "smaller granularity via stable action order",
+  "features": {
+    "qwen_logits": 5,
+    "similarity_tree": 173,
+    "total": 178,
+    "training_qwen_provenance": "paper-grouped OOF Phase 3C-OOF",
+    "validation_qwen_provenance": "frozen all-train full refit"
+  },
+  "model": {
+    "family": "five independent XGBoost regret regressors",
+    "objective": "reg:squarederror",
+    "fixed_candidate_inherited_from_phase3c_oof": {
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    "regressor_count": 5,
+    "seed": 42,
+    "hyperparameter_search": "none"
+  },
+  "training": {
+    "examples": 2245,
+    "paper_grouped_diagnostic_folds": 5,
+    "diagnostic_used_for_selection": false,
+    "gold_evidence_role": "training retrieval-utility targets only"
+  },
+  "validation": {
+    "examples": 924,
+    "used_for_training_or_selection": false,
+    "gold_utility_join": "only after prediction artifact is frozen and hashed"
+  },
+  "evaluation": {
+    "primary": "mean joined retrieval F1",
+    "secondary": [
+      "mean and median retrieval regret",
+      "retrieval-optimal agreement",
+      "evidence-length Oracle classification diagnostics"
+    ],
+    "primary_operational_baseline": "fixed granularity 40",
+    "uncertainty": "paired paper-cluster bootstrap",
+    "bootstrap_iterations": 10000,
+    "bootstrap_seed": 42
+  },
+  "source_hashes": {
+    "train_features": "6d55e1d10872c8db24cf9af9becfb8e2e6570e13a7697151febc7f44ecebdd9c",
+    "validation_features": "548e3cccab3b19dee644eb9858081ff380b6375765433f1d2369c6d7d2ecb893",
+    "train_oof_qwen_logits": "ee73c962d45b86034da7dfa903f9ff9ce92abd5707c6cec3b49a6ca7d1f4115d",
+    "validation_qwen_logits": "721e9bcdcf2f026e458e504ced14ccfc52d3031c2694b5e4e4717c146c731233",
+    "train_utilities_main": "1308a4188965e7afa6d84820c8f3be5dd83acb7998e9cf4af4876321519f9da6",
+    "train_utilities_recovery": "53cc9375d3e5b934a396fee6be2e407dee63b2350e7b05d0f3a0ca66454e9c71",
+    "validation_utilities": "92fffae69b6e33f37ea55f2d05593eccd7045797603bd3131ca47c7cd5de7bed"
+  }
+}

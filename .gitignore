@@ -5,6 +5,7 @@
 .venv-qwen/
 .venv-qwen-repair-backup/
 .venv-phase3b/
+.venv-phase4/
 tmp/huggingface_qwen_cache/
 tmp/matplotlib/
 json_output/
