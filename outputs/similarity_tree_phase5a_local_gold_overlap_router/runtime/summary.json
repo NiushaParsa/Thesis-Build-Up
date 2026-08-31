@@ -1,0 +1,7 @@
+{
+  "total_wall_seconds": 232.69495370000368,
+  "validation_prediction_seconds": 60.59178580000298,
+  "retrieval_scoring_seconds": 64.7594140000001,
+  "gpu_used": false,
+  "vast_ai_required": false
+}

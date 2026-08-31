@@ -1,0 +1,42 @@
+{
+  "split": "validation",
+  "source_questions": 924,
+  "eligible_questions": 889,
+  "excluded_questions": 35,
+  "training_or_diagnostic_tree_examples": 2074,
+  "tree_examples_per_question_distribution": {
+    "1": 272,
+    "2": 329,
+    "3": 135,
+    "4": 95,
+    "5": 28,
+    "6": 18,
+    "7": 5,
+    "8": 2,
+    "9": 1,
+    "10": 1,
+    "11": 2,
+    "19": 1
+  },
+  "label_distribution": {
+    "10": 273,
+    "20": 425,
+    "40": 662,
+    "80": 481,
+    "160": 233
+  },
+  "span_resolution_counts": {
+    "stored_span": 1750,
+    "unique_normalized_recovery": 87,
+    "unresolved": 211
+  },
+  "question_resolution_status": {
+    "all_unique_evidence_resolved": 753,
+    "no_resolved_evidence": 35,
+    "partial_resolved_evidence": 136
+  },
+  "exclusion_reasons": {
+    "no_gold_evidence_represented_in_chunk_text": 35
+  },
+  "unresolved_item_policy": "Use every uniquely located text-evidence item. Items absent from the chunk corpus (predominantly FLOAT SELECTED table/figure annotations) cannot overlap a tree and are audited but do not invalidate other resolved evidence for that question."
+}

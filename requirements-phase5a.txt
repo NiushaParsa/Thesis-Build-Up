@@ -1,0 +1,8 @@
+# Phase 5A tree-local similarity router (Python 3.10.7, CPU only)
+numpy==2.0.2
+scipy==1.15.3
+xgboost==3.0.2
+qdrant-client==1.16.1
+transformers==4.57.1
+pytest==8.3.5
+python-dotenv==1.2.1

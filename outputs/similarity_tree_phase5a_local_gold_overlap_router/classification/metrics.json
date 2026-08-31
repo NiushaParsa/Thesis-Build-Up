@@ -1,0 +1,100 @@
+{
+  "accuracy": 0.2849566055930569,
+  "macro_f1": 0.2144010220495706,
+  "weighted_f1": 0.2563287122576695,
+  "balanced_accuracy": 0.2225373829485001,
+  "top_2_accuracy": 0.5380906460945034,
+  "per_class": {
+    "10": {
+      "precision": 0.1830065359477124,
+      "recall": 0.10256410256410256,
+      "f1": 0.13145539906103285,
+      "support": 273
+    },
+    "20": {
+      "precision": 0.1903409090909091,
+      "recall": 0.15764705882352942,
+      "f1": 0.17245817245817244,
+      "support": 425
+    },
+    "40": {
+      "precision": 0.3324225865209472,
+      "recall": 0.5513595166163142,
+      "f1": 0.41477272727272724,
+      "support": 662
+    },
+    "80": {
+      "precision": 0.28640776699029125,
+      "recall": 0.24532224532224534,
+      "f1": 0.26427771556550955,
+      "support": 481
+    },
+    "160": {
+      "precision": 0.22033898305084745,
+      "recall": 0.055793991416309016,
+      "f1": 0.08904109589041097,
+      "support": 233
+    }
+  },
+  "confusion_matrix": [
+    [
+      28,
+      50,
+      147,
+      36,
+      12
+    ],
+    [
+      33,
+      67,
+      229,
+      85,
+      11
+    ],
+    [
+      46,
+      118,
+      365,
+      117,
+      16
+    ],
+    [
+      22,
+      75,
+      259,
+      118,
+      7
+    ],
+    [
+      24,
+      42,
+      98,
+      56,
+      13
+    ]
+  ],
+  "class_distribution": {
+    "10": 273,
+    "20": 425,
+    "40": 662,
+    "80": 481,
+    "160": 233
+  },
+  "predicted_distribution": {
+    "10": 153,
+    "20": 352,
+    "40": 1098,
+    "80": 412,
+    "160": 59
+  },
+  "top_2_accuracy_status": "available",
+  "mean_absolute_class_distance": 1.099324975891996,
+  "within_one_level_accuracy": 0.703953712632594,
+  "mean_absolute_token_distance": 35.58341369334619,
+  "quadratic_weighted_kappa": 0.05001888683661859,
+  "correct_count": 591,
+  "example_count": 2074,
+  "unit": "gold-overlap validation tree (secondary diagnostic)",
+  "eligible_questions": 889,
+  "excluded_questions": 35
+}

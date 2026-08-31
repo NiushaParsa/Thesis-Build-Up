@@ -1,0 +1,92 @@
+{
+  "phase": "Phase 5A",
+  "experiment_name": "Tree-Local Similarity Router with Gold-Overlap Training",
+  "formulation_version": "phase5a-tree-local-gold-overlap-v1",
+  "frozen_at": "2026-08-30T13:05:01.913659+00:00",
+  "training_unit": "one 160-token-rooted tree overlapping deduplicated gold evidence",
+  "tree_definition": {
+    "root": 160,
+    "aligned_descendants": {
+      "80": 2,
+      "40": 4,
+      "20": 8,
+      "10": 16
+    },
+    "last_partial_tree_allowed": true
+  },
+  "local_target": {
+    "source": "GPT-2 token length of merged gold-evidence intervals clipped to this root",
+    "classes": [
+      10,
+      20,
+      40,
+      80,
+      160
+    ],
+    "mapping": "nearest candidate, smaller exact-midpoint tie, clamp extremes",
+    "one_label_per_gold-overlap_tree": true
+  },
+  "input_features": {
+    "count": 173,
+    "source": "question-to-chunk cosine similarities within this tree only",
+    "gold_evidence_as_input": false,
+    "qwen_features": false
+  },
+  "classifier": {
+    "family": "XGBoost multiclass soft-probability classifier",
+    "hyperparameters": {
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    "class_weighting": "sqrt(max_class_count / class_count), recalculated on local-tree labels",
+    "model_selection": "none; fixed settings inherited from Phase 3B",
+    "cross_validation": "5-fold paper-grouped training diagnostic"
+  },
+  "inference": {
+    "tree_score": "average of mean similarities at levels 10,20,40,80,160",
+    "top_n_trees": 5,
+    "classifier_application": "independently to each selected tree",
+    "primary_chunk_selection": "single most similar chunk at predicted level per tree",
+    "exploratory_chunk_selection": "all chunks at predicted level per tree; reported separately with variable chunk count",
+    "negative_class": false,
+    "fixed_token_budget": false
+  },
+  "evaluation": {
+    "primary": "joined GPT-2 token-level Precision/Recall/F1 over five selected chunks",
+    "same_tree_fixed_baselines": [
+      10,
+      20,
+      40,
+      80,
+      160
+    ],
+    "exploratory_variant": "retain all descendants at each predicted level",
+    "paper_restricted": true,
+    "validation_status": "development result because validation was reused in prior phases"
+  },
+  "prohibited": [
+    "validation use for training/model selection/thresholding",
+    "Qdrant writes, collection creation, deletion, rebuilding, or re-indexing",
+    "embedding or Qwen inference",
+    "overwriting any previous experiment"
+  ],
+  "source_hashes": {
+    "train": {
+      "path": "outputs\\similarity_tree_phase3a_evidence_length_oracle\\features\\train_similarity_trees.jsonl.gz",
+      "sha256": "92b568f4dd37901f3df28c07d057b07aea009756e05444865fd2011225bed297",
+      "rows": 2245
+    },
+    "validation": {
+      "path": "outputs\\similarity_tree_phase3a_evidence_length_oracle\\features\\validation_similarity_trees.jsonl.gz",
+      "sha256": "5b3f1a0c4f8ea12ec47d4e0a0903a715d5fbefaa1875c51aafa982730ac4ec12",
+      "rows": 924
+    }
+  },
+  "procedure_sha256": "2f817cca119d06bf76b40606251b6fe6a99a7153e361e17dd70b148b476e9b0c"
+}

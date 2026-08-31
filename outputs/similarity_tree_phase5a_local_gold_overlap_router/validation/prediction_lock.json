@@ -1,0 +1,17 @@
+{
+  "locked_at": "2026-08-30T13:07:10.544620+00:00",
+  "procedure_sha256": "2f817cca119d06bf76b40606251b6fe6a99a7153e361e17dd70b148b476e9b0c",
+  "predictions_path": "outputs\\similarity_tree_phase5a_local_gold_overlap_router\\validation\\predictions_pre_evaluation.jsonl",
+  "predictions_sha256": "3b5550148ab3051b34ce27d7a6fe785dd19cfa3d83b9ff61a532dababa0de74d",
+  "predictions": 924,
+  "prediction_seconds": 60.59178580000298,
+  "validation_phase5a_local_gold_evidence_requested_before_lock": false,
+  "unused_legacy_question_oracle_present_in_frozen_score_source": true,
+  "selected_tree_prediction_distribution": {
+    "10": 246,
+    "20": 529,
+    "40": 2823,
+    "80": 965,
+    "160": 57
+  }
+}

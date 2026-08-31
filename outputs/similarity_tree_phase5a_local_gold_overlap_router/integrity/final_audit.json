@@ -1,0 +1,72 @@
+{
+  "status": "passed",
+  "completed_at": "2026-08-30T13:08:48.759798+00:00",
+  "qdrant_collections_unchanged": true,
+  "final_qdrant_snapshot": {
+    "PaperChunk": {
+      "points_count": 1701822,
+      "indexed_vectors_count": 1701822,
+      "status": "green",
+      "vectors": {
+        "size": 1536,
+        "distance": "Cosine"
+      }
+    },
+    "PaperEvidence": {
+      "points_count": 9522,
+      "indexed_vectors_count": 0,
+      "status": "green",
+      "vectors": {
+        "size": 1536,
+        "distance": "Cosine"
+      }
+    },
+    "PaperQuestion": {
+      "points_count": 4526,
+      "indexed_vectors_count": 0,
+      "status": "green",
+      "vectors": {
+        "size": 1536,
+        "distance": "Cosine"
+      }
+    },
+    "RetrievalEvaluation": {
+      "points_count": 18622,
+      "indexed_vectors_count": 0,
+      "status": "green",
+      "vectors": {}
+    },
+    "RouterDataset": {
+      "points_count": 3170,
+      "indexed_vectors_count": 0,
+      "status": "green",
+      "vectors": {
+        "size": 1536,
+        "distance": "Cosine"
+      }
+    },
+    "Stage4VerifyRetrievalEval": {
+      "points_count": 10,
+      "indexed_vectors_count": 0,
+      "status": "green",
+      "vectors": {}
+    },
+    "Stage4VerifyRouterDataset": {
+      "points_count": 2,
+      "indexed_vectors_count": 0,
+      "status": "green",
+      "vectors": {
+        "size": 1536,
+        "distance": "Cosine"
+      }
+    },
+    "Stage5MixedEvaluation": {
+      "points_count": 2,
+      "indexed_vectors_count": 0,
+      "status": "green",
+      "vectors": {}
+    }
+  },
+  "prediction_lock_sha256": "2420e3d1640169f1f4b2ca8d19b9c424a6f5b5de454b1a609e697d4f80c4fee7",
+  "final_summary_sha256": "b0008543b05eb148c58756e8b5a0a548803395cddf4edf922df213eb36bfc532"
+}

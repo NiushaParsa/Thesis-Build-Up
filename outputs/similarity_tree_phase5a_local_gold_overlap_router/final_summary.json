@@ -1,0 +1,330 @@
+{
+  "phase": "Phase 5A",
+  "experiment_name": "Tree-Local Similarity Router with Gold-Overlap Training",
+  "formulation_version": "phase5a-tree-local-gold-overlap-v1",
+  "status": "complete",
+  "completed_at": "2026-08-30T13:08:48.749246+00:00",
+  "train": {
+    "split": "train",
+    "source_questions": 2245,
+    "eligible_questions": 2101,
+    "excluded_questions": 144,
+    "training_or_diagnostic_tree_examples": 4081,
+    "tree_examples_per_question_distribution": {
+      "1": 861,
+      "2": 818,
+      "3": 251,
+      "4": 96,
+      "5": 44,
+      "6": 14,
+      "7": 7,
+      "8": 4,
+      "9": 2,
+      "11": 4
+    },
+    "label_distribution": {
+      "10": 557,
+      "20": 876,
+      "40": 1307,
+      "80": 958,
+      "160": 383
+    },
+    "span_resolution_counts": {
+      "stored_span": 3024,
+      "unique_normalized_recovery": 119,
+      "unresolved": 387
+    },
+    "question_resolution_status": {
+      "all_unique_evidence_resolved": 1915,
+      "no_resolved_evidence": 144,
+      "partial_resolved_evidence": 186
+    },
+    "exclusion_reasons": {
+      "no_gold_evidence_represented_in_chunk_text": 144
+    },
+    "unresolved_item_policy": "Use every uniquely located text-evidence item. Items absent from the chunk corpus (predominantly FLOAT SELECTED table/figure annotations) cannot overlap a tree and are audited but do not invalidate other resolved evidence for that question."
+  },
+  "validation_tree_diagnostic": {
+    "construction": {
+      "split": "validation",
+      "source_questions": 924,
+      "eligible_questions": 889,
+      "excluded_questions": 35,
+      "training_or_diagnostic_tree_examples": 2074,
+      "tree_examples_per_question_distribution": {
+        "1": 272,
+        "2": 329,
+        "3": 135,
+        "4": 95,
+        "5": 28,
+        "6": 18,
+        "7": 5,
+        "8": 2,
+        "9": 1,
+        "10": 1,
+        "11": 2,
+        "19": 1
+      },
+      "label_distribution": {
+        "10": 273,
+        "20": 425,
+        "40": 662,
+        "80": 481,
+        "160": 233
+      },
+      "span_resolution_counts": {
+        "stored_span": 1750,
+        "unique_normalized_recovery": 87,
+        "unresolved": 211
+      },
+      "question_resolution_status": {
+        "all_unique_evidence_resolved": 753,
+        "no_resolved_evidence": 35,
+        "partial_resolved_evidence": 136
+      },
+      "exclusion_reasons": {
+        "no_gold_evidence_represented_in_chunk_text": 35
+      },
+      "unresolved_item_policy": "Use every uniquely located text-evidence item. Items absent from the chunk corpus (predominantly FLOAT SELECTED table/figure annotations) cannot overlap a tree and are audited but do not invalidate other resolved evidence for that question."
+    },
+    "classification": {
+      "accuracy": 0.2849566055930569,
+      "macro_f1": 0.2144010220495706,
+      "weighted_f1": 0.2563287122576695,
+      "balanced_accuracy": 0.2225373829485001,
+      "top_2_accuracy": 0.5380906460945034,
+      "per_class": {
+        "10": {
+          "precision": 0.1830065359477124,
+          "recall": 0.10256410256410256,
+          "f1": 0.13145539906103285,
+          "support": 273
+        },
+        "20": {
+          "precision": 0.1903409090909091,
+          "recall": 0.15764705882352942,
+          "f1": 0.17245817245817244,
+          "support": 425
+        },
+        "40": {
+          "precision": 0.3324225865209472,
+          "recall": 0.5513595166163142,
+          "f1": 0.41477272727272724,
+          "support": 662
+        },
+        "80": {
+          "precision": 0.28640776699029125,
+          "recall": 0.24532224532224534,
+          "f1": 0.26427771556550955,
+          "support": 481
+        },
+        "160": {
+          "precision": 0.22033898305084745,
+          "recall": 0.055793991416309016,
+          "f1": 0.08904109589041097,
+          "support": 233
+        }
+      },
+      "confusion_matrix": [
+        [
+          28,
+          50,
+          147,
+          36,
+          12
+        ],
+        [
+          33,
+          67,
+          229,
+          85,
+          11
+        ],
+        [
+          46,
+          118,
+          365,
+          117,
+          16
+        ],
+        [
+          22,
+          75,
+          259,
+          118,
+          7
+        ],
+        [
+          24,
+          42,
+          98,
+          56,
+          13
+        ]
+      ],
+      "class_distribution": {
+        "10": 273,
+        "20": 425,
+        "40": 662,
+        "80": 481,
+        "160": 233
+      },
+      "predicted_distribution": {
+        "10": 153,
+        "20": 352,
+        "40": 1098,
+        "80": 412,
+        "160": 59
+      },
+      "top_2_accuracy_status": "available",
+      "mean_absolute_class_distance": 1.099324975891996,
+      "within_one_level_accuracy": 0.703953712632594,
+      "mean_absolute_token_distance": 35.58341369334619,
+      "quadratic_weighted_kappa": 0.05001888683661859,
+      "correct_count": 591,
+      "example_count": 2074,
+      "unit": "gold-overlap validation tree (secondary diagnostic)",
+      "eligible_questions": 889,
+      "excluded_questions": 35
+    }
+  },
+  "retrieval": {
+    "evaluated_questions": 924,
+    "retrieval_coverage": 1.0,
+    "top_n_trees": 5,
+    "selection_per_tree": "single most similar chunk at predicted/fixed level",
+    "paper_restricted": true,
+    "methods": {
+      "phase5a": {
+        "mean_joined_precision": 0.27543389009695773,
+        "mean_joined_recall": 0.5113751078624255,
+        "mean_joined_f1": 0.30526641968132995,
+        "median_joined_f1": 0.30303030303030304,
+        "mean_selected_chunk_count": 5.0,
+        "mean_retrieved_token_count": 232.80411255411255
+      },
+      "phase5a_all_predicted_level_chunks": {
+        "mean_joined_precision": 0.13819618475519935,
+        "mean_joined_recall": 0.7826223127069906,
+        "mean_joined_f1": 0.21314200488305834,
+        "median_joined_f1": 0.18230229591836733,
+        "mean_selected_chunk_count": 22.443722943722943,
+        "mean_retrieved_token_count": 809.5010822510823
+      },
+      "same_tree_fixed_10": {
+        "mean_joined_precision": 0.382916331845337,
+        "mean_joined_recall": 0.19317256509173603,
+        "mean_joined_f1": 0.21949513925855849,
+        "median_joined_f1": 0.2121212121212121,
+        "mean_selected_chunk_count": 5.0,
+        "mean_retrieved_token_count": 53.75541125541125
+      },
+      "same_tree_fixed_20": {
+        "mean_joined_precision": 0.344019407428798,
+        "mean_joined_recall": 0.3236895537088736,
+        "mean_joined_f1": 0.2819810419722952,
+        "median_joined_f1": 0.27741445508628326,
+        "mean_selected_chunk_count": 5.0,
+        "mean_retrieved_token_count": 103.62012987012987
+      },
+      "same_tree_fixed_40": {
+        "mean_joined_precision": 0.2846371971303934,
+        "mean_joined_recall": 0.4862124303530568,
+        "mean_joined_f1": 0.3074616400671991,
+        "median_joined_f1": 0.3065900383141762,
+        "mean_selected_chunk_count": 5.0,
+        "mean_retrieved_token_count": 202.74458874458875
+      },
+      "same_tree_fixed_80": {
+        "mean_joined_precision": 0.21034746608500607,
+        "mean_joined_recall": 0.6469019336485724,
+        "mean_joined_f1": 0.27912300841569226,
+        "median_joined_f1": 0.2606559128298259,
+        "mean_selected_chunk_count": 5.0,
+        "mean_retrieved_token_count": 400.508658008658
+      },
+      "same_tree_fixed_160": {
+        "mean_joined_precision": 0.13846681078977807,
+        "mean_joined_recall": 0.7832616935427839,
+        "mean_joined_f1": 0.21351816494242543,
+        "median_joined_f1": 0.18326870123499228,
+        "mean_selected_chunk_count": 5.0,
+        "mean_retrieved_token_count": 792.512987012987
+      }
+    },
+    "retrieval_scoring_seconds": 64.7594140000001,
+    "result_path": "outputs\\similarity_tree_phase5a_local_gold_overlap_router\\retrieval\\results.jsonl",
+    "result_sha256": "351c712abc4c744b523d0619bafc4d8849d5fb6c83a6ae721b4bcfe729842c9b",
+    "paired_paper_cluster_bootstrap": {
+      "versus_same_tree_fixed_40": {
+        "comparison": "phase5a_minus_same_tree_fixed_40",
+        "observed_mean_difference": -0.0021952203858691,
+        "confidence_interval_95": [
+          -0.005797343082065245,
+          0.0014508384262474597
+        ],
+        "resampling_unit": "source paper",
+        "papers": 277,
+        "replicates": 10000,
+        "seed": 42
+      },
+      "versus_same_tree_fixed_20": {
+        "comparison": "phase5a_minus_same_tree_fixed_20",
+        "observed_mean_difference": 0.023285377709034782,
+        "confidence_interval_95": [
+          0.016047911645152322,
+          0.030478435225345483
+        ],
+        "resampling_unit": "source paper",
+        "papers": 277,
+        "replicates": 10000,
+        "seed": 42
+      }
+    }
+  },
+  "model": {
+    "family": "XGBoost multiclass soft-probability classifier",
+    "feature_count": 173,
+    "hyperparameters": {
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    "model_sha256": "dc058455a4c7da4d699f81566a56fce1794e29c04a825a283b9163e00c6bd520",
+    "validation_selected_tree_prediction_distribution": {
+      "10": 246,
+      "20": 529,
+      "40": 2823,
+      "80": 965,
+      "160": 57
+    }
+  },
+  "methodology": {
+    "validation_predictions_locked_before_phase5a_local_gold_evaluation": true,
+    "legacy_question_oracle_field_in_source_scores_ignored": true,
+    "validation_used_for_model_selection": false,
+    "qdrant_read_only": true,
+    "qdrant_collections_unchanged": true,
+    "qwen_used": false,
+    "embeddings_recomputed": false,
+    "previous_experiments_overwritten": false,
+    "validation_status": "development result"
+  },
+  "runtime": {
+    "total_wall_seconds": 232.69495370000368,
+    "validation_prediction_seconds": 60.59178580000298,
+    "retrieval_scoring_seconds": 64.7594140000001,
+    "gpu_used": false,
+    "vast_ai_required": false
+  },
+  "artifacts": {
+    "output_root": "outputs\\similarity_tree_phase5a_local_gold_overlap_router",
+    "report": "reports\\similarity_tree_phase5a_local_gold_overlap_router\\experiment_report.md",
+    "results_document": "docs\\SIMILARITY_TREE_PHASE5A_RESULTS.md"
+  }
+}
