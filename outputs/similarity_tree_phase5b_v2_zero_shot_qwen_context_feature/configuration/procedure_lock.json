@@ -1,0 +1,81 @@
+{
+  "phase": "Phase 5B-v2",
+  "experiment_name": "Tree-Local Similarity Router with Constrained Zero-Shot Qwen Context Feature",
+  "formulation_version": "phase5b-v2-tree-local-constrained-zero-shot-qwen-context-v1",
+  "frozen_at": "2026-09-06T18:26:49.308705+00:00",
+  "qwen": {
+    "role": "question-level auxiliary context indication only",
+    "model_id": "Qwen/Qwen3.5-0.8B",
+    "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+    "local_snapshot": "tmp/huggingface_qwen_cache/hub/models--Qwen--Qwen3.5-0.8B/snapshots/2fc06364715b967f1860aea9cf38778875588b17",
+    "model_weight_sha256": "04b1c301231dd422b8860db31311ab2721511346a32cb1e079c4c4e5f1fe4696",
+    "task_fine_tuned": false,
+    "prompt": "You are not being asked to answer the question. Your only task is to classify how much supporting context would be needed to answer it. Respond with exactly one lowercase label from: short, medium, long. Do not output yes, no, the answer to the question, an explanation, or punctuation. Output one label only.",
+    "labels": [
+      "short",
+      "medium",
+      "long"
+    ],
+    "decoding": {
+      "method": "restricted next-token argmax over the three allowed one-token labels",
+      "do_sample": false,
+      "candidate_labels": [
+        "short",
+        "medium",
+        "long"
+      ],
+      "candidate_token_ids": {
+        "short": 8412,
+        "medium": 25252,
+        "long": 4670
+      },
+      "candidate_tokens_are_single_token": true
+    },
+    "parser": "one distinct standalone allowed label",
+    "invalid_policy": "no default; abort training/evaluation",
+    "oof_required": false,
+    "oof_reason": "the frozen zero-shot Qwen model is never fitted on thesis train questions"
+  },
+  "features": {
+    "phase5a_local_similarity_features": 173,
+    "qwen_one_hot_features": 3,
+    "total": 176,
+    "qwen_value_repeated_for_each_tree_of_same_question": true,
+    "gold_evidence_as_input": false
+  },
+  "fixed_from_phase5a": {
+    "training_examples_and_local_labels": true,
+    "xgboost_hyperparameters": {
+      "max_depth": 2,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "min_child_weight": 5.0,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "reg_lambda": 1.0,
+      "reg_alpha": 0.0
+    },
+    "class_weighting": "sqrt inverse-frequency weights",
+    "cross_validation": "5-fold paper-grouped diagnostic only",
+    "tree_score": "average of five within-tree level means",
+    "top_n_trees": 5,
+    "selected_chunks": "one most-similar chunk at predicted level per tree",
+    "joined_metric": "GPT-2 token-level precision/recall/F1"
+  },
+  "model_selection": "The v2 prompt and constrained categorical decision repaired a format failure observed only in Phase 5B-v1 training outputs; no validation example informed the repair, and no classifier hyperparameter search was performed",
+  "validation": {
+    "used_for_training_or_selection": false,
+    "predictions_saved_and_hashed_before_local_gold_or_retrieval_evaluation": true,
+    "status": "development result because the split was reused in earlier phases"
+  },
+  "source_hashes": {
+    "phase5a_final_summary": "b0008543b05eb148c58756e8b5a0a548803395cddf4edf922df213eb36bfc532",
+    "phase5a_train_tree_features": "8f94682a78c7d43b186179216506825ebf616ec6e88cc15bc6ea1f84a44c83ec",
+    "phase5a_validation_predictions": "3b5550148ab3051b34ce27d7a6fe785dd19cfa3d83b9ff61a532dababa0de74d",
+    "phase5a_retrieval_results": "351c712abc4c744b523d0619bafc4d8849d5fb6c83a6ae721b4bcfe729842c9b",
+    "phase3a_validation_scores": "5b3f1a0c4f8ea12ec47d4e0a0903a715d5fbefaa1875c51aafa982730ac4ec12"
+  },
+  "vast_ai_required": false,
+  "procedure_sha256": "b364804f07da8369ee43b1c51230245ffadf10b5a23a70da9c7589144ac451ba"
+}

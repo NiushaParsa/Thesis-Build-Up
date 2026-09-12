@@ -1,0 +1,17 @@
+{
+  "locked_at": "2026-09-06T18:46:27.089872+00:00",
+  "procedure_sha256": "b364804f07da8369ee43b1c51230245ffadf10b5a23a70da9c7589144ac451ba",
+  "predictions_path": "outputs\\similarity_tree_phase5b_v2_zero_shot_qwen_context_feature\\validation\\predictions_pre_evaluation.jsonl",
+  "predictions_sha256": "dee8d8ee79dd983b00eb82b47c31c12390dbdb249607b3852700819598d186d4",
+  "question_predictions": 924,
+  "tree_predictions": 4620,
+  "prediction_distribution": {
+    "10": 247,
+    "20": 506,
+    "40": 2804,
+    "80": 1008,
+    "160": 55
+  },
+  "validation_phase5b_local_gold_or_retrieval_evidence_requested_before_lock": false,
+  "unused_legacy_question_oracle_in_raw_score_file": true
+}

@@ -1,0 +1,12 @@
+{
+  "tree_stage_wall_seconds": 271.0837018000002,
+  "validation_prediction_seconds": 100.12056049999956,
+  "retrieval_scoring_seconds": 41.99868339999921,
+  "qwen_mean_inference_seconds": 0.13957433236142802,
+  "qwen_median_inference_seconds": 0.14051331899827346,
+  "qwen_recorded_wall_seconds_this_invocation": 0.04908147499372717,
+  "qwen_execution_provider": "Vast.ai",
+  "vast_ai_used": true,
+  "gpu_used": true,
+  "qwen_execution_device": "cuda:0"
+}

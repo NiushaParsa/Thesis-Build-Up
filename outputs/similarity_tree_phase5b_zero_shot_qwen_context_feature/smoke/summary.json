@@ -1,0 +1,84 @@
+{
+  "status": "passed",
+  "examples": 3,
+  "valid": 3,
+  "distribution": {
+    "medium": 3
+  },
+  "mean_inference_seconds": 0.4020920770029382,
+  "peak_rss_gib": 1.6719551086425781,
+  "model": {
+    "model_id": "Qwen/Qwen3.5-0.8B",
+    "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+    "processor_load_seconds": 0.7009741630026838,
+    "model_load_seconds": 0.9103322989976732,
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "quantization": null,
+    "all_parameters_frozen": true,
+    "parameter_updates": 0,
+    "optimizer_created": false,
+    "backward_passes": 0,
+    "rss_gib_after_load": 0.9962615966796875,
+    "local_snapshot": "tmp/huggingface_qwen_cache/hub/models--Qwen--Qwen3.5-0.8B/snapshots/2fc06364715b967f1860aea9cf38778875588b17",
+    "model_weight_sha256": "04b1c301231dd422b8860db31311ab2721511346a32cb1e079c4c4e5f1fe4696",
+    "environment": {
+      "captured_at": "2026-09-06T17:02:12.061814+00:00",
+      "python": "3.10.7 (main, Oct  3 2022, 02:19:58) [Clang 14.0.3 ]",
+      "python_executable": "/workspace/thesis-granularity-router/.venv-phase5b-gpu/bin/python",
+      "environment_name": ".venv-phase5b-gpu",
+      "expected_environment": ".venv-phase5b-gpu",
+      "platform": "Linux-6.8.0-124-generic-x86_64-with-glibc2.39",
+      "torch": "2.8.0+cu128",
+      "transformers": "5.15.0.dev0",
+      "transformers_source": "https://github.com/huggingface/transformers.git",
+      "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+      "numpy": "2.0.2",
+      "psutil": "7.2.2",
+      "cuda_available": true,
+      "torch_cuda_runtime": "12.8",
+      "execution_device": "cuda:0",
+      "cuda_device_name": "NVIDIA A100-SXM4-40GB",
+      "cuda_compute_capability": [
+        8,
+        0
+      ],
+      "exact_environment_check": "passed"
+    },
+    "cuda_allocated_gib_after_load": 1.617274284362793,
+    "cuda_reserved_gib_after_load": 1.69921875
+  },
+  "rows": [
+    {
+      "split": "train",
+      "question_id": "002ba9e2-0f40-540f-92ef-7183de2eeefc",
+      "document_id": "2003.05995",
+      "question_text": "What is meant by semiguided dialogue, what part of dialogue is guided?",
+      "raw_qwen_output": "medium",
+      "parsed_context_label": "medium",
+      "prediction_status": "valid",
+      "inference_seconds": 0.7161349689995404
+    },
+    {
+      "split": "train",
+      "question_id": "0044ab62-62bf-50fc-aa75-662b59841aba",
+      "document_id": "1909.07734",
+      "question_text": "How large is the first dataset?",
+      "raw_qwen_output": "medium",
+      "parsed_context_label": "medium",
+      "prediction_status": "valid",
+      "inference_seconds": 0.24616339600470383
+    },
+    {
+      "split": "train",
+      "question_id": "0060a017-e0c7-5a42-b9d9-3f496415c0d7",
+      "document_id": "1910.05608",
+      "question_text": "What dataset do they use?",
+      "raw_qwen_output": "medium",
+      "parsed_context_label": "medium",
+      "prediction_status": "valid",
+      "inference_seconds": 0.2439778660045704
+    }
+  ]
+}

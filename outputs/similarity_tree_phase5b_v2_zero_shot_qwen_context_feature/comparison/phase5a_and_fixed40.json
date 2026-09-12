@@ -1,0 +1,32 @@
+{
+  "baseline_summary": {
+    "phase5a_mean_joined_f1": 0.30526641968132995,
+    "same_tree_fixed_40_mean_joined_f1": 0.3074616400671991,
+    "source_path": "outputs\\similarity_tree_phase5a_local_gold_overlap_router\\retrieval\\results.jsonl",
+    "source_sha256": "351c712abc4c744b523d0619bafc4d8849d5fb6c83a6ae721b4bcfe729842c9b"
+  },
+  "versus_phase5a": {
+    "comparison": "phase5b_minus_phase5a",
+    "observed_mean_difference": -0.0007301358598272366,
+    "confidence_interval_95": [
+      -0.002363452469999809,
+      0.0008802940526503054
+    ],
+    "resampling_unit": "source paper",
+    "papers": 277,
+    "replicates": 10000,
+    "seed": 42
+  },
+  "versus_same_tree_fixed_40": {
+    "comparison": "phase5b_minus_same_tree_fixed_40",
+    "observed_mean_difference": -0.0029253562456963366,
+    "confidence_interval_95": [
+      -0.006459090112857724,
+      0.0006934798321731343
+    ],
+    "resampling_unit": "source paper",
+    "papers": 277,
+    "replicates": 10000,
+    "seed": 42
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "created_at": "2026-09-06T18:38:24.871427+00:00",
+  "artifact_root": "outputs/similarity_tree_phase5b_v2_zero_shot_qwen_context_feature",
+  "file_count": 19,
+  "files": [
+    {
+      "path": "configuration/audit_console.json",
+      "bytes": 5369,
+      "sha256": "ee9c8fb5d56883e305ba2e63c86aa6f0078362220a80c656661771d09c003dfb"
+    },
+    {
+      "path": "configuration/procedure_lock.json",
+      "bytes": 3649,
+      "sha256": "20f251c0f96a5998701519871756dfc06ad7b4a85ac654d146e222627a06c06a"
+    },
+    {
+      "path": "development/training_only_prompt_repair_probe.jsonl",
+      "bytes": 52489,
+      "sha256": "81f450dec157c7eb96f5c096df03c280d1f4ce88c1b696fc3276326b4665059d"
+    },
+    {
+      "path": "development/training_only_prompt_repair_probe_summary.json",
+      "bytes": 2129,
+      "sha256": "01f8a6e07815ab693268bff76e0f73a3a48ed14aed006ae92ab738fe958435ac"
+    },
+    {
+      "path": "environment/nvidia_smi.txt",
+      "bytes": 1689,
+      "sha256": "6eedc988f70de35e4eb2a15a0351665b4d73e74a97bd735ec5dd3436e9184adf"
+    },
+    {
+      "path": "environment/phase5b_gpu_packages.txt",
+      "bytes": 1433,
+      "sha256": "712dff774b2fbeb1baa6cfa2b26118bc0e832caf6e5c4ab235d4f875813e48df"
+    },
+    {
+      "path": "integrity/preflight_audit.json",
+      "bytes": 1471,
+      "sha256": "a9c5ed2bbf02c661cbb9c7341a8ed95968e42fb80eed111d1396eb1305e4fe91"
+    },
+    {
+      "path": "manifests/train_questions.jsonl",
+      "bytes": 369724,
+      "sha256": "266749f64ddfa2b1a2d5019562b7fafdab61ac2163894ec56c43986e8c53169e"
+    },
+    {
+      "path": "manifests/validation_questions.jsonl",
+      "bytes": 164249,
+      "sha256": "50852b9b37d86163e670ce3064a59570a1553ba8f3df2b24be5dfbbd8bbd9911"
+    },
+    {
+      "path": "qwen_features/checkpoint.json",
+      "bytes": 234,
+      "sha256": "0e8c1663fcc8b572337f97393c0d65826adb97017ac5d3a0846b122ea1a34ff0"
+    },
+    {
+      "path": "qwen_features/consolidation_console.log",
+      "bytes": 4666,
+      "sha256": "3588fe50a993ec0e9a3960f5327b227f9186c0ef564b15633e2060c08526ee0f"
+    },
+    {
+      "path": "qwen_features/invalid_outputs.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "qwen_features/model_info.json",
+      "bytes": 1721,
+      "sha256": "4774a1925be6b51b9791d7baa210fbd49dd162bf4a457a13f63f194fadf97765"
+    },
+    {
+      "path": "qwen_features/summary.json",
+      "bytes": 4666,
+      "sha256": "3588fe50a993ec0e9a3960f5327b227f9186c0ef564b15633e2060c08526ee0f"
+    },
+    {
+      "path": "qwen_features/train_console.log",
+      "bytes": 47956,
+      "sha256": "54ddb47b4e88bbef172c59a3ef945fa55b5415638bf9baf6f2a595f6d81eb77a"
+    },
+    {
+      "path": "qwen_features/train_outputs.jsonl",
+      "bytes": 1280865,
+      "sha256": "2addb245331f041ef41b51f513bba5cf07c3ef1800a162abbb93cd0a2bda650a"
+    },
+    {
+      "path": "qwen_features/validation_console.log",
+      "bytes": 23948,
+      "sha256": "efddddf40add8782e94683e88da345e7273e38bf8bc12ddafd33037cc68d3a06"
+    },
+    {
+      "path": "qwen_features/validation_outputs.jsonl",
+      "bytes": 564953,
+      "sha256": "8e9579e52b4bd745bef9eb6d060e15c855a9d2b20dce42300172b5da3077818f"
+    },
+    {
+      "path": "smoke/summary.json",
+      "bytes": 3094,
+      "sha256": "fb5204a020478250687c8273fb7eef659a61dca2a373d88ee556802ad6f077f0"
+    }
+  ]
+}

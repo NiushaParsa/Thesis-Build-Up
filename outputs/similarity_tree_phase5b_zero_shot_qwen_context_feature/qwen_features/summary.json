@@ -1,0 +1,106 @@
+{
+  "status": "complete_with_invalid_outputs",
+  "completed_at": "2026-09-06T17:15:33.225796+00:00",
+  "model": {
+    "model_id": "Qwen/Qwen3.5-0.8B",
+    "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+    "processor_load_seconds": 0.6987618589919293,
+    "model_load_seconds": 0.6623889339971356,
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "quantization": null,
+    "all_parameters_frozen": true,
+    "parameter_updates": 0,
+    "optimizer_created": false,
+    "backward_passes": 0,
+    "rss_gib_after_load": 1.0020408630371094,
+    "local_snapshot": "tmp/huggingface_qwen_cache/hub/models--Qwen--Qwen3.5-0.8B/snapshots/2fc06364715b967f1860aea9cf38778875588b17",
+    "model_weight_sha256": "04b1c301231dd422b8860db31311ab2721511346a32cb1e079c4c4e5f1fe4696",
+    "environment": {
+      "captured_at": "2026-09-06T17:02:56.210885+00:00",
+      "python": "3.10.7 (main, Oct  3 2022, 02:19:58) [Clang 14.0.3 ]",
+      "python_executable": "/workspace/thesis-granularity-router/.venv-phase5b-gpu/bin/python",
+      "environment_name": ".venv-phase5b-gpu",
+      "expected_environment": ".venv-phase5b-gpu",
+      "platform": "Linux-6.8.0-124-generic-x86_64-with-glibc2.39",
+      "torch": "2.8.0+cu128",
+      "transformers": "5.15.0.dev0",
+      "transformers_source": "https://github.com/huggingface/transformers.git",
+      "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+      "numpy": "2.0.2",
+      "psutil": "7.2.2",
+      "cuda_available": true,
+      "torch_cuda_runtime": "12.8",
+      "execution_device": "cuda:0",
+      "cuda_device_name": "NVIDIA A100-SXM4-40GB",
+      "cuda_compute_capability": [
+        8,
+        0
+      ],
+      "exact_environment_check": "passed"
+    },
+    "cuda_allocated_gib_after_load": 1.617274284362793,
+    "cuda_reserved_gib_after_load": 1.69921875
+  },
+  "prompt": {
+    "instruction": "You are providing an auxiliary context-length indication for a retrieval-augmented generation router. Based only on the question, decide whether the supporting context required to answer it is short, medium, or long. Choose exactly one label from: short, medium, long. Return only the label.",
+    "question_format": "{instruction}\\n\\nQuestion: {original_question_text}",
+    "prompt_template_sha256": "425e961f702466fdca49cdd71d03d8e14821bc5515fd13a8ba81cf7d9db49c45",
+    "allowed_labels": [
+      "short",
+      "medium",
+      "long"
+    ]
+  },
+  "decoding": {
+    "do_sample": false,
+    "max_new_tokens": 8
+  },
+  "parser": "exactly one distinct standalone short/medium/long label, case-insensitive",
+  "invalid_policy": "no default category; stop before classifier training if any output is invalid",
+  "splits": {
+    "train": {
+      "split": "train",
+      "expected_questions": 2101,
+      "completed_questions": 2101,
+      "remaining_questions": 0,
+      "valid_outputs": 1926,
+      "invalid_outputs": 175,
+      "distribution": {
+        "short": 54,
+        "medium": 1867,
+        "long": 5
+      },
+      "output_path": "outputs/similarity_tree_phase5b_zero_shot_qwen_context_feature/qwen_features/train_outputs.jsonl",
+      "output_sha256": "57f0c19ecd1b64275297eb456a728dd6fcc11e6f3d02c439701c197e30888fa1"
+    },
+    "validation": {
+      "split": "validation",
+      "expected_questions": 924,
+      "completed_questions": 924,
+      "remaining_questions": 0,
+      "valid_outputs": 868,
+      "invalid_outputs": 56,
+      "distribution": {
+        "short": 31,
+        "medium": 836,
+        "long": 1
+      },
+      "output_path": "outputs/similarity_tree_phase5b_zero_shot_qwen_context_feature/qwen_features/validation_outputs.jsonl",
+      "output_sha256": "5dc029281fdc9fa554f6f532522d53203fa292ac03ff89a1b84ffe9d3ba10d36"
+    }
+  },
+  "total_questions": 3025,
+  "valid_outputs": 2794,
+  "invalid_outputs": 231,
+  "mean_inference_seconds": 0.24113586617318608,
+  "median_inference_seconds": 0.2404930219927337,
+  "total_generation_seconds": 729.4359951738879,
+  "peak_rss_gib_this_invocation": 1.6990966796875,
+  "wall_seconds_this_invocation": 754.4337874229968,
+  "invalid_output_records": {
+    "path": "outputs/similarity_tree_phase5b_zero_shot_qwen_context_feature/qwen_features/invalid_outputs.jsonl",
+    "sha256": "6150ff847f52a791fcb09fdb7e8e0eb4fdaaf6707247768865feb54c85f565a6"
+  }
+}

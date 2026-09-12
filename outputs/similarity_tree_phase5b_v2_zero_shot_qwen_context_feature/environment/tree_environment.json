@@ -1,0 +1,11 @@
+{
+  "captured_at": "2026-09-06T18:47:56.657328+00:00",
+  "python": "3.10.7 (tags/v3.10.7:6cc6b13, Sep  5 2022, 14:08:36) [MSC v.1933 64 bit (AMD64)]",
+  "python_executable": "C:\\Users\\behno\\Repos\\Thesis Build Up\\.venv-phase5a\\Scripts\\python.exe",
+  "expected_environment": ".venv-phase5a",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "numpy": "2.0.2",
+  "scipy": "1.15.3",
+  "xgboost": "3.0.2",
+  "device": "CPU"
+}

@@ -1,0 +1,315 @@
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s]Loading weights: 100%|██████████| 473/473 [00:00<00:00, 5645.17it/s]
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 10, "pending_this_invocation": 2101, "split_completed": 10, "split_expected": 2101, "last_seconds": 0.14112815000407863}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 20, "pending_this_invocation": 2101, "split_completed": 20, "split_expected": 2101, "last_seconds": 0.1415374759963015}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 30, "pending_this_invocation": 2101, "split_completed": 30, "split_expected": 2101, "last_seconds": 0.1419142329978058}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 40, "pending_this_invocation": 2101, "split_completed": 40, "split_expected": 2101, "last_seconds": 0.14109304500743747}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 50, "pending_this_invocation": 2101, "split_completed": 50, "split_expected": 2101, "last_seconds": 0.14095218500006013}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 60, "pending_this_invocation": 2101, "split_completed": 60, "split_expected": 2101, "last_seconds": 0.14537216899043415}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 70, "pending_this_invocation": 2101, "split_completed": 70, "split_expected": 2101, "last_seconds": 0.14122783999482635}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 80, "pending_this_invocation": 2101, "split_completed": 80, "split_expected": 2101, "last_seconds": 0.14116970798932016}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 90, "pending_this_invocation": 2101, "split_completed": 90, "split_expected": 2101, "last_seconds": 0.14190040399262216}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 100, "pending_this_invocation": 2101, "split_completed": 100, "split_expected": 2101, "last_seconds": 0.14072991799912415}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 110, "pending_this_invocation": 2101, "split_completed": 110, "split_expected": 2101, "last_seconds": 0.14100576500641182}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 120, "pending_this_invocation": 2101, "split_completed": 120, "split_expected": 2101, "last_seconds": 0.14138436199573334}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 130, "pending_this_invocation": 2101, "split_completed": 130, "split_expected": 2101, "last_seconds": 0.14085900300415233}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 140, "pending_this_invocation": 2101, "split_completed": 140, "split_expected": 2101, "last_seconds": 0.14158044700161554}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 150, "pending_this_invocation": 2101, "split_completed": 150, "split_expected": 2101, "last_seconds": 0.1410657279920997}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 160, "pending_this_invocation": 2101, "split_completed": 160, "split_expected": 2101, "last_seconds": 0.14210710099723656}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 170, "pending_this_invocation": 2101, "split_completed": 170, "split_expected": 2101, "last_seconds": 0.14152048200776335}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 180, "pending_this_invocation": 2101, "split_completed": 180, "split_expected": 2101, "last_seconds": 0.1422129480051808}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 190, "pending_this_invocation": 2101, "split_completed": 190, "split_expected": 2101, "last_seconds": 0.1413948999979766}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 200, "pending_this_invocation": 2101, "split_completed": 200, "split_expected": 2101, "last_seconds": 0.14145391900092363}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 210, "pending_this_invocation": 2101, "split_completed": 210, "split_expected": 2101, "last_seconds": 0.14117683800577652}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 220, "pending_this_invocation": 2101, "split_completed": 220, "split_expected": 2101, "last_seconds": 0.141492595008458}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 230, "pending_this_invocation": 2101, "split_completed": 230, "split_expected": 2101, "last_seconds": 0.1438157609954942}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 240, "pending_this_invocation": 2101, "split_completed": 240, "split_expected": 2101, "last_seconds": 0.1419367600028636}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 250, "pending_this_invocation": 2101, "split_completed": 250, "split_expected": 2101, "last_seconds": 0.14212050700734835}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 260, "pending_this_invocation": 2101, "split_completed": 260, "split_expected": 2101, "last_seconds": 0.14285445200221147}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 270, "pending_this_invocation": 2101, "split_completed": 270, "split_expected": 2101, "last_seconds": 0.1433148570067715}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 280, "pending_this_invocation": 2101, "split_completed": 280, "split_expected": 2101, "last_seconds": 0.14451860899862368}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 290, "pending_this_invocation": 2101, "split_completed": 290, "split_expected": 2101, "last_seconds": 0.14422416900924873}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 300, "pending_this_invocation": 2101, "split_completed": 300, "split_expected": 2101, "last_seconds": 0.14224524999735877}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 310, "pending_this_invocation": 2101, "split_completed": 310, "split_expected": 2101, "last_seconds": 0.14186331900418736}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 320, "pending_this_invocation": 2101, "split_completed": 320, "split_expected": 2101, "last_seconds": 0.14183250900532585}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 330, "pending_this_invocation": 2101, "split_completed": 330, "split_expected": 2101, "last_seconds": 0.1401284570019925}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 340, "pending_this_invocation": 2101, "split_completed": 340, "split_expected": 2101, "last_seconds": 0.1442078730033245}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 350, "pending_this_invocation": 2101, "split_completed": 350, "split_expected": 2101, "last_seconds": 0.14358577500388492}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 360, "pending_this_invocation": 2101, "split_completed": 360, "split_expected": 2101, "last_seconds": 0.14138516600360163}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 370, "pending_this_invocation": 2101, "split_completed": 370, "split_expected": 2101, "last_seconds": 0.14105287598795258}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 380, "pending_this_invocation": 2101, "split_completed": 380, "split_expected": 2101, "last_seconds": 0.14092011599859688}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 390, "pending_this_invocation": 2101, "split_completed": 390, "split_expected": 2101, "last_seconds": 0.13936072299838997}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 400, "pending_this_invocation": 2101, "split_completed": 400, "split_expected": 2101, "last_seconds": 0.1407255840022117}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 410, "pending_this_invocation": 2101, "split_completed": 410, "split_expected": 2101, "last_seconds": 0.13971799799764995}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 420, "pending_this_invocation": 2101, "split_completed": 420, "split_expected": 2101, "last_seconds": 0.14034990400250535}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 430, "pending_this_invocation": 2101, "split_completed": 430, "split_expected": 2101, "last_seconds": 0.14113267700304277}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 440, "pending_this_invocation": 2101, "split_completed": 440, "split_expected": 2101, "last_seconds": 0.14117917598923668}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 450, "pending_this_invocation": 2101, "split_completed": 450, "split_expected": 2101, "last_seconds": 0.13923209499625955}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 460, "pending_this_invocation": 2101, "split_completed": 460, "split_expected": 2101, "last_seconds": 0.1406046560005052}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 470, "pending_this_invocation": 2101, "split_completed": 470, "split_expected": 2101, "last_seconds": 0.1414795089949621}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 480, "pending_this_invocation": 2101, "split_completed": 480, "split_expected": 2101, "last_seconds": 0.14056471300136764}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 490, "pending_this_invocation": 2101, "split_completed": 490, "split_expected": 2101, "last_seconds": 0.14088844000070821}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 500, "pending_this_invocation": 2101, "split_completed": 500, "split_expected": 2101, "last_seconds": 0.14053450099891052}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 510, "pending_this_invocation": 2101, "split_completed": 510, "split_expected": 2101, "last_seconds": 0.14024187099130359}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 520, "pending_this_invocation": 2101, "split_completed": 520, "split_expected": 2101, "last_seconds": 0.1402082109998446}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 530, "pending_this_invocation": 2101, "split_completed": 530, "split_expected": 2101, "last_seconds": 0.14028864800638985}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 540, "pending_this_invocation": 2101, "split_completed": 540, "split_expected": 2101, "last_seconds": 0.14022027699684259}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 550, "pending_this_invocation": 2101, "split_completed": 550, "split_expected": 2101, "last_seconds": 0.14077107301272918}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 560, "pending_this_invocation": 2101, "split_completed": 560, "split_expected": 2101, "last_seconds": 0.14039514400064945}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 570, "pending_this_invocation": 2101, "split_completed": 570, "split_expected": 2101, "last_seconds": 0.14090549999673385}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 580, "pending_this_invocation": 2101, "split_completed": 580, "split_expected": 2101, "last_seconds": 0.13961721600207966}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 590, "pending_this_invocation": 2101, "split_completed": 590, "split_expected": 2101, "last_seconds": 0.13953077599580865}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 600, "pending_this_invocation": 2101, "split_completed": 600, "split_expected": 2101, "last_seconds": 0.14299839299928863}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 610, "pending_this_invocation": 2101, "split_completed": 610, "split_expected": 2101, "last_seconds": 0.14077513600932434}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 620, "pending_this_invocation": 2101, "split_completed": 620, "split_expected": 2101, "last_seconds": 0.14018465699336957}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 630, "pending_this_invocation": 2101, "split_completed": 630, "split_expected": 2101, "last_seconds": 0.14013346699357498}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 640, "pending_this_invocation": 2101, "split_completed": 640, "split_expected": 2101, "last_seconds": 0.14028120299917646}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 650, "pending_this_invocation": 2101, "split_completed": 650, "split_expected": 2101, "last_seconds": 0.13988459500251338}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 660, "pending_this_invocation": 2101, "split_completed": 660, "split_expected": 2101, "last_seconds": 0.1405971290078014}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 670, "pending_this_invocation": 2101, "split_completed": 670, "split_expected": 2101, "last_seconds": 0.14112487499369308}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 680, "pending_this_invocation": 2101, "split_completed": 680, "split_expected": 2101, "last_seconds": 0.1430054420052329}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 690, "pending_this_invocation": 2101, "split_completed": 690, "split_expected": 2101, "last_seconds": 0.14083427499281242}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 700, "pending_this_invocation": 2101, "split_completed": 700, "split_expected": 2101, "last_seconds": 0.14106775099935476}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 710, "pending_this_invocation": 2101, "split_completed": 710, "split_expected": 2101, "last_seconds": 0.14051071400172077}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 720, "pending_this_invocation": 2101, "split_completed": 720, "split_expected": 2101, "last_seconds": 0.14079144000425003}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 730, "pending_this_invocation": 2101, "split_completed": 730, "split_expected": 2101, "last_seconds": 0.14061015100742225}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 740, "pending_this_invocation": 2101, "split_completed": 740, "split_expected": 2101, "last_seconds": 0.14061676900018938}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 750, "pending_this_invocation": 2101, "split_completed": 750, "split_expected": 2101, "last_seconds": 0.14056983799673617}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 760, "pending_this_invocation": 2101, "split_completed": 760, "split_expected": 2101, "last_seconds": 0.14054536700132303}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 770, "pending_this_invocation": 2101, "split_completed": 770, "split_expected": 2101, "last_seconds": 0.14087644399842247}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 780, "pending_this_invocation": 2101, "split_completed": 780, "split_expected": 2101, "last_seconds": 0.14088467200053856}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 790, "pending_this_invocation": 2101, "split_completed": 790, "split_expected": 2101, "last_seconds": 0.14108873999794014}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 800, "pending_this_invocation": 2101, "split_completed": 800, "split_expected": 2101, "last_seconds": 0.1422101210046094}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 810, "pending_this_invocation": 2101, "split_completed": 810, "split_expected": 2101, "last_seconds": 0.14182793299551122}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 820, "pending_this_invocation": 2101, "split_completed": 820, "split_expected": 2101, "last_seconds": 0.14113533598720096}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 830, "pending_this_invocation": 2101, "split_completed": 830, "split_expected": 2101, "last_seconds": 0.14061826800752897}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 840, "pending_this_invocation": 2101, "split_completed": 840, "split_expected": 2101, "last_seconds": 0.1412632930005202}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 850, "pending_this_invocation": 2101, "split_completed": 850, "split_expected": 2101, "last_seconds": 0.1419707470049616}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 860, "pending_this_invocation": 2101, "split_completed": 860, "split_expected": 2101, "last_seconds": 0.1416399469890166}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 870, "pending_this_invocation": 2101, "split_completed": 870, "split_expected": 2101, "last_seconds": 0.14213946399104316}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 880, "pending_this_invocation": 2101, "split_completed": 880, "split_expected": 2101, "last_seconds": 0.14176901400787756}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 890, "pending_this_invocation": 2101, "split_completed": 890, "split_expected": 2101, "last_seconds": 0.14011734300584067}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 900, "pending_this_invocation": 2101, "split_completed": 900, "split_expected": 2101, "last_seconds": 0.14028581100865267}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 910, "pending_this_invocation": 2101, "split_completed": 910, "split_expected": 2101, "last_seconds": 0.14022811100585386}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 920, "pending_this_invocation": 2101, "split_completed": 920, "split_expected": 2101, "last_seconds": 0.1408486550062662}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 930, "pending_this_invocation": 2101, "split_completed": 930, "split_expected": 2101, "last_seconds": 0.14059417600219604}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 940, "pending_this_invocation": 2101, "split_completed": 940, "split_expected": 2101, "last_seconds": 0.1427175900025759}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 950, "pending_this_invocation": 2101, "split_completed": 950, "split_expected": 2101, "last_seconds": 0.14053942399914376}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 960, "pending_this_invocation": 2101, "split_completed": 960, "split_expected": 2101, "last_seconds": 0.1405984820012236}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 970, "pending_this_invocation": 2101, "split_completed": 970, "split_expected": 2101, "last_seconds": 0.14063558098860085}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 980, "pending_this_invocation": 2101, "split_completed": 980, "split_expected": 2101, "last_seconds": 0.14077893800276797}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 990, "pending_this_invocation": 2101, "split_completed": 990, "split_expected": 2101, "last_seconds": 0.14074031700147316}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1000, "pending_this_invocation": 2101, "split_completed": 1000, "split_expected": 2101, "last_seconds": 0.14050302800023928}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1010, "pending_this_invocation": 2101, "split_completed": 1010, "split_expected": 2101, "last_seconds": 0.14069290600309614}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1020, "pending_this_invocation": 2101, "split_completed": 1020, "split_expected": 2101, "last_seconds": 0.14079926299746148}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1030, "pending_this_invocation": 2101, "split_completed": 1030, "split_expected": 2101, "last_seconds": 0.1409434420056641}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1040, "pending_this_invocation": 2101, "split_completed": 1040, "split_expected": 2101, "last_seconds": 0.14052863299730234}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1050, "pending_this_invocation": 2101, "split_completed": 1050, "split_expected": 2101, "last_seconds": 0.14114257799519692}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1060, "pending_this_invocation": 2101, "split_completed": 1060, "split_expected": 2101, "last_seconds": 0.14094927799305879}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1070, "pending_this_invocation": 2101, "split_completed": 1070, "split_expected": 2101, "last_seconds": 0.14133016399864573}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1080, "pending_this_invocation": 2101, "split_completed": 1080, "split_expected": 2101, "last_seconds": 0.14113412400183734}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1090, "pending_this_invocation": 2101, "split_completed": 1090, "split_expected": 2101, "last_seconds": 0.14137974199547898}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1100, "pending_this_invocation": 2101, "split_completed": 1100, "split_expected": 2101, "last_seconds": 0.141243852005573}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1110, "pending_this_invocation": 2101, "split_completed": 1110, "split_expected": 2101, "last_seconds": 0.14179751700430643}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1120, "pending_this_invocation": 2101, "split_completed": 1120, "split_expected": 2101, "last_seconds": 0.14125425899692345}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1130, "pending_this_invocation": 2101, "split_completed": 1130, "split_expected": 2101, "last_seconds": 0.14153156599786598}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1140, "pending_this_invocation": 2101, "split_completed": 1140, "split_expected": 2101, "last_seconds": 0.1412321779935155}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1150, "pending_this_invocation": 2101, "split_completed": 1150, "split_expected": 2101, "last_seconds": 0.14234451900119893}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1160, "pending_this_invocation": 2101, "split_completed": 1160, "split_expected": 2101, "last_seconds": 0.14166960200236645}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1170, "pending_this_invocation": 2101, "split_completed": 1170, "split_expected": 2101, "last_seconds": 0.14201653900090605}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1180, "pending_this_invocation": 2101, "split_completed": 1180, "split_expected": 2101, "last_seconds": 0.14256034400023054}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1190, "pending_this_invocation": 2101, "split_completed": 1190, "split_expected": 2101, "last_seconds": 0.1418073880049633}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1200, "pending_this_invocation": 2101, "split_completed": 1200, "split_expected": 2101, "last_seconds": 0.14084756300144363}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1210, "pending_this_invocation": 2101, "split_completed": 1210, "split_expected": 2101, "last_seconds": 0.14135362800152507}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1220, "pending_this_invocation": 2101, "split_completed": 1220, "split_expected": 2101, "last_seconds": 0.14121260899992194}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1230, "pending_this_invocation": 2101, "split_completed": 1230, "split_expected": 2101, "last_seconds": 0.14117656700545922}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1240, "pending_this_invocation": 2101, "split_completed": 1240, "split_expected": 2101, "last_seconds": 0.14084862900199369}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1250, "pending_this_invocation": 2101, "split_completed": 1250, "split_expected": 2101, "last_seconds": 0.14141426399874035}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1260, "pending_this_invocation": 2101, "split_completed": 1260, "split_expected": 2101, "last_seconds": 0.14125757399597205}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1270, "pending_this_invocation": 2101, "split_completed": 1270, "split_expected": 2101, "last_seconds": 0.1408352850121446}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1280, "pending_this_invocation": 2101, "split_completed": 1280, "split_expected": 2101, "last_seconds": 0.14087453398678917}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1290, "pending_this_invocation": 2101, "split_completed": 1290, "split_expected": 2101, "last_seconds": 0.14087745299912058}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1300, "pending_this_invocation": 2101, "split_completed": 1300, "split_expected": 2101, "last_seconds": 0.14158491700072773}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1310, "pending_this_invocation": 2101, "split_completed": 1310, "split_expected": 2101, "last_seconds": 0.1418218039907515}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1320, "pending_this_invocation": 2101, "split_completed": 1320, "split_expected": 2101, "last_seconds": 0.14024295400304254}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1330, "pending_this_invocation": 2101, "split_completed": 1330, "split_expected": 2101, "last_seconds": 0.1400677839992568}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1340, "pending_this_invocation": 2101, "split_completed": 1340, "split_expected": 2101, "last_seconds": 0.14018315299472306}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1350, "pending_this_invocation": 2101, "split_completed": 1350, "split_expected": 2101, "last_seconds": 0.14074555700062774}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1360, "pending_this_invocation": 2101, "split_completed": 1360, "split_expected": 2101, "last_seconds": 0.14048091799486428}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1370, "pending_this_invocation": 2101, "split_completed": 1370, "split_expected": 2101, "last_seconds": 0.14047952600230929}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1380, "pending_this_invocation": 2101, "split_completed": 1380, "split_expected": 2101, "last_seconds": 0.1405648950021714}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1390, "pending_this_invocation": 2101, "split_completed": 1390, "split_expected": 2101, "last_seconds": 0.1406210440036375}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1400, "pending_this_invocation": 2101, "split_completed": 1400, "split_expected": 2101, "last_seconds": 0.14066745300078765}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1410, "pending_this_invocation": 2101, "split_completed": 1410, "split_expected": 2101, "last_seconds": 0.140773100007209}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1420, "pending_this_invocation": 2101, "split_completed": 1420, "split_expected": 2101, "last_seconds": 0.14080726899555884}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1430, "pending_this_invocation": 2101, "split_completed": 1430, "split_expected": 2101, "last_seconds": 0.14034978199924808}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1440, "pending_this_invocation": 2101, "split_completed": 1440, "split_expected": 2101, "last_seconds": 0.1431212520110421}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1450, "pending_this_invocation": 2101, "split_completed": 1450, "split_expected": 2101, "last_seconds": 0.14420322400110308}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1460, "pending_this_invocation": 2101, "split_completed": 1460, "split_expected": 2101, "last_seconds": 0.14037652799743228}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1470, "pending_this_invocation": 2101, "split_completed": 1470, "split_expected": 2101, "last_seconds": 0.1414733390120091}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1480, "pending_this_invocation": 2101, "split_completed": 1480, "split_expected": 2101, "last_seconds": 0.14044015500985552}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1490, "pending_this_invocation": 2101, "split_completed": 1490, "split_expected": 2101, "last_seconds": 0.14048570398881566}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1500, "pending_this_invocation": 2101, "split_completed": 1500, "split_expected": 2101, "last_seconds": 0.14019154499692377}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1510, "pending_this_invocation": 2101, "split_completed": 1510, "split_expected": 2101, "last_seconds": 0.14031745299871545}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1520, "pending_this_invocation": 2101, "split_completed": 1520, "split_expected": 2101, "last_seconds": 0.1402265630022157}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1530, "pending_this_invocation": 2101, "split_completed": 1530, "split_expected": 2101, "last_seconds": 0.14094326700433157}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1540, "pending_this_invocation": 2101, "split_completed": 1540, "split_expected": 2101, "last_seconds": 0.14105838601244614}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1550, "pending_this_invocation": 2101, "split_completed": 1550, "split_expected": 2101, "last_seconds": 0.1414183220040286}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1560, "pending_this_invocation": 2101, "split_completed": 1560, "split_expected": 2101, "last_seconds": 0.14031929800694343}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1570, "pending_this_invocation": 2101, "split_completed": 1570, "split_expected": 2101, "last_seconds": 0.14037629700032994}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1580, "pending_this_invocation": 2101, "split_completed": 1580, "split_expected": 2101, "last_seconds": 0.1401585480052745}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1590, "pending_this_invocation": 2101, "split_completed": 1590, "split_expected": 2101, "last_seconds": 0.14463539599091746}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1600, "pending_this_invocation": 2101, "split_completed": 1600, "split_expected": 2101, "last_seconds": 0.1404950239957543}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1610, "pending_this_invocation": 2101, "split_completed": 1610, "split_expected": 2101, "last_seconds": 0.1408844899997348}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1620, "pending_this_invocation": 2101, "split_completed": 1620, "split_expected": 2101, "last_seconds": 0.14068062099977396}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1630, "pending_this_invocation": 2101, "split_completed": 1630, "split_expected": 2101, "last_seconds": 0.14025419199606404}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1640, "pending_this_invocation": 2101, "split_completed": 1640, "split_expected": 2101, "last_seconds": 0.14030881100916304}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1650, "pending_this_invocation": 2101, "split_completed": 1650, "split_expected": 2101, "last_seconds": 0.13999117200728506}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1660, "pending_this_invocation": 2101, "split_completed": 1660, "split_expected": 2101, "last_seconds": 0.13978861199575476}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1670, "pending_this_invocation": 2101, "split_completed": 1670, "split_expected": 2101, "last_seconds": 0.13993934101017658}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1680, "pending_this_invocation": 2101, "split_completed": 1680, "split_expected": 2101, "last_seconds": 0.14009377799811773}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1690, "pending_this_invocation": 2101, "split_completed": 1690, "split_expected": 2101, "last_seconds": 0.14027018600609154}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1700, "pending_this_invocation": 2101, "split_completed": 1700, "split_expected": 2101, "last_seconds": 0.14058217300043907}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1710, "pending_this_invocation": 2101, "split_completed": 1710, "split_expected": 2101, "last_seconds": 0.14111030800268054}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1720, "pending_this_invocation": 2101, "split_completed": 1720, "split_expected": 2101, "last_seconds": 0.14141860499512404}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1730, "pending_this_invocation": 2101, "split_completed": 1730, "split_expected": 2101, "last_seconds": 0.14127701500547118}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1740, "pending_this_invocation": 2101, "split_completed": 1740, "split_expected": 2101, "last_seconds": 0.14163955199182965}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1750, "pending_this_invocation": 2101, "split_completed": 1750, "split_expected": 2101, "last_seconds": 0.1407562370004598}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1760, "pending_this_invocation": 2101, "split_completed": 1760, "split_expected": 2101, "last_seconds": 0.14043082798889372}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1770, "pending_this_invocation": 2101, "split_completed": 1770, "split_expected": 2101, "last_seconds": 0.1404543379903771}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1780, "pending_this_invocation": 2101, "split_completed": 1780, "split_expected": 2101, "last_seconds": 0.14052973600337282}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1790, "pending_this_invocation": 2101, "split_completed": 1790, "split_expected": 2101, "last_seconds": 0.1408739729959052}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1800, "pending_this_invocation": 2101, "split_completed": 1800, "split_expected": 2101, "last_seconds": 0.14043964399024844}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1810, "pending_this_invocation": 2101, "split_completed": 1810, "split_expected": 2101, "last_seconds": 0.1403809940093197}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1820, "pending_this_invocation": 2101, "split_completed": 1820, "split_expected": 2101, "last_seconds": 0.14059930200164672}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1830, "pending_this_invocation": 2101, "split_completed": 1830, "split_expected": 2101, "last_seconds": 0.140540812004474}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1840, "pending_this_invocation": 2101, "split_completed": 1840, "split_expected": 2101, "last_seconds": 0.14097311699879356}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1850, "pending_this_invocation": 2101, "split_completed": 1850, "split_expected": 2101, "last_seconds": 0.14116028598800767}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1860, "pending_this_invocation": 2101, "split_completed": 1860, "split_expected": 2101, "last_seconds": 0.14200675800384488}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1870, "pending_this_invocation": 2101, "split_completed": 1870, "split_expected": 2101, "last_seconds": 0.14176647900603712}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1880, "pending_this_invocation": 2101, "split_completed": 1880, "split_expected": 2101, "last_seconds": 0.14146789000369608}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1890, "pending_this_invocation": 2101, "split_completed": 1890, "split_expected": 2101, "last_seconds": 0.14212537498679012}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1900, "pending_this_invocation": 2101, "split_completed": 1900, "split_expected": 2101, "last_seconds": 0.14231465201009996}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1910, "pending_this_invocation": 2101, "split_completed": 1910, "split_expected": 2101, "last_seconds": 0.14207902300404385}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1920, "pending_this_invocation": 2101, "split_completed": 1920, "split_expected": 2101, "last_seconds": 0.14047898301214445}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1930, "pending_this_invocation": 2101, "split_completed": 1930, "split_expected": 2101, "last_seconds": 0.1406634509912692}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1940, "pending_this_invocation": 2101, "split_completed": 1940, "split_expected": 2101, "last_seconds": 0.14070186999742873}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1950, "pending_this_invocation": 2101, "split_completed": 1950, "split_expected": 2101, "last_seconds": 0.14062460999411996}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1960, "pending_this_invocation": 2101, "split_completed": 1960, "split_expected": 2101, "last_seconds": 0.1404849690006813}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1970, "pending_this_invocation": 2101, "split_completed": 1970, "split_expected": 2101, "last_seconds": 0.14081423699099105}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1980, "pending_this_invocation": 2101, "split_completed": 1980, "split_expected": 2101, "last_seconds": 0.14074664600775577}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 1990, "pending_this_invocation": 2101, "split_completed": 1990, "split_expected": 2101, "last_seconds": 0.14103087299736217}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 2000, "pending_this_invocation": 2101, "split_completed": 2000, "split_expected": 2101, "last_seconds": 0.1408054740022635}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 2010, "pending_this_invocation": 2101, "split_completed": 2010, "split_expected": 2101, "last_seconds": 0.14044618600746617}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 2020, "pending_this_invocation": 2101, "split_completed": 2020, "split_expected": 2101, "last_seconds": 0.14098815999750514}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 2030, "pending_this_invocation": 2101, "split_completed": 2030, "split_expected": 2101, "last_seconds": 0.14071328200225253}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 2040, "pending_this_invocation": 2101, "split_completed": 2040, "split_expected": 2101, "last_seconds": 0.1402616449922789}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 2050, "pending_this_invocation": 2101, "split_completed": 2050, "split_expected": 2101, "last_seconds": 0.14152930400450714}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 2060, "pending_this_invocation": 2101, "split_completed": 2060, "split_expected": 2101, "last_seconds": 0.14058257000579033}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 2070, "pending_this_invocation": 2101, "split_completed": 2070, "split_expected": 2101, "last_seconds": 0.1401956719928421}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 2080, "pending_this_invocation": 2101, "split_completed": 2080, "split_expected": 2101, "last_seconds": 0.1405390889995033}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 2090, "pending_this_invocation": 2101, "split_completed": 2090, "split_expected": 2101, "last_seconds": 0.14121367399638984}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 2100, "pending_this_invocation": 2101, "split_completed": 2100, "split_expected": 2101, "last_seconds": 0.14023109900881536}
+{"event": "phase5b_qwen_progress", "split": "train", "completed_this_invocation": 2101, "pending_this_invocation": 2101, "split_completed": 2101, "split_expected": 2101, "last_seconds": 0.14082974499615375}
+{
+  "status": "complete",
+  "completed_at": "2026-09-06T18:32:54.481535+00:00",
+  "model": {
+    "model_id": "Qwen/Qwen3.5-0.8B",
+    "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+    "processor_load_seconds": 0.6891388459916925,
+    "model_load_seconds": 0.8655014940013643,
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "quantization": null,
+    "all_parameters_frozen": true,
+    "parameter_updates": 0,
+    "optimizer_created": false,
+    "backward_passes": 0,
+    "rss_gib_after_load": 1.0025177001953125,
+    "local_snapshot": "tmp/huggingface_qwen_cache/hub/models--Qwen--Qwen3.5-0.8B/snapshots/2fc06364715b967f1860aea9cf38778875588b17",
+    "model_weight_sha256": "04b1c301231dd422b8860db31311ab2721511346a32cb1e079c4c4e5f1fe4696",
+    "environment": {
+      "captured_at": "2026-09-06T18:27:37.192385+00:00",
+      "python": "3.10.7 (main, Oct  3 2022, 02:19:58) [Clang 14.0.3 ]",
+      "python_executable": "/workspace/thesis-granularity-router/.venv-phase5b-gpu/bin/python",
+      "environment_name": ".venv-phase5b-gpu",
+      "expected_environment": ".venv-phase5b-gpu",
+      "platform": "Linux-6.8.0-124-generic-x86_64-with-glibc2.39",
+      "torch": "2.8.0+cu128",
+      "transformers": "5.15.0.dev0",
+      "transformers_source": "https://github.com/huggingface/transformers.git",
+      "transformers_commit": "2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7",
+      "numpy": "2.0.2",
+      "psutil": "7.2.2",
+      "cuda_available": true,
+      "torch_cuda_runtime": "12.8",
+      "execution_device": "cuda:0",
+      "cuda_device_name": "NVIDIA A100-SXM4-40GB",
+      "cuda_compute_capability": [
+        8,
+        0
+      ],
+      "exact_environment_check": "passed"
+    },
+    "cuda_allocated_gib_after_load": 1.617274284362793,
+    "cuda_reserved_gib_after_load": 1.69921875
+  },
+  "prompt": {
+    "instruction": "You are not being asked to answer the question. Your only task is to classify how much supporting context would be needed to answer it. Respond with exactly one lowercase label from: short, medium, long. Do not output yes, no, the answer to the question, an explanation, or punctuation. Output one label only.",
+    "question_format": "{instruction}\\n\\nQuestion: {original_question_text}",
+    "prompt_template_sha256": "d53faa997d46ca747216c626c80de037a7a924608c74172205d8b445824ca645",
+    "allowed_labels": [
+      "short",
+      "medium",
+      "long"
+    ]
+  },
+  "decoding": {
+    "method": "restricted next-token argmax over the three allowed one-token labels",
+    "do_sample": false,
+    "candidate_labels": [
+      "short",
+      "medium",
+      "long"
+    ],
+    "candidate_token_ids": {
+      "short": 8412,
+      "medium": 25252,
+      "long": 4670
+    },
+    "candidate_tokens_are_single_token": true
+  },
+  "parser": "exactly one distinct standalone short/medium/long label, case-insensitive",
+  "invalid_policy": "no default category; stop before classifier training if any output is invalid",
+  "splits": {
+    "train": {
+      "split": "train",
+      "expected_questions": 2101,
+      "completed_questions": 2101,
+      "remaining_questions": 0,
+      "valid_outputs": 2101,
+      "invalid_outputs": 0,
+      "distribution": {
+        "short": 24,
+        "medium": 2076,
+        "long": 1
+      },
+      "output_path": "outputs/similarity_tree_phase5b_v2_zero_shot_qwen_context_feature/qwen_features/train_outputs.jsonl",
+      "output_sha256": "2addb245331f041ef41b51f513bba5cf07c3ef1800a162abbb93cd0a2bda650a"
+    }
+  },
+  "total_questions": 2101,
+  "valid_outputs": 2101,
+  "invalid_outputs": 0,
+  "invalid_output_records": {
+    "path": "outputs/similarity_tree_phase5b_v2_zero_shot_qwen_context_feature/qwen_features/invalid_outputs.jsonl",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "mean_inference_seconds": 0.14121435427279297,
+  "median_inference_seconds": 0.1407991599990055,
+  "total_generation_seconds": 296.691358327138,
+  "peak_rss_gib_this_invocation": 1.6021003723144531,
+  "wall_seconds_this_invocation": 314.51683556199714
+}

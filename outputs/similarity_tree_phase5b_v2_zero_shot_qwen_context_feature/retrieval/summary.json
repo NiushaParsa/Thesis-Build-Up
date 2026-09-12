@@ -1,0 +1,15 @@
+{
+  "evaluated_questions": 924,
+  "retrieval_coverage": 1.0,
+  "mean_joined_precision": 0.273905108044803,
+  "mean_joined_recall": 0.5119958114737322,
+  "mean_joined_f1": 0.3045362838215027,
+  "median_joined_f1": 0.30113929862824995,
+  "mean_retrieved_token_count": 234.8008658008658,
+  "top_n_trees": 5,
+  "selection_per_tree": "single most similar chunk at predicted level",
+  "paper_restricted": true,
+  "scoring_seconds": 41.99868339999921,
+  "result_path": "outputs\\similarity_tree_phase5b_v2_zero_shot_qwen_context_feature\\retrieval\\results.jsonl",
+  "result_sha256": "4a8106a40d1d1d57718633fb3972a35eae62a08adb4e8cc9eb16a58e0299b363"
+}
