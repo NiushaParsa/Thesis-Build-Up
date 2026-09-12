@@ -38,12 +38,10 @@
 
 \input{common/toptesi_config}
 
-% front page
-% frontespizio can be used for the first page print
-% while the custom-made frontpage can be used as hard-cover
-% use pdfjoin or pdfseparate to extract or put together the pages if needed
-%\frontespizio* % without star the logo is on top
-\input{common/frontpage.tex} % custom frontpage
+%\english % uncomment for English
+
+% front page -- add your info in common/thesis_info.tex
+\input{common/frontpage.tex} % new frontespizio (2023)
 %\retrofrontespizio
 % insert text for the back of the front page
 % if you insert any remove the following \paginavuota
@@ -52,7 +50,7 @@
 
 %\paginavuota % clears a page
 
-\frontmatter
+\frontmatter % not strictly needed, as toptesi takes care of it already
 
 % abstract if needed
 % \begin{abstract}
@@ -68,12 +66,14 @@
 % 2) or
 \paginavuota % to manually create a blank page
 
-\sommario
-\input{content/summary}
+% summary (uncomment until "end summary" if needed)
+%\sommario
+%\input{content/summary}
 
-\phantom{0}
-\cleardoublepage
-\thispagestyle{empty}
+%\phantom{0}
+%\cleardoublepage
+%\thispagestyle{empty}
+% end summary
 
 \ringraziamenti % acknowledgements
 \input{content/acknowledgements}
@@ -81,7 +81,7 @@
 \paginavuota
 \tableofcontents
 
-\listoftables % ToC for tables
+%\listoftables % ToC for tables
 
 \listoffigures % ToC for figures
 
@@ -91,8 +91,8 @@
 % style overrides the global style
 % here we are printing only abbreviations
 % printunsrtglossary if using record, otherwise printglossary is ok
-\paginavuota
-\printunsrtglossary[style=altlist,title=Acronyms,type=\glsxtrabbrvtype]
+%\paginavuota
+%\printunsrtglossary[style=altlist,title=Glossario,type=\glsxtrabbrvtype]
 
 % also list of symbols here if needed
 
@@ -105,12 +105,18 @@
 %\cleardoublepage[empty] % to have a fully blank page
 % a blank page appears before the first chapter in some configurations, on the last version it doesn't
 
-\input{content/chapters.tex}
+% chapters go here
+\input{content/chapters/chapter1}
+%\input{content/chapters/chapter2}
+%\input{content/chapters/chapter3}
+%\input{content/chapters/chapter4}
+%\input{content/chapters/chapter5}
+%\input{content/chapters/chapter6}
 
 % \paginavuota % it works even without stile=classica
 
-\appendix
-\input{content/appendix}
+%\appendix
+%\input{content/appendix}
 
 % endnotes here if needed
 
