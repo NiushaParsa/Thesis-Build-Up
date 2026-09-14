@@ -1,20 +1,203 @@
-\chapter{Introduzione}
-\label{sec:introduction}
+\chapter{Introduction}
+\label{ch:introduction}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Porttitor eget dolor morbi non arcu risus quis varius. Libero id faucibus nisl tincidunt. Neque laoreet suspendisse interdum consectetur libero id faucibus nisl tincidunt. Scelerisque in dictum non consectetur a erat. Leo a diam sollicitudin tempor id eu. Sodales ut eu sem integer vitae justo eget magna fermentum. A cras semper auctor neque vitae. Cursus euismod quis viverra nibh cras pulvinar. Mi tempus imperdiet nulla malesuada pellentesque elit eget gravida cum. Dictum at tempor commodo ullamcorper a lacus vestibulum sed. Ultricies mi eget mauris pharetra. In pellentesque massa placerat duis ultricies lacus. Fringilla phasellus faucibus scelerisque eleifend donec pretium vulputate.
+\section{Motivation}
+A useful answer often depends on a small part of a much larger document.
+Finding that part is not just a matter of choosing the right document.
+Even after the source is known, a retrieval system must decide what to
+return from it. A phrase may identify a method, a paragraph may explain
+its assumptions, and several passages may be needed to compare the
+results of two experiments. The unit of retrieval therefore shapes what
+an answering system can see.
 
-Aliquam sem fringilla ut morbi tincidunt augue interdum. Risus at ultrices mi tempus imperdiet nulla malesuada pellentesque. Semper quis lectus nulla at volutpat. Nullam non nisi est sit amet facilisis. Eget velit aliquet sagittis id consectetur purus ut faucibus pulvinar. Ultricies tristique nulla aliquet enim tortor at auctor urna nunc. Pharetra diam sit amet nisl suscipit adipiscing bibendum est ultricies. Amet facilisis magna etiam tempor. Nunc non blandit massa enim nec dui nunc mattis. At ultrices mi tempus imperdiet nulla malesuada pellentesque. Cursus metus aliquam eleifend mi in nulla posuere. In eu mi bibendum neque egestas congue quisque. Augue eget arcu dictum varius duis at consectetur.
+Retrieval-augmented generation (RAG) brings retrieved material into the
+generation process instead of relying only on information stored in a
+model's parameters \cite{lewis2020rag}. This creates a useful separation
+between acquiring evidence and producing an answer, but it also gives
+the retrieval stage considerable responsibility. If relevant text is
+missing, the generator has to work without it. If the supplied text is
+mostly irrelevant, the generator must distinguish the useful evidence
+from the surrounding material. Good retrieval is not sufficient for
+good generation, but it is a necessary part of a dependable pipeline.
 
-% use [] to set name for ToC
-\section[Goal]{Goal} % ok with fontsize=12pt
+Chunking is one of the decisions that connects those two stages. In
+fixed-size chunking, a document is divided into pieces according to a
+token budget selected in advance. The same rule applies to all questions,
+including those that need very different amounts of evidence. This is
+convenient: indexing is straightforward, every chunk has a predictable
+nominal size, and the retrieval procedure has few moving parts. It is
+less clear whether that convenience comes at the expense of evidence
+quality.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Tristique senectus et netus et malesuada fames ac turpis. Pretium nibh ipsum consequat nisl vel pretium lectus quam. Urna molestie at elementum eu facilisis sed odio morbi quis. Sed egestas egestas fringilla phasellus faucibus scelerisque eleifend. At in tellus integer feugiat. Mauris rhoncus aenean vel elit scelerisque mauris pellentesque pulvinar. Commodo sed egestas egestas fringilla. Nunc lobortis mattis aliquam faucibus purus in massa. Facilisis magna etiam tempor orci eu lobortis elementum nibh. Elementum curabitur vitae nunc sed velit dignissim. Neque volutpat ac tincidunt vitae. Massa id neque aliquam vestibulum morbi blandit cursus risus at. Porta non pulvinar neque laoreet suspendisse interdum consectetur. Turpis in eu mi bibendum. Ut tristique et egestas quis ipsum suspendisse. Integer quis auctor elit sed vulputate mi sit amet. Viverra nam libero justo laoreet sit amet cursus.
+The intuition behind adaptive granularity is simple. Rather than ask
+every question to work with the same chunk size, allow the system to
+select a size that suits the current information need. The difficulty is
+knowing what \enquote{suits} means before the answer is available. A
+question may sound broad while its evidence is concentrated in one
+sentence. A short factual question may depend on a table or on several
+parts of a paper. Even a correct estimate of the total evidence length
+does not specify how that evidence is distributed across retrievable
+pieces.
 
-\section[Struttura della tesi]{Struttura della tesi} % ok with fontsize=12pt
+Scientific papers make this problem particularly interesting. They
+contain definitions, methodological explanations, experimental settings,
+and results, often spread across separate sections. QASPER provides
+questions anchored in such papers together with annotated supporting
+evidence \cite{dasigi2021qasper}. This allows the granularity decision to
+be studied against an explicit evidence target rather than against an
+informal impression of what a passage should contain.
 
-Lorem ipsum dolor sit amet:
-\begin{itemize}
-    \item onsectetur adipiscing elit,
-    \item sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-    \item Tristique senectus et netus et malesuada fames ac turpis.
-\end{itemize}
+\section{Problem statement and scope}
+This thesis asks whether an adaptive choice of chunk size can improve
+evidence retrieval within a known source paper. The candidate sizes are
+$\granularities=\{10,20,40,80,160\}$ GPT-2 tokens. The primary
+question-level protocol selects one size and retrieves the five most
+similar chunks at that size. Later experiments make the decision locally,
+allowing different regions of the same paper to contribute chunks at
+different sizes.
+
+This is a deliberately controlled problem. The source paper is supplied
+by the dataset, embeddings remain fixed, and retrieval uses cosine
+similarity. The experiments do not train an embedding model, search an
+unknown corpus for the correct paper, rerank passages with a cross-encoder,
+or generate final answers. These choices isolate the granularity decision
+and make its successes and failures easier to interpret.
+
+The main outcome is joined evidence-token F1: the lexical overlap between
+the combined retrieved text and the combined annotated evidence.
+Chapter~\ref{ch:data} defines the metric precisely. Throughout the thesis,
+\emph{retrieval F1} refers to this measure. It is distinct from the
+classification F1 used to assess predicted size labels, and from the
+answer-level scores used in a complete question-answering system.
+
+The word \emph{adaptive} also needs a boundary. A method is adaptive here
+when its size choice depends on the question or its similarity pattern
+within the paper. An offline oracle that inspects gold evidence is not
+a deployable adaptive method. It provides a reference for what could be
+gained if the best of the available actions were known. Likewise, a
+method that retrieves many more chunks is not automatically better
+adaptation; it may simply spend a larger context budget.
+
+\section{Research questions}
+The investigation is organised around five research questions.
+
+\begin{description}[style=nextline,leftmargin=0pt]
+\item[RQ1: Is there useful headroom beyond a fixed granularity?]
+How do the five fixed sizes compare, and how much can an offline
+per-question choice improve over the strongest fixed setting?
+\item[RQ2: Can the question alone support a useful size decision?]
+Do question embeddings or a small language model predict a granularity
+that improves evidence retrieval? How closely does label prediction
+track the retrieval outcome?
+\item[RQ3: Does the document's similarity structure add information?]
+Can score distributions across coarse and fine spans help a router?
+Does combining those signals with language-model features improve the
+decision when stacking is trained without in-sample base predictions?
+\item[RQ4: Is direct retrieval-utility supervision more effective?]
+What changes when the target becomes the cost of a retrieval decision
+rather than an evidence-length class?
+\item[RQ5: Does local adaptation improve a matched retrieval pipeline?]
+Can a system benefit from selecting different sizes in different regions,
+and does a frozen language-model estimate of context need add useful
+information to that local decision?
+\end{description}
+
+These questions reflect the actual development of the project. They are
+not five independent confirmations of a single preselected method. The
+answer to one question often motivated a change in the next experiment.
+That history is important because it explains both the design choices
+and the limits of the final evaluation.
+
+\section{Experimental approach}
+The work began with data ingestion and a fixed retrieval benchmark.
+Documents were represented at all five sizes, embedded, and stored with
+stable identifiers and source offsets. Questions and evidence were
+normalised and audited. Fixed-size retrieval established the reference
+outcomes from which oracle labels and later utility targets could be
+constructed.
+
+The first learned router used the question embedding. Logistic regression
+and a small multilayer perceptron tested whether a comparatively cheap
+representation was already sufficient. Mixed-size retrieval tested a
+different possibility: perhaps it was unnecessary to predict a size at
+all if candidates from all levels could share one ranking. These methods
+provided practical baselines before introducing a language model.
+
+The Qwen sequence then investigated the question-only decision in more
+detail. It moved from frozen prompting to supervised numeric generation,
+restricted alias outputs, class weighting, and a dedicated classification
+head. A prompt change and a small learning-rate grid examined whether
+the remaining limitation was primarily the output interface or the
+training configuration.
+
+The next sequence used the evidence landscape without using gold
+evidence at inference. Similarity-tree features describe where high
+question-to-chunk scores occur and whether they persist across scales.
+Linear models, boosted trees, and Qwen-feature fusion were evaluated.
+The fusion procedure was then corrected to use paper-grouped out-of-fold
+base predictions, making the training interface closer to the way the
+fusion model would encounter a new question.
+
+Finally, expected-regret learning changed the objective, while local
+routing changed the decision unit. A frozen short/medium/long Qwen feature
+was added to the local router in the last experiment. Its unsuccessful
+free-generation version and its constrained-output replacement are both
+part of the record.
+
+\section{Contributions}
+The contribution is an evidence-based study of the granularity decision,
+rather than a claim that one adaptive architecture universally solves it.
+Four aspects of the work are particularly useful.
+
+First, the repository provides a reproducible multi-granularity evaluation
+setting with frozen questions, fixed embeddings, paper-restricted retrieval,
+versioned metrics, and recoverable intermediate outputs. This makes it
+possible to compare substantially different routers against the same
+underlying retrieval actions.
+
+Second, the study separates several meanings of an oracle. The
+retrieval-optimal action, the total evidence-length category, and the
+local evidence-overlap category supervise different decisions. Making
+those differences explicit explains why classification improvements
+sometimes move retrieval in the wrong direction.
+
+Third, the experiments include methodological corrections and negative
+results. In particular, the out-of-fold fusion rerun and the invalid-output
+gate in the final Qwen feature experiment expose failure modes that would
+be easy to hide in a report containing only the best scores.
+
+Fourth, the expected-regret and matched local-routing comparisons identify
+where adaptation became more competitive and where it still fell short.
+The strongest learned question-level router reached 0.3075 mean retrieval
+F1, but fixed 40-token retrieval reached 0.3159. Local routing similarly
+did not demonstrate an advantage over its matched fixed-40 comparator.
+These results support a more precise conclusion than either
+\enquote{adaptation works} or \enquote{adaptation is unnecessary}.
+
+\section{How to read the findings}
+The repository's validation split was consulted across successive modelling
+decisions. Although several later protocols use training-only selection,
+prediction locks, and grouped folds, these safeguards cannot turn a
+repeatedly observed validation split into an untouched test set. The
+reported comparisons are therefore development findings. Their confidence
+intervals quantify resampling uncertainty within the observed papers,
+not all uncertainty due to model selection, random seeds, or transfer to
+another domain.
+
+This distinction does not make the experiments uninformative. It changes
+what can be concluded from them. A carefully controlled improvement over
+an earlier router can motivate the next study, while a final superiority
+claim requires independent confirmation. The thesis keeps both ideas in
+view: the results are useful, and their evidential scope is limited.
+
+\section{Thesis organisation}
+Chapter~\ref{ch:background} introduces the retrieval concepts and places
+the work alongside research on granularity, hierarchy, and adaptive RAG.
+Chapter~\ref{ch:data} describes QASPER, preprocessing, data integrity, and
+evaluation targets. Chapter~\ref{ch:method} develops the baseline and
+adaptive methods in experimental order. Chapter~\ref{ch:results} presents
+the results, controlled comparisons, unsuccessful runs, and threats to
+validity. Chapter~\ref{ch:conclusion} answers the research questions and
+sets out the next experiments needed for a stronger conclusion. The
+appendices document the chronology, configurations, output contracts,
+and links between reported results and repository artifacts.

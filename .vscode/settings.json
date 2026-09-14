@@ -1,7 +1,11 @@
 {
   "latex-workshop.latex.outDir": "%DIR%/build",
-  "latex-workshop.latex.recipe.default": "pdfLaTeX + Biber + glossaries",
+  "latex-workshop.latex.recipe.default": "pdfLaTeX + Biber",
   "latex-workshop.latex.recipes": [
+    {
+      "name": "pdfLaTeX + Biber",
+      "tools": ["pdflatex", "biber", "pdflatex", "pdflatex"]
+    },
     {
       "name": "pdfLaTeX + Biber + glossaries",
       "tools": ["pdflatex", "biber", "makeindex-glossary", "pdflatex", "pdflatex"]

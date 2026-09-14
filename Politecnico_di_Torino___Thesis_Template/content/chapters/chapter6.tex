@@ -1,0 +1,177 @@
+\chapter{Conclusion and Future Work}
+\label{ch:conclusion}
+
+\section{What the study found}
+This thesis began with a reasonable expectation: questions that need
+different amounts of evidence should benefit from different retrieval
+granularities. The experiments support the premise that the best size
+varies across questions, but they do not establish that the evaluated
+routers can exploit that variation better than a strong fixed setting.
+
+On the frozen validation set, fixed 40-token retrieval reaches mean
+joined evidence-token F1 of 0.3159. The offline best-of-five oracle
+reaches 0.3821, leaving a meaningful gap. The strongest learned
+question-level method, expected-regret routing, reaches 0.3075.
+Local tree-level routing reaches 0.3053, compared with 0.3075 for
+its matched fixed-40 tree baseline. Adding a frozen Qwen
+context-need feature does not demonstrate an improvement.
+
+The sequence separates the promise of adaptation from the information
+and supervision needed to turn it into a reliable decision.
+
+\section{Answers to the research questions}
+\subsection{RQ1: Is there headroom beyond a fixed size?}
+Yes, within the five saved retrieval actions. The offline oracle
+improves mean F1 by 0.0662 over fixed 40, and its selected sizes
+cover the full candidate set. A single size is therefore not
+optimal for every question. However, oracle headroom alone does
+not show that the correct decision is predictable without access
+to gold evidence. It establishes opportunity, not deployability.
+
+\subsection{RQ2: Is the question alone sufficient?}
+The evaluated question-only methods do not beat fixed 40.
+The embedding router reaches 0.2853 retrieval F1, while the
+strongest retrieval result among the reported Qwen question-only
+variants is 0.2865 for uniform alias training. Fine-tuning and
+classification-head changes improve some label metrics without
+consistently improving retrieval.
+
+The clearest counterexample is numeric SFT: label accuracy
+increases from 0.0400 to 0.4318 relative to frozen prompting,
+but retrieval F1 decreases. This shows that learning the
+evidence-length category is not an adequate substitute for
+learning a useful retrieval action in this protocol.
+
+\subsection{RQ3: Does similarity structure help?}
+Similarity-tree features provide additional observable information,
+and nonlinear models use the full representation more effectively
+than the tested linear tree model. Original fusion looks promising,
+but its in-sample base features make the training-fold estimate
+optimistic. Corrected OOF fusion reaches 0.2783 retrieval F1.
+
+The evidence therefore supports investigating combined language
+and document signals, but not claiming that hierarchy or fusion
+alone solves granularity selection. The corrected training
+procedure is a methodological contribution even though it lowers
+the apparent result.
+
+\subsection{RQ4: Does retrieval-utility supervision help?}
+Yes, relative to the preceding learned global methods in the
+recorded development comparisons. Expected-regret learning
+reaches 0.3075 F1, with positive paired differences over
+Phase 2D, Phase 3B, and both fusion versions. The change of
+objective also produces a markedly different prediction
+distribution, concentrating on 20 and 40 rather than 80 and 160.
+
+It still falls short of fixed 40 by 0.00835 F1. The result
+supports objective alignment as a productive direction, not
+a final superiority claim for the learned router.
+
+\subsection{RQ5: Does local adaptation add value?}
+The local protocol allows different regions to contribute
+different chunk sizes, but the trained router does not demonstrate
+an advantage over the same-tree fixed-40 baseline. Its slight
+recall gain comes with lower precision. Returning all chunks
+at each predicted level raises recall much further while
+reducing F1 and substantially increasing the output budget.
+
+The frozen Qwen context feature also adds no demonstrated gain.
+Constrained scoring successfully removes invalid outputs, but
+almost every question receives the category medium. A reliable
+interface is necessary; it does not guarantee a discriminative
+feature.
+
+\section{Implications for adaptive retrieval}
+The most useful design principle is to define the retrieval action
+before its label. If the action returns five chunks, the target
+should reflect their utility. Total annotation length is an
+intuitive property, but it is not the action itself.
+
+A second principle is to account for information cost. A question-only
+router needs less preparation than one that inspects every level
+of a paper. Additional features must earn their cost through a
+measurable quality or efficiency benefit.
+
+A third principle is to retain strong controls as the research
+becomes more sophisticated. The global fixed-size baseline,
+the matched local baseline, and the OOF reconstruction each
+prevent a different misleading comparison. They are part of
+the scientific result, not merely implementation details.
+
+\section{Future work}
+\subsection{Independent evaluation and repeated training}
+The immediate priority is an untouched evaluation split with
+a frozen protocol. The action set, target, feature extraction,
+hyperparameters, checkpoint rule, and primary metric should
+be fixed before inspecting its outcomes. Repeated training
+seeds would then distinguish stable gains from a favourable
+single fit.
+
+If further model selection is required, it should occur inside
+paper-grouped training procedures, with nested construction
+for stacked models where appropriate. The external evaluation
+should be used once for the specified comparison. Additional
+datasets would test whether the observed preference for an
+intermediate size is specific to QASPER and this metric.
+
+\subsection{Utility-aware local decisions}
+The most direct modelling extension is to bring the Phase 4
+objective into the local setting. Instead of predicting local
+evidence length, a tree-level learner could estimate the
+incremental retrieval utility of each candidate chunk. This
+would also expose an interaction that the current local
+classifier ignores: a useful chunk may become redundant after
+another tree has already contributed similar evidence.
+
+A set-level decision under an explicit token budget would
+address that interaction more naturally. Candidate selection
+could stop when further text adds little expected evidence
+coverage, rather than always returning five independent
+decisions. This is a proposed experiment, not an implemented
+result of the repository.
+
+\subsection{Calibration and selective adaptation}
+Most questions in Phase 4 are assigned 20 or 40, while some
+large-size oracle opportunities are missed. A selective router
+could use fixed 40 as a default and deviate only when the
+predicted utility difference is sufficiently large and
+well-calibrated. The threshold would need training-only
+selection, and performance should be reported as a function
+of both deviation frequency and retrieval cost.
+
+The question is whether the system can identify when changing
+a strong default is worthwhile. The current results motivate
+that experiment without answering it.
+
+\subsection{Representations, budgets, and generation}
+Sentence-aware or proposition-based units could reduce the
+boundary failures of short token windows. Contextual chunk
+embeddings could preserve neighbouring information without
+always returning longer passages. Both changes should be
+evaluated with matched candidate and token budgets, since
+otherwise a representation effect can be confused with an
+increase in returned text.
+
+A complete RAG evaluation should then test whether changes in
+retrieved evidence improve generated answers. It should hold
+the generator, prompt, context ordering, and generation
+settings constant, and measure answer correctness, evidence
+support, and citation quality alongside retrieval F1. Questions
+requiring tables or figures deserve separate analysis rather
+than exclusion from every stage.
+
+Finally, a deployment-oriented study should measure indexing
+cost, feature-extraction latency, model memory, retrieval
+latency, and total supplied tokens under comparable hardware
+conditions. An adaptive method can be useful by saving
+resources at similar quality, even if its absolute F1 does
+not exceed the best fixed baseline. That trade-off was not
+established by the present experiments.
+
+\section{Closing remarks}
+The value of adaptation must be demonstrated, not assumed. Here,
+the strongest progress came from aligning supervision with retrieval
+utility and correcting evaluation weaknesses. Learning from a
+decision's consequences, keeping development separate from evaluation,
+and retaining a strong fixed baseline provide a sound basis for
+the next stage.

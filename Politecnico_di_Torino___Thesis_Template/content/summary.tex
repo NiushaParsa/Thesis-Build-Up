@@ -1,6 +1,89 @@
-% only the text for the summary
+A retrieval system must decide how much text should count as one
+retrievable piece. A dataset name may need only a short phrase, while
+an explanation may require several connected statements. Yet a longer
+passage can contain the answer and still bury it in unnecessary material.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Sed arcu non odio euismod lacinia at quis risus sed. Tempor commodo ullamcorper a lacus vestibulum. Sed elementum tempus egestas sed sed risus. Netus et malesuada fames ac turpis. Sed blandit libero volutpat sed cras ornare arcu dui vivamus. Vel pharetra vel turpis nunc eget lorem dolor. Iaculis nunc sed augue lacus viverra vitae congue. Orci eu lobortis elementum nibh. Faucibus nisl tincidunt eget nullam non nisi est sit. Ante metus dictum at tempor commodo ullamcorper. Tempus quam pellentesque nec nam. Nulla malesuada pellentesque elit eget gravida.
+This thesis asks whether selecting different chunk sizes recovers
+annotated evidence more effectively than using one size throughout.
+It focuses on retrieval within a RAG pipeline, not on training an answer
+generator or measuring generated-answer quality.
 
+The experimental environment was built around QASPER, a dataset of
+questions about scientific papers. Each paper was represented at five
+granularities: 10, 20, 40, 80, and 160 GPT-2 tokens. Chunks and questions
+were embedded with \texttt{text-embedding-3-small}, and vectors were stored
+in Qdrant. Retrieval was restricted to the paper associated with each
+question. This deliberately removes document discovery from the problem
+and makes the experiments about finding evidence within a known paper.
+The frozen supervised population contains 2,245 training questions and
+924 validation questions.
 
-% $400\times$ is nicer than 400x
+The work first established resumable ingestion, stable identifiers,
+evidence normalisation, source offsets, and collection audits. These
+checks prevent missing records or partially resumed runs from being
+mistaken for modelling effects. Complete fixed-size outputs then provided
+a common retrieval benchmark.
+
+Fixed-size retrieval provided the main reference. Among the five sizes,
+40 tokens achieved the highest mean joined retrieval F1, 0.3159. The
+offline best-size oracle achieved 0.3821, so a useful adaptive choice was
+possible in principle. However, that oracle sees the reference evidence
+and all five retrieval outcomes. Its score measures remaining opportunity;
+it is not a system that can be deployed for a new question.
+
+The early adaptive methods used the question embedding to predict a size,
+or pooled chunks from all sizes into a single ranking. The selected
+logistic-regression router reached 0.2853 retrieval F1. Raw mixed-size
+retrieval reached 0.2562, and overlap-aware deduplication raised this to
+0.2618. Pooling candidates therefore did not solve the problem. The pooled
+rankings were dominated by short chunks, and removing redundant spans did
+not remove that imbalance.
+
+The next experiments asked whether a small Qwen model could make a better
+decision from the question wording. They covered zero-shot prompting,
+numeric-output fine-tuning, restricted alias classification, class-balanced
+loss, a dedicated classification head, explicit token-count instructions,
+and a learning-rate and training-duration search. Several variants improved
+classification against an evidence-length target without improving
+retrieval. In particular, numeric supervised fine-tuning increased label
+accuracy while concentrating predictions on large chunks and reducing
+retrieval F1. This exposed a central weakness of the target: the total
+length of the annotated evidence is not necessarily the best size for
+each of five retrieved chunks.
+
+The study then added information from the document. Similarity trees
+describe how question-to-chunk scores change between aligned coarse and
+fine spans. Linear classifiers and boosted trees were evaluated on
+level-wise and hierarchical features, followed by fusion with Qwen
+features. An initial fusion experiment was subsequently repeated with
+paper-grouped out-of-fold Qwen predictions. The corrected procedure gave
+less optimistic results, demonstrating why a stacking model must be
+trained on base-model predictions that were not produced in sample.
+
+The clearest improvement among the learned question-level methods came
+from changing the learning objective. Expected-regret regression used the
+observed retrieval F1 of every candidate size and learned the cost of
+choosing each one. It reached 0.3075 mean retrieval F1, ahead of the
+preceding learned routers. Nevertheless, its difference from fixed
+40-token retrieval was $-0.00835$, with a paired paper-cluster bootstrap
+95\% interval of $[-0.01266,-0.00416]$. Within the evaluated development
+sample, the fixed baseline remained stronger.
+
+Finally, local routing allowed different regions of the same paper to use
+different sizes. A router chose one granularity within each of the five
+highest-ranked 160-token trees, and one chunk was returned from each tree.
+This reached 0.3053 F1, against 0.3075 for a fixed-40 method using the same
+trees. A frozen Qwen feature describing the anticipated context need as
+short, medium, or long was also tested. Its first free-generation version
+failed the valid-output gate. Constrained token scoring fixed the interface,
+but the resulting feature was almost always \enquote{medium} and did not
+provide a demonstrated gain over the local router alone.
+
+Taken together, the experiments do not establish adaptive retrieval as
+superior to a well-chosen fixed size. They show where the difficulty lies:
+the supervision must reward useful retrieval decisions, training and
+evaluation must remain separated, and any adaptive method must justify its
+additional cost against a matched baseline. Since the same validation
+split informed repeated development decisions, an untouched evaluation,
+additional datasets, and downstream answer-quality measurements remain
+necessary before making broader claims.

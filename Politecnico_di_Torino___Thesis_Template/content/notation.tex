@@ -1,0 +1,29 @@
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+Term & Meaning in this thesis\\
+\midrule
+RAG & Retrieval-augmented generation\\
+NLP & Natural language processing\\
+LLM & Large language model\\
+GPT-2 & Tokenizer used for chunk boundaries and lexical evaluation\\
+QASPER & Question-answering dataset over scientific research papers\\
+OOF & Out-of-fold: a prediction made by a model not fitted on that fold\\
+SFT & Supervised fine-tuning\\
+MLP & Multilayer perceptron\\
+HNSW & Hierarchical navigable small world vector index\\
+$q,d$ & Question and its associated source paper\\
+$\granularities$ & Candidate chunk sizes $\{10,20,40,80,160\}$ tokens\\
+$K$ & Number of retrieved chunks; $K=5$ in the primary protocols\\
+$s(q,c)$ & Cosine similarity between a question and a chunk\\
+$E(q)$ & Joined reference evidence for a question\\
+$R_g(q)$ & Ranked top-$K$ chunks retrieved at size $g$\\
+$U(q,g)$ & Joined retrieval token F1 for $R_g(q)$\\
+$C(q,g)$ & Regret relative to the best of the five fixed-size actions\\
+\bottomrule
+\end{tabularx}
+
+\medskip
+\enquote{Validation} names the repository split. Because that split was consulted
+throughout development, its results are interpreted as development-set
+findings, not as a final, untouched test evaluation. \enquote{Classification F1}
+and \enquote{retrieval F1} refer to different tasks and are kept separate.

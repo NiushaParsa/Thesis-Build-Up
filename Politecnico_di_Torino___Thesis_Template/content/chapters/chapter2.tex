@@ -1,0 +1,250 @@
+\chapter{Background and Literature Review}
+\label{ch:background}
+
+\section{Retrieval as part of an answering system}
+A language model can produce a fluent answer without exposing where its
+information came from. Retrieval offers a different interface: relevant
+external text is selected and made available to the answering model.
+Lewis et al.\ formalised a RAG architecture combining a retriever with a
+sequence-to-sequence generator, bringing non-parametric information into
+the prediction process \cite{lewis2020rag}. In this thesis, that broader
+architecture motivates the task, but only the evidence-selection stage
+is evaluated.
+
+Retrieval itself has several decisions. The system needs a searchable
+representation, a relevance function, a candidate set, and a rule for
+constructing the final context. Granularity affects all four. Changing
+the boundaries of a passage changes its embedding, the number of indexed
+items, the competition between candidates, and the amount of text returned
+for a fixed number of results. It is therefore more than a formatting
+choice made after retrieval.
+
+It is helpful to distinguish document retrieval from passage retrieval.
+In an open-domain setting, finding the relevant document is part of the
+task. In this study, the associated QASPER paper is known and retrieval
+is filtered to that paper. The remaining difficulty is selecting evidence
+inside it. A method that succeeds under this restriction may still fail
+when unrelated documents are introduced, because the score distributions
+and the nature of hard negatives change.
+
+\section{Dense representations and similarity search}
+Dense retrieval maps questions and passages into a vector space. A
+similarity function then ranks passages by their relation to the question.
+Dense Passage Retrieval demonstrated the effectiveness of learned
+question and passage encoders for open-domain question answering
+\cite{karpukhin2020dpr}. The present project uses a fixed embedding
+service rather than retraining such a retriever. Consequently, any
+improvement must come from selecting or organising the existing
+representations, not from learning a better embedding space.
+
+For nonzero vectors $\mathbf{e}_q$ and $\mathbf{e}_c$, cosine similarity is
+\begin{equation}
+s(q,c)=\frac{\mathbf{e}_q^\top\mathbf{e}_c}
+{\|\mathbf{e}_q\|_2\|\mathbf{e}_c\|_2}.
+\label{eq:cosine}
+\end{equation}
+The repository uses \texttt{text-embedding-3-small} with 1,536-dimensional
+vectors \cite{openai2024embeddings}. It keeps the model and dimension
+fixed across the reported retrieval comparisons. This controls an
+important source of variation, although it also limits the conclusions
+to one embedding representation.
+
+Qdrant stores vectors together with payload fields used for filtering,
+including paper identity and granularity \cite{qdrantcollections}.
+Its vector index is an infrastructure component, not the document
+hierarchy proposed later in the thesis. HNSW organises vectors for
+approximate nearest-neighbour search \cite{malkov2016hnsw}; the
+similarity tree in this work organises aligned text spans within a
+paper. The two structures solve different problems despite both using
+hierarchical organisation.
+
+A high cosine score should not be read as a calibrated probability that
+a passage contains sufficient evidence. In particular, scores produced
+for different passage lengths may have different distributions. The
+mixed-size experiments directly test what happens when those scores
+are pooled without learning a cross-granularity calibration. Their
+outcome is therefore informative about this pipeline, but it is not a
+general theorem about dense retrieval.
+
+\section{What retrieval granularity changes}
+\subsection{Precision, coverage, and context}
+A small chunk can concentrate on words closely related to a question.
+It can also cut away a definition, a qualifier, or the subject of a
+pronoun. A large chunk can retain those connections while bringing in
+text that does not belong to the evidence. Neither choice is uniformly
+better. The right balance depends on the scoring objective as well as
+the document.
+
+In a top-$K$ evaluation, length and count interact. With five full chunks,
+10-token retrieval returns approximately 50 source tokens, whereas
+160-token retrieval returns approximately 800. The two methods have
+the same number of results but not the same text budget. A rise in recall
+at the larger size may simply reflect this increase in coverage.
+Likewise, a decline in precision may reflect the additional denominator
+in the lexical metric. A fair interpretation must retain both facts.
+
+Evidence annotations introduce a further distinction. The number of
+tokens highlighted by an annotator describes the reference material,
+not necessarily the best size of an independently ranked chunk. If
+evidence consists of several short statements, retrieving several
+compact chunks may be preferable to retrieving several long chunks
+whose length resembles the total annotation. This observation motivates
+the later move from evidence-length classification to retrieval regret.
+
+\subsection{Fixed windows and semantic units}
+Fixed token windows are simple and reproducible, but their boundaries
+need not match sentences or propositions. Dense X Retrieval studies
+retrieval units at several levels and argues for propositions as atomic,
+self-contained pieces of information \cite{chen2024densex}. Its units
+are constructed semantically. A 10-token window in this project is not
+equivalent to a proposition, and the thesis does not claim to reproduce
+that method.
+
+The advantage of the fixed windows here is experimental alignment. The
+chosen sizes double at each level, so a coarse window contains smaller
+windows from the same token sequence. This makes parent--child score
+comparisons possible without an additional sentence segmentation or
+semantic clustering procedure. The disadvantage is equally concrete:
+the resulting hierarchy preserves positional containment, not
+necessarily a meaningful discourse structure.
+
+An alternative way to retain context is to change when embeddings are
+constructed. Late Chunking encodes a longer text before pooling token
+representations into chunk embeddings, allowing the chunk representation
+to retain surrounding context \cite{gunther2024late}. The repository
+instead embeds each stored chunk as its own text. The current results
+therefore do not answer whether adaptive routing remains useful when
+small chunks already have contextualised representations.
+
+\section{Hierarchical retrieval}
+Hierarchical approaches offer access to information at more than one
+scale. RAPTOR recursively groups and summarises text to build a
+tree-organised retrieval structure \cite{sarthi2024raptor}. Its upper
+levels contain generated summaries. The hierarchy in this thesis is
+different: a 160-token node is a literal span of the paper, not an
+abstraction generated from its descendants. This avoids an extra
+summarisation model and preserves direct source offsets.
+
+The distinction matters for both capability and evaluation. A generated
+summary can express information not present in any single child and can
+combine evidence across separated parts of a document. A contiguous
+token tree cannot do that. On the other hand, its parent and child
+spans have a transparent containment relation, making it possible to
+measure local overlap with annotated evidence and to inspect score
+differences without assessing summary faithfulness.
+
+The similarity-tree hypothesis is that these score differences reveal
+something about evidence concentration. A strong parent and consistently
+strong children may suggest a broadly relevant region. A single strong
+child among weak siblings may suggest a narrow match. This is an
+interpretation of possible signals, not an assumption that either
+pattern always identifies gold evidence. The experiments test whether
+a classifier can use these patterns more effectively than it uses
+level-wise score summaries alone.
+
+\section{Adaptive retrieval in RAG}
+Adaptation can occur at several points in a retrieval pipeline.
+Adaptive-RAG uses question complexity to select among answering
+strategies with different retrieval demands, including different
+amounts of retrieval activity \cite{jeong2024adaptive}. Its decision is
+about the retrieval strategy, rather than choosing among the five
+fixed token lengths used here. The shared idea is that a question can
+inform how resources are allocated; the action spaces and supervision
+are different.
+
+Self-RAG integrates decisions to retrieve with generation and
+self-reflection through special reflection tokens
+\cite{asai2023selfrag}. It addresses the interaction between retrieval,
+generation, and critique. This thesis keeps generation outside the
+evaluation and makes a narrower decision before evidence is returned.
+A successful router here would therefore be a possible retrieval
+component, not a replacement for a system that verifies its generated
+claims.
+
+The amount of supplied context also cannot be separated entirely from
+how a generator uses it. Lost in the Middle reports sensitivity to the
+position of relevant information in long contexts
+\cite{liu2023lost}. This motivates care in assembling evidence, but
+does not establish that a higher lexical retrieval F1 will produce
+better answers in the present setting. That connection requires a
+downstream experiment with a specified generator and context ordering.
+
+\begin{table}[tbp]
+\centering\small
+\caption{Position of the thesis relative to neighbouring retrieval ideas.
+The rows describe different decisions, not a ranking of methods.}
+\label{tab:literature}
+\begin{tabularx}{\textwidth}{@{}p{3.1cm}XX@{}}
+\toprule
+Approach & Main decision or representation & Difference from this thesis\\
+\midrule
+Dense X Retrieval & Semantic retrieval units, including propositions & Fixed token spans are not semantic propositions\\
+RAPTOR & Hierarchy with recursively generated summaries & Trees here contain literal, aligned source spans\\
+Late Chunking & Contextualise before forming chunk embeddings & Stored chunks here are embedded independently\\
+Adaptive-RAG & Adapt the answering/retrieval strategy & The primary action here is chunk size\\
+Self-RAG & Retrieve, generate, and critique jointly & Only evidence retrieval is evaluated here\\
+This work & Select global or local token granularity & Compare decisions under fixed embeddings and explicit evidence scoring\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Learning a router}
+\subsection{Classification and its target}
+A router can be expressed as a classifier over five sizes. Given features
+$\mathbf{x}$, it predicts probabilities $p_\theta(g\mid\mathbf{x})$ and
+chooses the largest. Standard cross-entropy rewards the labelled size
+and penalises every other size through the same categorical objective.
+Its suitability depends on how that label was obtained.
+
+If the target is evidence length, a correct classification means that
+the model has recovered a length category. It does not mean that the
+associated top-five retrieval set is optimal. If two sizes have almost
+identical retrieval utility, a hard label also hides that similarity.
+Conversely, two equally wrong classifications can have very different
+retrieval costs. These are objective-design issues, not simply limits
+of classifier capacity.
+
+Class imbalance creates an additional difficulty. Class-balanced loss
+uses the effective number of samples to reduce the dominance of common
+classes \cite{cui2019classbalanced}. This provides the weighting
+principle tested in Phase 2B. It cannot, by itself, make a proxy target
+more faithful to the downstream retrieval objective.
+
+\subsection{Nonlinear models and combined features}
+Boosted decision trees provide a way to learn nonlinear interactions
+between score statistics without fine-tuning the embedding model.
+XGBoost supplies a regularised gradient-boosting implementation
+\cite{chen2016xgboost}. Here its role is modest: learn whether particular
+combinations of level-wise and hierarchical features support a size
+decision. Feature importance can suggest which measurements the fitted
+model used, but it does not establish a causal explanation of relevance.
+
+Combining a language model and a tree model raises a separate training
+question. If a second-stage learner sees base-model predictions on
+examples that trained the base model, its inputs can be unrealistically
+confident. Out-of-fold predictions are a practical way to reduce this
+mismatch. Grouping by paper is important because questions about the
+same paper share content and should not be treated as independent
+documents when constructing the folds.
+
+\section{Evaluation as part of the method}
+Evaluation is not a final reporting step detached from model design.
+The target, decision unit, candidate set, and retrieval budget determine
+what a score means. A question-level classifier, a local-tree classifier,
+and a retrieval system can all report an F1 value while measuring
+different events.
+
+Uncertainty also depends on the unit of observation. Questions from the
+same paper share a source, so resampling individual questions can ignore
+an important dependence. The later repository comparisons resample
+papers and preserve all of their questions. General guidance on
+significance testing in NLP emphasises choosing procedures that match
+the task and comparison \cite{dror2018testing}. The exact paired
+paper-cluster bootstrap used here is specified in
+Chapter~\ref{ch:results}.
+
+The gap addressed by this thesis is consequently specific. It is not
+that granularity or adaptive retrieval has never been studied. It is
+the empirical question of which signals and learning targets support
+a useful granularity choice in this fixed, evidence-annotated setting,
+and whether their added complexity beats a strong fixed-size baseline.

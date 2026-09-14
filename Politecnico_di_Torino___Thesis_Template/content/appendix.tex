@@ -1,25 +1,298 @@
-% appendix
-\chapter{Galileo}
-\label{sec:appendix_galileo}
+\chapter{Experimental Chronology}
+\label{app:chronology}
+This appendix records the development sequence rather than presenting
+only the final model. Phase names follow the repository. Infrastructure
+checks and interrupted runs are identified separately from completed
+retrieval evaluations.
 
-\lstdefinelanguage{JavaScript}{
-  keywords={break, case, catch, continue, debugger, default, delete, do, else, finally, for, function, if, in, const, instanceof, new, return, switch, this, throw, try, typeof, var, void, while, with},
-  morecomment=[l]{//},
-  morecomment=[s]{/*}{*/},
-  morestring=[b]',
-  morestring=[b]",
-  sensitive=true
-}
+\small
+\begin{longtable}{@{}p{2cm}p{5.3cm}p{5.8cm}@{}}
+\caption{Chronology of the preserved experimental programme.}
+\label{tab:chronology}\\
+\toprule
+Stage & Purpose & Outcome or status\\
+\midrule
+\endfirsthead
+\toprule
+Stage & Purpose & Outcome or status\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Foundation & Text flattening, five chunk levels, embeddings, Qdrant schema & Resumable ingestion and stable identities; legacy storage code is not a second benchmark\\
+Early smoke & Verify retrieval and output writing & Tiny and empty artifacts are execution diagnostics, not full validation results\\
+Integrity & Audit counts, offsets, checkpoints, and missing records & Dated problems documented; later frozen artifacts define final populations\\
+Fixed baseline & Score all five sizes, top five within each paper & Fixed 40 strongest; offline oracle records per-question opportunity\\
+Embedding router & Logistic regression and 64-unit MLP & MLP gain below adoption threshold; logistic router retained\\
+Mixed sizes & Pool candidates, with and without overlap removal & Neither raw nor deduplicated mixture beats fixed 40\\
+Phase 1 & Frozen Qwen, question-only numeric decision & Valid outputs, strong preference for size 10\\
+Phase 2 preflights & Smoke, tiny-overfit and training-loop checks & Tail-accumulation issue corrected; interrupted v1 not a final model\\
+Phase 2 v2 & Numeric supervised fine-tuning & Better label accuracy, weaker retrieval, large-size collapse\\
+Phase 2B-A & Uniform restricted-alias classification & More medium-size predictions; strongest Qwen-only retrieval result\\
+Phase 2B-B & Effective-number class weighting & No small-class recovery; weaker macro F1 and retrieval than A\\
+Phase 2C & Base model with five-class head & Removes response parsing; classification improvement over numeric SFT\\
+Phase 2D & Exact token-count prompt & Better classification than 2C, slightly lower retrieval F1\\
+Phase 2E & Three learning rates, five epochs & Fifteen candidates; winner 5e-6 at epoch four\\
+Phase 3A & Level and hierarchy features with linear models & Small hierarchy difference; heuristics retained as diagnostics\\
+Phase 3B & Nonlinear XGBoost on both representations & Full-tree model improves over linear tree model\\
+Phase 3C & Qwen logits or hidden states fused with tree features & Initial result limited by in-sample base features\\
+Phase 3C-OOF & Reconstruct base features using paper-grouped held-out predictions & Less optimistic fusion estimates; fixed full-data refit\\
+Phase 4 & Five retrieval-regret regressors & Best learned global retrieval; still below fixed 40\\
+Phase 5A & Gold-overlap supervision for local tree decisions & Close to, but not better than, matched fixed-40 tree retrieval\\
+Phase 5A probe & Return all descendants at predicted level & Higher recall, larger budget, much lower F1\\
+Phase 5B v1 & Frozen Qwen context category from free generation & Invalid-output gate fails; no downstream result\\
+Phase 5B-v2 & Training-only prompt repair and constrained token scoring & Valid but nearly constant feature; no demonstrated retrieval gain\\
+\end{longtable}
+\normalsize
 
-%\lstinputlisting[]{} % for source code files directly
-% lstlisting environment for direct inclusion
-\begin{lstlisting}[language=JavaScript]
-    const test = test;
-\end{lstlisting}
+Preflight runs check gradients, tiny-set fitting, accumulation, and
+recovery; they are not independent estimates of generalisation.
+Source transfers and hash audits likewise preserve an experiment
+rather than create a new model. Phase 3A resumed gRPC feature
+extraction through REST after 1,844 training questions. Its durable
+processing-time sum must not be mistaken for uninterrupted wall time.
 
-% for computational complexity
-$\mathcal{O}\left(n\log{n}\right)$
+\chapter{Configurations and Output Contracts}
+\label{app:protocols}
 
-% verbatim
-\verb+numpy+
+\section{Common retrieval settings}
+The common settings are the candidate sizes 10, 20, 40, 80, and 160;
+GPT-2 tokenisation; fixed 1,536-dimensional
+\texttt{text-embedding-3-small} vectors; cosine similarity; source-paper
+filtering; and top-five retrieval for the primary protocols.
+The metric configuration hash preserved in the main frozen comparisons is
+\begin{quote}\small
+\path{9a3022fd1c808f72ccbf3265fe6020593bb58bdd28aeb9025b8c4b735d669de8}.
+\end{quote}
+The metric name is \texttt{f1\_joined\_topk}; the metric version is
+\texttt{qasper-token-prf-v2}. A change in normalisation, candidate
+population, or top-$K$ is a new evaluation configuration.
 
+The three target definitions are
+\begin{itemize}
+\item \path{oracle-f1-evidence-smaller-v1}: legacy retrieval-derived labels;
+\item \path{oracle-evidence-length-gpt2-smaller-midpoint-v1}: total evidence length;
+\item local gold-overlap labels constructed for question--tree pairs.
+\end{itemize}
+The last target is described by its construction in
+Chapter~\ref{ch:data}; it must not be assumed identical to a global
+label merely because both return one of the same five numbers.
+
+\section{Model identities and training}
+The post-trained Qwen model is pinned to revision
+\begin{quote}\small
+\path{2fc06364715b967f1860aea9cf38778875588b17},
+\end{quote}
+and the base model to
+\begin{quote}\small
+\path{dc7cdfe2ee4154fa7e30f5b51ca41bfa40174e68}.
+\end{quote}
+Revision pinning matters because a model name alone does not identify
+an immutable set of weights or tokenizer files.
+
+The common three-epoch Qwen training setup uses seed 42, bfloat16,
+microbatch size four, eight accumulation steps, maximum sequence
+length 128, learning rate $2\times10^{-5}$, weight decay 0.01,
+cosine scheduling, 5\% warm-up, and clipping at 1. The full training
+population yields 71 optimiser steps per epoch. The five-epoch grid
+changes its learning rate and schedule horizon as documented in
+Chapter~\ref{ch:method}.
+
+The Phase 2E recorded environment includes Python 3.11.13,
+PyTorch 2.8.0 with CUDA 12.8, and Transformers
+\texttt{5.15.0.dev0} pinned to commit
+\begin{quote}\small
+\path{2ef79f87a02111f8b49a72fb7d0c86b5b0bf10b7}.
+\end{quote}
+These describe the preserved GPU run, not requirements to install
+on a computer that only needs to compile the thesis.
+
+\input{content/generated/lr_grid}
+
+\section{Token-count classifier instruction}
+The Phase 2D/2E instruction is reproduced from the repository:
+\begin{quote}
+You are a router for a retrieval-augmented generation system. Based
+only on the question, select the option representing the context
+size most suitable for retrieving the evidence required to answer
+it. Choose exactly one value from: 1 = 10 tokens, 2 = 20 tokens,
+3 = 40 tokens, 4 = 80 tokens, 5 = 160 tokens. Return only the number
+\end{quote}
+The original question follows a blank line and the prefix
+\texttt{Question:}. Although the wording refers to returning a number,
+the sequence-classification experiment obtains five head logits,
+not a generated response. The prompt is an input specification;
+it should not be confused with the model's output mechanism.
+
+\section{Final frozen context-feature instruction}
+The repaired Phase 5B-v2 instruction states:
+\begin{quote}
+You are not being asked to answer the question. Your only task is
+to classify how much supporting context would be needed to answer
+it. Respond with exactly one lowercase label from: short, medium,
+long. Do not output yes, no, the answer to the question, an
+explanation, or punctuation. Output one label only.
+\end{quote}
+The final decision restricts the next-token comparison to
+\texttt{short} (8412), \texttt{medium} (25252), and
+\texttt{long} (4670). The chosen category is represented by three
+one-hot features. It is repeated across local trees for that question.
+
+The free-generation predecessor used a maximum of eight new tokens.
+Its invalid responses are retained, and no classifier or retrieval
+result is attributed to it. The final constrained method is a
+distinct version, not a retroactive replacement of those invalid
+records.
+
+\section{Prediction distributions}
+\input{content/generated/prediction_counts}
+The prediction counts in Table~\ref{tab:predictioncounts} are useful
+for checking both completeness and class collapse. Each row sums
+to 924. A row concentrated on one or two sizes can still have a
+moderate accuracy under an imbalanced target. It should be inspected
+alongside macro F1 and retrieval utility.
+
+\section{Selection and leakage boundaries}
+For the evidence-length Qwen sequence, checkpoint selection uses
+validation macro F1, followed by accuracy, weighted F1, balanced
+accuracy, lower cross-entropy, and an earlier checkpoint where
+needed. Phase 2E adds lower numeric learning rate as a final exact-tie
+criterion. Retrieval cannot revise the locked classification winner.
+
+The tree-model grids use paper-grouped training folds. The corrected
+fusion base features are OOF, while its meta-level diagnostics are
+not claimed to be fully nested. Phase 4 uses fixed inherited
+hyperparameters and saves validation decisions before opening the
+validation utility targets. Phase 5A and 5B-v2 similarly separate
+prediction-time features from gold-overlap evaluation.
+
+These are phase-specific safeguards. The validation split remains
+a development split across the programme as a whole.
+
+\chapter{Repository Provenance and Reproduction}
+\label{app:provenance}
+
+\section{How reported numbers map to artifacts}
+Paths in this appendix are relative to the project repository,
+not to the LaTeX directory. The structured files are the primary
+numerical record; the documents in \path{docs/} explain protocol
+and execution history.
+
+\begin{description}[style=nextline,leftmargin=0pt]
+\item[Data construction and early baseline]
+\path{docs/DATA_INTEGRITY.md},
+\path{docs/EVALUATION_PIPELINE.md}, and
+\path{reports/final_validation_comparison/}.
+The selected embedding-router report is
+\path{models/granularity_router/frozen_topk5/training_report.json}.
+The frozen validation action table is
+\path{outputs/oracle_frozen/validation/RouterDataset_20260623_171712.jsonl}.
+
+\item[Question-only Qwen phases]
+Each phase directory below contains classification and retrieval
+summaries and a final summary:
+\path{outputs/qwen_pretrained_zero_shot_router_evidence_length_oracle/},
+\path{outputs/qwen_finetuned_router_evidence_length_oracle/},
+\path{outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/},
+\path{outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/},
+\path{outputs/qwen_phase2c_sequence_classifier_evidence_length_oracle/},
+and
+\path{outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/}.
+The Phase 2E study is under
+\path{outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/};
+the selected retrieval result is under \path{trials/lr5e-6/}.
+
+\item[Similarity features and fusion]
+The corresponding roots are
+\path{outputs/similarity_tree_phase3a_evidence_length_oracle/},
+\path{outputs/similarity_tree_phase3b_xgboost_evidence_length_oracle/},
+\path{outputs/qwen_phase3c_fusion_evidence_length_oracle/}, and
+\path{outputs/qwen_phase3c_oof_fusion_evidence_length_oracle/}.
+Within them, \path{classification_summary.json} records representation
+comparisons, while \path{classification/metrics.json} and
+\path{retrieval/summary.json} describe the primary result.
+
+\item[Expected regret]
+\path{outputs/qwen_phase4_expected_regret_retrieval_utility/comparison/baselines.json}
+contains the comparable strategy metrics and paired bootstrap
+differences. Its \path{retrieval/results.jsonl} records all five
+utilities, the predicted size, and the resulting regret per question.
+Its \path{targets/train_utility_targets.jsonl} contains the completed
+training utility targets.
+
+\item[Local routing]
+\path{outputs/similarity_tree_phase5a_local_gold_overlap_router/retrieval/summary.json}
+contains the primary local result, matched fixed-size methods,
+the all-descendants probe, and paired intervals.
+The construction summaries under \path{features/} document exclusions
+and local training units.
+
+\item[Frozen context feature]
+The first version is preserved under
+\path{outputs/similarity_tree_phase5b_zero_shot_qwen_context_feature/}.
+The repaired version is under
+\path{outputs/similarity_tree_phase5b_v2_zero_shot_qwen_context_feature/}.
+Its \path{comparison/phase5a_and_fixed40.json} records the paired
+comparisons, and its \path{development/} and \path{qwen_features/}
+directories separate the training-only repair probe from final
+feature extraction.
+\end{description}
+
+The experiment entry points include \path{granularity_router.py},
+\path{router_selected.py}, the \path{qwen_phase*.py} scripts,
+\path{similarity_tree_phase3a.py},
+\path{similarity_tree_phase3b.py},
+\path{similarity_tree_phase5a.py}, and
+\path{similarity_tree_phase5b_v2.py}. The phase documents specify
+the exact commands and source snapshots used for their runs.
+Historical absolute paths in transferred metadata identify the
+original GPU host; they are not assumed to exist on the current
+writing computer.
+
+\section{Rebuilding the thesis results}
+The LaTeX project includes
+\path{scripts/generate_results.py}. It reads preserved JSON and JSONL
+artifacts and produces the tables in \path{content/generated/} and
+vector figures in \path{images/generated/}. It does not call an
+embedding service, access the vector database, train a model, or
+modify experiment outputs.
+
+The script checks that the main prediction distributions sum to
+924, that the Phase 4 records cover 924 questions and 277 papers,
+and that per-question fixed-size means reproduce the stored
+comparison values. It records SHA-256 hashes of its input files
+in \path{content/generated/source_manifest.json}. The diagnostic
+cases preserve their question identifiers in that manifest.
+
+To rebuild those derived assets from the thesis directory:
+\begin{verbatim}
+python scripts/generate_results.py
+\end{verbatim}
+The plotting environment needs NumPy and Matplotlib. Generated
+tables and figures are retained with the LaTeX source so that
+ordinary document compilation does not require the experimental
+Python environments.
+
+\section{Compiling and reviewing the document}
+The project uses pdfLaTeX and Biber. The included PowerShell
+build script runs the required passes and writes the PDF and
+intermediate files to \path{build/}. From the thesis directory:
+\begin{verbatim}
+powershell -ExecutionPolicy Bypass -File scripts/build_thesis.ps1
+\end{verbatim}
+The existing VS Code LaTeX configuration also provides a build
+recipe. Compilation does not require a GPU, a running Qdrant
+service, API credentials, or the original model checkpoints.
+
+The original demonstration bibliography and glossary files remain
+in the downloaded template as reference assets but are not included
+in this thesis. Personal acknowledgements are intentionally omitted;
+they should be written by the author rather than inferred from
+experiment records.
+
+This document is a complete research draft grounded in the saved
+repository. Before submission, the author and supervisors should
+review the scientific interpretation, institutional formatting
+requirements, and citation details. Any new evaluation should be
+added as a separately identifiable result and reflected consistently
+in the abstract, summary, results, and conclusion.

@@ -1,52 +1,31 @@
-% EDIT THE thesis_info.tex FILE, NOT THIS ONE!
-\newgeometry{top=4cm,left=3cm,right=3cm,bottom=4cm,heightrounded}
+% Personal details belong in thesis_info.tex.
+\newgeometry{top=2.8cm,left=2.8cm,right=2.8cm,bottom=2.8cm,heightrounded}
 \begin{titlepage}
 \centering
-%
-\includegraphics[width=110mm]{\thesisuniversitylogo}\\
-%
-\vspace{\stretch{2}}
-%
-{\institutionfont \textbf{\thesisuniversity} \par}
-%
-\vspace{\stretch{1}} % changing this number and the others changes the proportion
-%
-{\divisionfont \thesiscourse \par}
-{\divisionfont \academicYear \par}
-\iflanguage{english}{
-    {\divisionfont Graduation Session \thesisdate \par}
-}{\divisionfont Sessione di laurea \thesisdate \par}
-%
-
-\vspace{\stretch{4}}
-%
-{\customtitlefont \textbf{\thesistitle} \par}
-{\customsubtitlefont \textbf{\thesissubtitle} \par}
-%
-\vspace{\stretch{4}}
-%
-\makebox[\textwidth]{\null\hfill\def\arraystretch{1.1} % to change the spacing change this number
-\begin{minipage}[t]{.4\textwidth}
-    \begin{tabular}[t]{@{}ll@{}}
-        \fixednamesfont \thesissupervisortext: & \\
-         & \namesfont \thesissupervisoronename~\thesissupervisoronesurname \\
-         & \namesfont \thesissupervisortwoname~\thesissupervisortwosurname %\\
-         % uncomment if you need a third supervisor
-         % & \namesfont \thesissupervisorthreename~\thesissupervisorthreesurname
-    \end{tabular}
+\includegraphics[width=105mm]{\thesisuniversitylogo}\par
+\vspace{1.2cm}
+{\institutionfont\textbf{\thesisuniversity}\par}
+\vspace{0.8cm}
+{\large\thesiscourse\par}
+\vspace{0.3cm}
+{\large\academicYear\par}
+{\large Graduation Session: \thesisdate\par}
+\vfill
+{\customtitlefont\textbf{\thesistitle}\par}
+\vfill
+\begin{minipage}[t]{0.61\textwidth}
+\raggedright
+{\large\textbf{\thesissupervisortext}\par}
+\medskip
+{\large\thesissupervisoronename\ \thesissupervisoronesurname\par}
+{\large\thesissupervisortwoname\ \thesissupervisortwosurname\par}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\raggedright
+{\large\textbf{\thesiscandidatetext}\par}
+\medskip
+{\large\thesiscandidatename\ \thesiscandidatesurname\par}
 \end{minipage}
-%
-\hfill
-%
-\begin{minipage}[t]{.4\textwidth}
-\begin{tabular}[t]{@{}ll@{}}
-    \fixednamesfont \thesiscandidatetext: & \\
-     & \namesfont \thesiscandidatename~\thesiscandidatesurname
-\end{tabular}
-\end{minipage}\hfill\null}\\
-%
-\vspace{\stretch{1}}
-%
+\vspace{1cm}
 \end{titlepage}
-
 \restoregeometry

@@ -1,0 +1,314 @@
+\chapter{Dataset and Preprocessing}
+\label{ch:data}
+
+\section{QASPER and the experimental population}
+QASPER contains 5,049 information-seeking questions associated with 1,585
+NLP research papers, with answers and supporting evidence annotations
+\cite{dasigi2021qasper}. This structure makes it possible to evaluate
+retrieval against evidence from a known source. It also introduces
+practical complications: papers have different lengths, questions can
+have multiple annotations, and some evidence refers to tables or figures
+that do not have a directly recoverable text span.
+
+The published dataset size is not the denominator used in every
+repository experiment. The frozen supervised population contains 2,245
+training questions from 845 papers and 924 validation questions from
+277 papers. Those are the counts used for the main question-level
+comparisons. They describe the preserved, eligible experimental records,
+not a claim that every original question has usable text evidence for
+every later method.
+
+\begin{table}[tbp]
+\centering
+\caption{Populations used in the main experiments. The local training
+rows are derived from the frozen question-level training population.}
+\label{tab:populations}
+\begin{tabularx}{\textwidth}{@{}Xrr@{}}
+\toprule
+Population & Questions & Papers\\
+\midrule
+Frozen question-level training & 2,245 & 845\\
+Frozen validation retrieval & 924 & 277\\
+Eligible local-router training & 2,101 & ---\\
+Excluded from local training: no mappable text evidence & 144 & ---\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The same paper must not appear on both sides of a grouped training
+fold. The later five-fold procedures therefore group questions by
+paper identifier. Validation remains outside those training folds.
+However, it was used repeatedly across the development sequence,
+including checkpoint selection in the Qwen experiments. This thesis
+does not report a final test-set evaluation.
+
+\section{Document construction and token boundaries}
+\subsection{Flattening the source}
+The ingestion code constructs a single paper text from the title,
+abstract, section names, and section paragraphs. Nonempty components
+are joined with double newlines. Retaining section names gives the
+retriever access to signals such as an experimental or methodological
+heading, while the single source string provides a consistent coordinate
+system for chunk and evidence offsets.
+
+This representation is a text view of a scientific paper, not a
+reconstruction of its PDF layout. A table may be represented differently
+from its appearance on the page, and figure-based evidence may not be
+locatable as ordinary prose. The method should therefore be understood
+as text evidence retrieval over the dataset's representation.
+
+\subsection{Five aligned granularities}
+The GPT-2 fast tokenizer is applied without special tokens and with
+offset mappings. For a token sequence of length $L$, a size $g$ defines
+successive ranges
+\begin{equation}
+[jg,\min((j+1)g,L)),\qquad
+j=0,\ldots,\left\lceil L/g\right\rceil-1.
+\label{eq:chunks}
+\end{equation}
+The final chunk may be shorter than $g$. The source text for a chunk is
+sliced using the corresponding character offsets. Thus the stored
+content can be traced to the flattened paper rather than reconstructed
+from a potentially different token decoder.
+
+Chunks do not overlap within a level. Because all sizes are multiples
+of ten and double successively, boundaries align in token space across
+levels. A complete 160-token root contains two 80-token children, four
+40-token descendants, eight 20-token descendants, and sixteen 10-token
+leaves. At document edges the tree can be partial. This alignment
+supports the later hierarchy without implying that every boundary
+coincides with a sentence or that every inter-token whitespace character
+belongs to a stored span.
+
+Token counts used for boundaries must also be distinguished from counts
+after joining or normalising retrieved text. Joining separately sliced
+chunks can change tokenisation at boundaries. For this reason, reported
+retrieved token counts need not equal exactly five times the nominal
+chunk size, even before considering short final chunks.
+
+\section{Embedding and storage}
+The project embeds questions, chunks, and evidence using
+\path{text-embedding-3-small}, with 1,536 dimensions. Qdrant contains
+three relevant collections: \texttt{PaperChunk},
+\texttt{PaperQuestion}, and \texttt{PaperEvidence}. Payloads retain
+identities, split information, chunk size, and available source offsets.
+Granularity is a filter within the chunk collection; the five levels
+should not be mistaken for five unrelated embedding models.
+
+A read-only collection audit recorded 1,701,822 chunks, 4,526 questions,
+and 9,522 evidence records. These are storage counts across the ingested
+material. They are not the frozen training and validation sample sizes
+in Table~\ref{tab:populations}. In particular, the presence of other
+split records in storage does not imply that a test benchmark was
+evaluated in the thesis.
+
+The embedding pipeline batches requests, retries failures, and preserves
+the association between input texts and returned vectors. Stable UUID5
+identifiers are derived from document, granularity, and chunk index for
+chunks; evidence identity incorporates its text hash. This allows
+repeated ingestion to upsert the intended objects rather than silently
+creating additional copies.
+
+The Qdrant setup uses cosine distance, on-disk vector storage, HNSW,
+and payload indexes for common filters. A historical audit recorded a
+server/client version difference, with server 1.13.2 and client 1.16.1.
+That observation belongs to the environment history; it is not evidence
+that later frozen outputs are invalid. The repository also contains
+legacy Weaviate-related code. The reported experiment pipeline uses
+Qdrant, so those files are not an additional evaluated vector-store
+baseline.
+
+\section{Resumability and data integrity}
+\subsection{From smoke tests to a frozen benchmark}
+Early smoke tests were intended to validate execution, not estimate
+retrieval performance. A February smoke artifact included an empty
+output and a separate 15-record result corresponding to three questions
+at five sizes. Neither is a full validation run. Treating these small
+files as final results would confuse pipeline development with model
+evaluation.
+
+Ingestion was made resumable with seven tracked stages: one for each
+chunk size, one for questions, and one for evidence. Checkpoint updates
+use locking and atomic replacement. JSONL output writing also required
+care: a bookkeeping problem in the locked writing/counting path was
+addressed so that durable records and reported completion counts agreed.
+These measures matter when embedding requests, retrieval, or training
+are interrupted.
+
+A June integrity audit covered 1,585 papers and identified four papers
+with incomplete checkpoint state, six missing questions, sixteen missing
+evidence records, and 1,345 evidence records without resolved offsets
+out of 9,522. It also recorded 46 papers without highlighted evidence.
+These are dated observations of the pipeline at that point. Subsequent
+complete experiment artifacts, rather than a stale report of pending
+work, determine the populations reported here.
+
+The expected-regret phase provides a concrete example. Its utility
+table initially covered 2,223 training questions. Recovering the missing
+22 completed the frozen population of 2,245; it did not add a new
+training dataset. The final comparison uses the completed target set.
+
+\subsection{Text evidence and source offsets}
+Two uses of evidence need different kinds of completeness. Joined
+lexical F1 can compare the retrieved text with a supplied evidence string
+even when that string has no exact source offset. Local gold-overlap
+training, in contrast, needs to determine which source region intersects
+the evidence. It cannot construct a meaningful span target from an
+unlocatable annotation.
+
+The local-router construction therefore separates complete, partial,
+and unmappable evidence. Of the 2,245 training questions, 1,915 have
+complete mapped evidence and 186 retain a usable partial mapping. The
+remaining 144 are excluded from local training. Together the 2,101
+eligible questions yield 4,081 gold-overlapping tree examples.
+Annotations involving \texttt{FLOAT SELECTED} are an important source
+of unmappable table or figure evidence.
+
+Excluding unmappable questions is a defensible construction rule, but
+it changes the training population. The local router may consequently
+be less representative of questions whose support depends on visual
+or tabular material. The thesis does not turn these exclusions into
+zero-length labels or silently treat them as short-evidence cases.
+All 924 frozen validation questions remain in the primary local
+retrieval evaluation.
+
+\section{Joined evidence-token evaluation}
+\subsection{Normalisation and aggregation}
+The versioned primary metric is \texttt{qasper-token-prf-v2}, with
+lowercasing, ASCII punctuation removal, and whitespace collapsing. Reference
+evidence strings are deduplicated under the metric's normalisation and
+combined. Retrieved chunks are joined in their returned order. The
+normalised strings are then tokenised using GPT-2. Each token is
+decoded separately, surrounding whitespace is stripped, and empty
+decoded tokens are discarded before counting. Thus the multiset
+elements are these decoded token strings, not raw tokenizer IDs.
+
+Let $a_t$ and $b_t$ be the multiplicities of token $t$ in the joined
+retrieved text and reference evidence. The overlap is
+\begin{equation}
+O(q)=\sum_t\min(a_t,b_t).
+\end{equation}
+Precision, recall, and joined retrieval F1 are
+\begin{equation}
+P(q)=\frac{O(q)}{\sum_t a_t},\qquad
+R(q)=\frac{O(q)}{\sum_t b_t},\qquad
+\retrievalf(q)=\frac{2P(q)R(q)}{P(q)+R(q)}.
+\label{eq:retrievalmetric}
+\end{equation}
+The implementation assigns zero when an empty denominator or zero
+combined precision and recall prevents an ordinary calculation.
+The reported mean is the arithmetic mean of per-question F1, not
+the F1 computed from corpus-wide token totals and not the mean of
+individual chunk F1 scores.
+
+The multiset definition is important. Repeating a token in several
+retrieved chunks increases the retrieved count, but its credit is
+capped by the reference count. Redundant chunks can therefore lower
+precision even when each looks relevant. Conversely, a matching token
+can receive lexical credit without occurring at the same source
+position as the annotated evidence. This is not a positional overlap
+metric or a semantic entailment measure.
+
+\subsection{Diagnostic similarity measures}
+The baseline reports also store query-to-chunk and evidence-to-chunk
+similarity summaries. Query similarity is available during retrieval.
+Evidence similarity uses the reference evidence and is an offline
+diagnostic. For a chunk, the latter can be summarised by its maximum
+similarity to an evidence item and then aggregated across retrieved
+chunks.
+
+These measurements should not be substituted for joined F1. A passage
+can have a high query similarity and omit much of the annotated evidence.
+A long passage can resemble an evidence embedding while containing a
+large amount of additional text. The experiments use these diagnostics
+to inspect behaviour, while keeping the versioned lexical metric as
+the primary retrieval outcome.
+
+\section{Three targets called an oracle}
+\label{sec:oracles}
+\subsection{Retrieval-derived labels and the offline bound}
+For each question, the fixed-size benchmark stores
+\begin{equation}
+U(q,g)=\retrievalf(R_g(q),E(q)),\qquad g\in\granularities.
+\end{equation}
+The best available utility is
+\begin{equation}
+U^*(q)=\max_{g\in\granularities}U(q,g).
+\label{eq:oracle}
+\end{equation}
+Averaging $U^*(q)$ gives an offline bound over those five saved actions.
+It is not an upper bound over every possible mixture of chunks or every
+future retrieval architecture.
+
+The early router uses a legacy label rule: maximise joined F1 within
+$10^{-6}$, then use evidence similarity to break ties, and finally prefer
+the smaller size. A later exact utility argmax with smaller-size
+tie-breaking is close but not identical. On validation, their size
+counts are respectively $(137,235,283,187,82)$ and
+$(138,235,282,187,82)$. The thesis preserves that distinction rather
+than silently reassigning the earlier model's targets.
+
+\subsection{Whole-question evidence length}
+The Qwen and global similarity-tree classification sequence uses a
+different target. Evidence strings are stripped, exactly deduplicated,
+sorted, joined with newlines, and tokenised. If their total length is
+$\ell(q)$, the label is the nearest candidate size:
+\begin{equation}
+y_{\mathrm{len}}(q)=
+\underset{g\in\granularities}{\arg\min}\ |\ell(q)-g|,
+\label{eq:lengthlabel}
+\end{equation}
+with the smaller size chosen at a midpoint and extreme lengths clipped
+to the available range. This target does not inspect which size
+retrieves the best evidence.
+
+\begin{table}[tbp]
+\centering
+\caption{Whole-question evidence-length labels. Counts sum to the
+frozen training and validation populations.}
+\label{tab:labels}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Split & 10 & 20 & 40 & 80 & 160\\
+\midrule
+Training & 55 & 267 & 586 & 687 & 650\\
+Validation & 13 & 81 & 178 & 232 & 420\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The most common training label is 80, whereas the most common validation
+label is 160. Predicting the training majority is a legitimate constant
+baseline. Choosing the validation majority after inspecting validation
+labels is only a descriptive reference, not a training-derived method.
+This shift also helps explain why accuracy alone can conceal poor
+coverage of smaller classes.
+
+\subsection{Local evidence overlap}
+The final tree-level target uses only the evidence intersecting a given
+160-token root. Intersections are combined as a union so that overlapping
+annotations do not count the same source region repeatedly. The
+tokenised local evidence length is mapped to the nearest candidate
+size with the same smaller-midpoint convention.
+
+Its training unit is a question--tree pair, not a question. Its label
+describes a local evidence span, not the total evidence in the paper.
+Consequently, its class distribution and classification F1 cannot be
+directly compared with the global evidence-length labels. The common
+point of comparison is the final retrieval output on the same questions,
+with the change in candidate-selection protocol stated explicitly.
+
+\section{Reproducibility boundary}
+The thesis draws numerical results from preserved reports, metric files,
+and per-question outputs. It does not rerun embedding, GPU training,
+or retrieval to create a more favourable result. Model revisions,
+configuration fingerprints, source hashes, and pre-evaluation predictions
+are retained where the corresponding phase recorded them. The generated
+tables and figures are linked to those saved artifacts in
+Appendix~\ref{app:provenance}.
+
+This boundary keeps the writing task separate from a new experiment.
+It also leaves a clear route for future work: a new run should produce
+a new identifiable artifact, with its population, model state, and
+metric version stated, rather than overwriting the result that supports
+an earlier claim.
