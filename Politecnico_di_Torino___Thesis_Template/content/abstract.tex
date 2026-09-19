@@ -1,35 +1,33 @@
-Retrieval-augmented generation depends on finding useful evidence, but the
-amount of text returned by a retriever is often fixed before a question is
-seen. A short passage can isolate an important detail while losing its
-context; a longer passage can preserve that context while introducing
-irrelevant material. This thesis investigates whether retrieval granularity
-can be adapted to a question and to the evidence distribution within its
-source document.
+Retrieval-augmented generation depends on finding useful evidence. The
+size of the passages available for retrieval is often fixed before a
+question is seen, even though different questions may need different
+amounts of context. Short passages can isolate a detail but lose its
+surroundings; longer passages can preserve context while introducing
+irrelevant material. This thesis investigates whether adapting retrieval
+granularity, the size of the retrieved chunks, improves evidence recovery
+within a known source document.
 
-The study uses QASPER scientific papers, five non-overlapping chunk sizes
-from 10 to 160 GPT-2 tokens, fixed dense embeddings, and paper-restricted
-top-five retrieval. The experimental sequence progresses from fixed-size
-and mixed-size baselines to embedding-based routers, Qwen language-model
-routers, hierarchical similarity features, leakage-controlled feature
-fusion, expected-regret learning, and local tree-level routing. It also
-examines unsuccessful training formulations and a constrained-output
-repair for a zero-shot context feature.
+The study uses QASPER scientific papers, five chunk sizes from 10 to 160
+GPT-2 tokens, and fixed dense embeddings. The question-level experiments
+use 2,245 training questions and 924 validation questions, with five
+chunks retrieved from the associated paper. Methods progress from fixed
+and mixed sizes through question-embedding and Qwen routers to similarity
+trees, out-of-fold feature fusion, expected-regret learning, and local
+routing. Evaluation measures lexical overlap with annotated evidence
+using joined evidence-token F1.
 
-On 924 validation questions, fixed 40-token retrieval achieves a mean
-joined evidence-token F1 of 0.3159. An offline oracle that chooses the best
-of the five fixed-size results for each question reaches 0.3821, indicating
-potential value in adaptation within this action space. The strongest
-learned question-level router instead reaches 0.3075: learning expected
-retrieval regret improves on the preceding learned alternatives but does
-not surpass the fixed baseline. Local tree-level routing reaches 0.3053,
-compared with 0.3075 for a matched fixed-40 tree baseline. Adding a frozen
-Qwen context-need feature gives 0.3045 and no demonstrated improvement.
+Fixed 40-token retrieval achieves mean F1 of 0.3159. An offline oracle
+that uses the reference evidence to choose the best of the five saved
+results per question reaches 0.3821. The strongest learned question-level
+method, expected-regret routing, reaches 0.3075, remaining below the fixed
+baseline. Local routing reaches 0.3053, compared with 0.3075 for a
+fixed-40 baseline using the same selected trees. Adding a frozen Qwen
+context-need feature gives 0.3045, with no demonstrated improvement.
 
-The main finding is that predicting an evidence-length category and
-maximising retrieval usefulness are not equivalent. Retrieval-utility
-supervision improves the tested learned global routers, but added model
-complexity does not by itself establish a gain over fixed retrieval.
-The study also highlights the need for leakage-controlled training and
-matched comparison protocols. These results concern lexical evidence retrieval, not
-generated-answer quality, and repeated use of the validation split limits
-claims about unseen-data generalisation.
+The results show that better prediction of evidence length does not
+reliably translate into better retrieval. Learning from retrieval regret
+produces the strongest tested global router, but the study finds no
+demonstrated advantage over the corresponding fixed-size baselines.
+The findings concern evidence retrieval; generated-answer quality remains
+unevaluated. Repeated use of validation data during development also
+limits claims about performance on unseen data.

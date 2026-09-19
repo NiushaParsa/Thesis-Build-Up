@@ -1,12 +1,14 @@
-A retrieval system must decide how much text should count as one
-retrievable piece. A dataset name may need only a short phrase, while
-an explanation may require several connected statements. Yet a longer
-passage can contain the answer and still bury it in unnecessary material.
+A retrieval system must decide how much text to return as one passage.
+A question asking for a dataset name may need only a short phrase,
+while an explanation may require several connected statements. A longer
+passage can preserve useful context, but it can also bury the relevant
+detail in unnecessary material.
 
-This thesis asks whether selecting different chunk sizes recovers
-annotated evidence more effectively than using one size throughout.
-It focuses on retrieval within a RAG pipeline, not on training an answer
-generator or measuring generated-answer quality.
+This thesis asks whether adapting chunk size to a question or a region
+of a paper recovers evidence more effectively than using one size
+throughout. The study focuses on the retrieval stage of
+retrieval-augmented generation (RAG). It evaluates evidence selection;
+generated answers are outside its scope.
 
 The experimental environment was built around QASPER, a dataset of
 questions about scientific papers. Each paper was represented at five
@@ -14,74 +16,79 @@ granularities: 10, 20, 40, 80, and 160 GPT-2 tokens, using fixed
 \texttt{text-embedding-3-small} embeddings stored in Qdrant. Retrieval
 was restricted to the associated paper, isolating evidence selection
 from document discovery.
-The frozen supervised population contains 2,245 training questions and
-924 validation questions.
+The frozen question-level population contains 2,245 training questions
+and 924 validation questions. The main retrieval protocol returns five
+chunks per question. Its primary metric, joined evidence-token F1,
+measures lexical overlap between the combined retrieved text and the
+annotated evidence.
 
 The work began with a Weaviate prototype before moving to Qdrant.
-Resumable ingestion, stable identifiers, source offsets, and collection
-audits helped distinguish data problems from modelling effects. The
-storage migration was an engineering step, not a database benchmark.
+Resumable ingestion and checks of identifiers, offsets, and collection
+completeness established a consistent experimental pipeline.
 
 Fixed-size retrieval provided the main reference. Among the five sizes,
 40 tokens achieved the highest mean joined retrieval F1, 0.3159. The
-offline best-size oracle achieved 0.3821, so a useful adaptive choice was
-possible in principle. However, that oracle sees the reference evidence
-and all five retrieval outcomes. Its score measures remaining opportunity;
-it is not a system that can be deployed for a new question.
+offline best-size oracle achieved 0.3821 by using the reference evidence
+to select among all five retrieval outcomes. This gap shows that different
+questions can benefit from different sizes. It does not establish that
+a router can predict those choices for a new question.
 
 The early adaptive methods used the question embedding to predict a size,
 or pooled chunks from all sizes into a single ranking. The selected
 logistic-regression router reached 0.2853 retrieval F1. Raw mixed-size
 retrieval reached 0.2562, and overlap-aware deduplication raised this to
-0.2618. Pooling candidates therefore did not solve the problem. The pooled
-rankings were dominated by short chunks, and removing redundant spans did
-not remove that imbalance.
+0.2618. Both mixtures remained below fixed 40 and favoured short chunks,
+even after deduplication.
 
 \newpage
 The next experiments asked whether a small Qwen model could make a better
 decision from the question wording. They covered zero-shot prompting,
 numeric-output fine-tuning, restricted alias classification, class-balanced
 loss, a dedicated classification head, explicit token-count instructions,
-and a learning-rate and training-duration search. Numeric supervised
-fine-tuning increased label accuracy while concentrating predictions on
-large chunks and reducing retrieval F1. This exposed a central weakness
-of the target: total annotated evidence length is not necessarily the
+and a learning-rate and training-duration search. The strongest
+Qwen-only retrieval result was 0.2865 when fine-tuning the model to choose
+among five single-token labels with uniform loss weights. Numeric
+fine-tuning increased label accuracy while favouring
+large chunks and reducing retrieval F1. The contrast exposed a weakness
+of the target: total evidence length does not necessarily identify the
 best size for each of five retrieved chunks.
 
 The study then added information from the document. Similarity trees
 describe how question-to-chunk scores change between aligned coarse and
 fine spans. Linear classifiers and boosted trees were evaluated on
 level-wise and hierarchical features, followed by fusion with Qwen
-features. An initial fusion experiment was subsequently repeated with
-paper-grouped out-of-fold Qwen predictions. The corrected procedure gave
-lower scores while removing the known in-sample feature contamination.
-The correction makes the training interface more credible, even though
-it does not improve the reported result.
+features. The initial fusion used Qwen predictions on examples that had
+trained the base model. A corrected run used paper-grouped out-of-fold
+predictions: each training paper was predicted by a model fitted on other
+papers. This removed the known contamination in the training features.
+Corrected fusion reached 0.2783 retrieval F1, below the original result.
 
-The clearest improvement among the learned question-level methods came
-from changing the learning objective. Expected-regret regression used the
-observed retrieval F1 of every candidate size and learned the cost of
-choosing each one. It reached 0.3075 mean retrieval F1, ahead of the
-preceding learned routers. Nevertheless, its difference from fixed
+The strongest learned question-level method used expected-regret
+regression. It learned the loss in retrieval F1 associated with each
+size, making supervision reflect the consequences of a routing decision.
+It reached 0.3075 mean retrieval F1, ahead of the preceding learned
+routers. Its difference from fixed
 40-token retrieval was $-0.00835$, with a paired paper-cluster bootstrap
 95\% interval of $[-0.01266,-0.00416]$. Within the evaluated development
 sample, the fixed baseline remained stronger.
 
 Finally, local routing allowed different regions of the same paper to use
-different sizes. A router chose one granularity within each of the five
-highest-ranked 160-token trees, and one chunk was returned from each tree.
+different sizes. The router learned from 4,081 question--tree examples
+drawn from 2,101 questions with mappable evidence. At inference, it chose one
+size within each of the five highest-ranked 160-token trees and returned
+one chunk per tree.
 This reached 0.3053 F1, against 0.3075 for a fixed-40 method using the same
 trees. A frozen Qwen feature describing the anticipated context need as
-short, medium, or long was also tested. Its first free-generation version
-failed the valid-output gate. Constrained token scoring fixed the interface,
-but the resulting feature was almost always \enquote{medium}. Retrieval
+short, medium, or long was also tested. Free generation sometimes
+produced answers instead of a category. Restricting the decision to
+the three labels resolved that problem, but almost every question
+received \enquote{medium}. Retrieval
 F1 was 0.3045, with no demonstrated gain over the local router alone.
 
-Taken together, the experiments do not establish adaptive retrieval as
-superior to a well-chosen fixed size. They show where the difficulty lies:
-the supervision must reward useful retrieval decisions, training and
-evaluation must remain separated, and any adaptive method must justify its
-additional cost against a matched baseline. Since the same validation
-split informed repeated development decisions, an untouched evaluation,
-additional datasets, and downstream answer-quality measurements remain
-necessary before making broader claims.
+The experiments identify retrieval-utility supervision as a promising
+direction, without demonstrating an advantage over the corresponding
+fixed baselines. Comparisons also depend on the returned text budget:
+five chunks can contain very different amounts of text. Since validation
+informed repeated development decisions, the next step is evaluation on
+untouched data, followed by additional datasets and measurements of
+generated-answer quality.
