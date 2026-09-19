@@ -41,7 +41,8 @@ citations = {key.strip() for group in re.findall(r"\\cite\{([^}]+)\}", combined)
 labels = re.findall(r"\\label\{([^}]+)\}", combined)
 references = re.findall(r"\\ref\{([^}]+)\}", combined)
 log = (ROOT / "build/thesis.log").read_text(encoding="utf-8", errors="replace")
-warnings = [line for line in log.splitlines() if "Warning:" in line or "Overfull" in line]
+warnings = [line for line in log.splitlines()
+            if "Warning:" in line or "Overfull" in line or "ignored error:" in line or "Undefined control sequence" in line]
 report = {
     "pdf_pages": len(pages),
     "approximate_extracted_words_including_front_matter_and_references": len(re.findall(r"\b[\w'-]+\b", "\n".join(pages))),
@@ -79,3 +80,4 @@ assert not report["missing_citations"]
 assert not report["missing_cross_references"]
 assert not report["duplicate_labels"]
 assert not report["unresolved_markers"]
+assert not report["log_warnings"]

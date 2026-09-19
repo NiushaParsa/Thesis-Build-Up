@@ -1,6 +1,17 @@
 \chapter{Methodology}
 \label{ch:method}
 
+The methods follow three changes in the research question: whether the
+question alone can predict a useful size, whether document similarity
+structure improves that decision, and whether changing the target or
+the decision unit better matches retrieval. Each family keeps an
+explicit fixed-size reference. The order explains the development of
+the work; it does not imply that every later method is better.
+Prompt-only and added-feature comparisons isolate narrower changes than
+the broader model and target redesigns. Their results are interpreted
+accordingly, rather than treating every cross-phase difference as a
+controlled effect.
+
 \section{A common retrieval problem}
 Let $q$ be a question about paper $d$, and let $\mathcal{C}_g(d)$ contain
 the chunks of $d$ at granularity $g$. Fixed-size retrieval returns
@@ -259,8 +270,12 @@ rates 0.03 and 0.05; and 200 or 400 trees, giving 12 candidates per
 representation. Other settings include minimum child weight 5,
 row and column subsampling 0.8, L2 regularisation 1, and L1
 regularisation 0. Square-root inverse-frequency weights address
-class imbalance. Selection uses the grouped training folds, and the
-tree model remains the primary method.
+class imbalance. Unlike Phase 3A's predesignated primary representation,
+Phase 3B selects both the configuration and the primary representation
+by grouped training-fold macro F1. The full-tree model wins that
+comparison and is locked before the validation retrieval evaluation.
+The change from Phase 3A includes both nonlinear capacity and class
+weighting, so it is not a one-factor test of model capacity.
 
 Simple score heuristics are also retained: maximum similarity,
 top-five mean similarity, a training-tuned penalised top-five score,
@@ -428,38 +443,23 @@ category is one-hot encoded and appended to each local tree feature
 vector for that question, increasing the dimension from 173 to 176.
 The language model is not fine-tuned on the local labels.
 
-The first version uses deterministic free generation with a limit of
-eight new tokens. It produces invalid responses on part of both splits,
-including answers to the question instead of a category. The pipeline's
-gate forbids replacing those failures with an arbitrary default and
-proceeding as if the input feature were valid. No downstream classifier
-result is claimed for that version.
+The first version uses deterministic generation with a limit of eight
+new tokens. Some responses answer the question instead of giving a
+category. The validity gate rejects these outputs without substituting
+defaults, so this version has no downstream classifier result.
 
 \subsection{Constrained first-token scoring}
-The repaired version first tests revised wording on the 175 previously
-invalid training questions. It then uses a stronger output contract:
-compare only the next-token logits for the verified single tokens
+The repaired version tests revised wording on the 175 invalid training
+questions, then compares next-token logits only for the single tokens
 \texttt{short}, \texttt{medium}, and \texttt{long}, whose IDs are 8412,
-25252, and 4670. One forward pass and an argmax produce a category;
-there is no free text to parse.
+25252, and 4670. One forward pass and an argmax produce a valid category.
 
-The revised prompt explicitly tells the model not to answer the
-question and to provide one lowercase label only. The full wording
-is recorded in Appendix~\ref{app:protocols}. The training-only prompt
-probe and final constrained evaluation are different operations:
-the former tests wording on known training failures, while the latter
-enforces validity for all required feature rows.
+The prompt requests one lowercase label, not an answer
+(Appendix~\ref{app:protocols}). The wording probe uses only known
+training failures; constrained scoring subsequently enforces validity
+for every required feature row. These are separate operations.
 
-The local training examples, labels, tree ranking, and boosted-tree
-protocol remain unchanged. The language model is frozen and receives
-no task-label updates, so an OOF fine-tuning procedure is not required
-to remove supervised in-sample predictions from this particular
-feature. The experiment still shares the broader development-set
-limitations of the rest of the thesis.
-
-\section{What is held constant, and what is not}
-Some comparisons isolate one change, such as the Phase 2C/2D prompt
-or the Phase 5A/5B-v2 feature addition. Others redesign several
-components, including the move from numeric generation to aliases
-and from global to local routing. The results therefore distinguish
-controlled effects from descriptive cross-phase differences.
+Local examples, labels, tree ranking, and classifier settings remain
+unchanged. Because Qwen receives no task-label updates, OOF fine-tuning
+is not needed to remove supervised in-sample contamination from this
+feature. Repeated development-set use remains a limitation.

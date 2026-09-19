@@ -98,16 +98,20 @@ for phase, name, directory in phases:
     f1 = rm.get("mean_joined_retrieval_f1", rm.get("valid_only_mean_joined_retrieval_f1"))
     assert f1 is not None and sum(cm["class_distribution"].values()) == 924, (phase, cm.keys())
     assert sum(cm["predicted_distribution"].values()) == 924
-    phase_data.append({"phase": phase, "name": name, "classification": cm, "retrieval_f1": f1})
+    median = rm.get("median_joined_retrieval_f1", rm.get("valid_only_median_joined_retrieval_f1"))
+    assert median is not None
+    phase_data.append({"phase": phase, "name": name, "classification": cm,
+                       "retrieval_f1": f1, "retrieval_median": median})
 
 for name, part, caption in [
     ("qwen_results", phase_data[:7], "Question-only Qwen results on the evidence-length target."),
     ("tree_results", phase_data[7:], "Global similarity-tree and fusion results on the evidence-length target.")]:
     rows = [[p["phase"], p["name"], f'{p["classification"]["accuracy"]:.4f}',
-             f'{p["classification"]["macro_f1"]:.4f}', f'{p["retrieval_f1"]:.4f}'] for p in part]
-    table(name, caption, "tab:" + name, "@{}llrrr@{}",
-          ["Phase", "Method", "Accuracy", "Macro F1", "Retrieval F1"], rows,
-          "Classification macro F1 and joined retrieval F1 measure different objectives." +
+             f'{p["classification"]["macro_f1"]:.4f}', f'{p["retrieval_f1"]:.4f}',
+             f'{p["retrieval_median"]:.4f}'] for p in part]
+    table(name, caption, "tab:" + name, "@{}llrrrr@{}",
+          ["Phase", "Method", "Accuracy", "Macro F1", "Mean RF1", "Median RF1"], rows,
+          "RF1 denotes joined retrieval F1, a different objective from classification macro F1." +
           (" Original fusion has in-sample base-feature contamination in its training-fold evaluation." if name == "tree_results" else ""))
 
 rows = [[p["phase"]] + [str(p["classification"]["predicted_distribution"][str(g)]) for g in sizes] for p in phase_data]
@@ -245,6 +249,56 @@ table("lr_grid", "All 15 Phase 2E validation candidates.",
       "tab:lrgrid", "@{}lrrrrrr@{}",
       ["LR", "Epoch", "Step", "CE loss", "Accuracy", "Macro F1", "Top-two"], grid_rows,
       "The selected candidate is 5e-6, epoch 4, step 284. The table does not imply retrieval was evaluated for every checkpoint.")
+
+early = read("models/granularity_router/frozen_topk5/training_report.json")
+candidate_rows = []
+for candidate in early["logistic_candidates"] + early["mlp_candidates"]:
+    cm = candidate["validation_metrics"]
+    candidate_rows.append(["Logistic" if candidate["model_type"] == "logistic_regression" else "MLP",
+                           f'{candidate["learning_rate"]:g}', f'{candidate["weight_decay"]:g}',
+                           str(candidate["seed"]), f'{cm["accuracy"]:.4f}', f'{cm["macro_f1"]:.4f}'])
+table("early_candidates", "All saved question-embedding router candidates.",
+      "tab:earlycandidates", "@{}lrrrrr@{}",
+      ["Model", "LR", "Weight decay", "Seed", "Accuracy", "Macro F1"], candidate_rows,
+      "Legacy retrieval-derived labels. Logistic seed 43 was retained: the MLP's macro-F1 advantage was below the 0.01 adoption threshold. Candidate seeds differ, so these are not seed-controlled hyperparameter ablations.")
+
+history_rows = []
+for phase, _, directory in phases[1:6]:
+    histories = [path for path in (REPO / "outputs" / directory / "runs").glob("*full-parameter*/validation_history.jsonl")
+                 if "smoke" not in path.parent.name and "tiny" not in path.parent.name]
+    assert len(histories) == 1, histories
+    events = read(histories[0].relative_to(REPO).as_posix(), lines=True)
+    assert len(events) == 3
+    selected_epoch = 2 if phase == "2B-B" else 3
+    for event in events:
+        history_rows.append([phase, str(event["epoch"]), str(event["global_step"]),
+                             f'{event["accuracy"]:.4f}', f'{event["macro_f1"]:.4f}',
+                             "Yes" if event["epoch"] == selected_epoch else "---"])
+table("qwen_checkpoints", "Three-epoch Qwen checkpoint histories before the Phase 2E grid.",
+      "tab:qwencheckpoints", "@{}lrrrrl@{}",
+      ["Phase", "Epoch", "Step", "Accuracy", "Macro F1", "Selected"], history_rows,
+      "Validation evidence-length classification. Only selected checkpoints have the reported final retrieval evaluation. Phase 2 uses the corrected v2 run; preflights and its interrupted predecessor are not competing full runs.")
+
+heuristics = read("outputs/similarity_tree_phase3a_evidence_length_oracle/heuristics/metrics.json")
+secondary_rows = []
+for label, value in [
+    ("3A: maximum similarity", heuristics["fixed"]["max_similarity"]),
+    ("3A: top-five mean", heuristics["fixed"]["top5_mean_similarity"]),
+    ("3A: penalised top-five", heuristics["penalized_top5"]),
+    ("3A: leaf breadth", heuristics["leaf_relevance_breadth"]),
+]:
+    cm = value["validation_metrics"]
+    secondary_rows.append([label, f'{cm["accuracy"]:.4f}', f'{cm["macro_f1"]:.4f}'])
+for directory, key, label in [
+    ("similarity_tree_phase3a_evidence_length_oracle", "level_aggregate_logistic_regression", "3A: level-only linear"),
+    ("similarity_tree_phase3b_xgboost_evidence_length_oracle", "level_xgboost", "3B: level-only XGBoost"),
+    ("qwen_phase3c_fusion_evidence_length_oracle", "qwen_hidden_tree", "3C: hidden-state fusion"),
+]:
+    cm = read(f"outputs/{directory}/classification_summary.json")["models"][key]["validation_metrics"]
+    secondary_rows.append([label, f'{cm["accuracy"]:.4f}', f'{cm["macro_f1"]:.4f}'])
+table("secondary_variants", "Secondary similarity and fusion variants on 924 validation questions.",
+      "tab:secondaryvariants", "@{}lrr@{}", ["Variant", "Accuracy", "Macro F1"], secondary_rows,
+      "These are evidence-length classification diagnostics, not additional retrieval evaluations. Original hidden-state fusion has the same in-sample base-feature limitation as original logits fusion.")
 
 manifest = {"description": "Read-only reconstruction from saved experiment artifacts; no new experiments.",
             "source_sha256": SOURCES, "question_level_results": phase_data,

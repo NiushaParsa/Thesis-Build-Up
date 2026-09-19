@@ -3,18 +3,18 @@
 \centering\small
 \caption{Question-only Qwen results on the evidence-length target.}
 \label{tab:qwen_results}
-\begin{tabular}{@{}llrrr@{}}
+\begin{tabular}{@{}llrrrr@{}}
 \toprule
-Phase & Method & Accuracy & Macro F1 & Retrieval F1\\
+Phase & Method & Accuracy & Macro F1 & Mean RF1 & Median RF1\\
 \midrule
-1 & Frozen Qwen & 0.0400 & 0.0490 & 0.2391\\
-2 & Numeric SFT & 0.4318 & 0.1650 & 0.2266\\
-2B-A & Uniform aliases & 0.3506 & 0.2092 & 0.2865\\
-2B-B & Balanced aliases & 0.3701 & 0.1684 & 0.2496\\
-2C & Base + class head & 0.3452 & 0.2176 & 0.2791\\
-2D & Token-count prompt & 0.3690 & 0.2299 & 0.2767\\
-2E & LR-grid winner & 0.3485 & 0.2278 & 0.2794\\
+1 & Frozen Qwen & 0.0400 & 0.0490 & 0.2391 & 0.2211\\
+2 & Numeric SFT & 0.4318 & 0.1650 & 0.2266 & 0.1962\\
+2B-A & Uniform aliases & 0.3506 & 0.2092 & 0.2865 & 0.2748\\
+2B-B & Balanced aliases & 0.3701 & 0.1684 & 0.2496 & 0.2232\\
+2C & Base + class head & 0.3452 & 0.2176 & 0.2791 & 0.2607\\
+2D & Token-count prompt & 0.3690 & 0.2299 & 0.2767 & 0.2559\\
+2E & LR-grid winner & 0.3485 & 0.2278 & 0.2794 & 0.2674\\
 \bottomrule
 \end{tabular}
-\par\smallskip\begin{minipage}{\textwidth}\footnotesize Classification macro F1 and joined retrieval F1 measure different objectives.\end{minipage}
+\par\smallskip\begin{minipage}{\textwidth}\footnotesize RF1 denotes joined retrieval F1, a different objective from classification macro F1.\end{minipage}
 \end{table}

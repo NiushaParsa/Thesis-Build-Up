@@ -43,9 +43,10 @@ evidence-length category is not an adequate substitute for
 learning a useful retrieval action in this protocol.
 
 \subsection{RQ3: Does similarity structure help?}
-Similarity-tree features provide additional observable information,
-and nonlinear models use the full representation more effectively
-than the tested linear tree model. Original fusion looks promising,
+Similarity-tree features provide additional observable information.
+The weighted boosted-tree setup improves mean retrieval F1 and macro
+F1 over the tested uniformly weighted linear tree model, but does not
+isolate a benefit from nonlinearity alone. Original fusion looks promising,
 but its in-sample base features make the training-fold estimate
 optimistic. Corrected OOF fusion reaches 0.2783 retrieval F1.
 
@@ -169,9 +170,7 @@ not exceed the best fixed baseline. That trade-off was not
 established by the present experiments.
 
 \section{Closing remarks}
-The value of adaptation must be demonstrated, not assumed. Here,
-the strongest progress came from aligning supervision with retrieval
-utility and correcting evaluation weaknesses. Learning from a
-decision's consequences, keeping development separate from evaluation,
-and retaining a strong fixed baseline provide a sound basis for
-the next stage.
+Adaptation must earn its place against a strong fixed baseline.
+Here, utility-aware supervision and cleaner evaluation made progress,
+but did not establish superiority. The next step is to test that
+direction on untouched data under a fixed protocol.

@@ -18,6 +18,14 @@ comparisons. They describe the preserved, eligible experimental records,
 not a claim that every original question has usable text evidence for
 every later method.
 
+Eligibility requires usable, nonempty highlighted evidence and a
+complete five-size retrieval record, with at least one retrieved chunk
+at every size. The frozen validation run separately records one
+excluded candidate with the reason \texttt{no\_valid\_evidence}; it is
+not counted as a zero-scoring question in the 924-question benchmark.
+Source-span mapping imposes a further requirement for local training,
+as described below, but not for the primary lexical retrieval score.
+
 \begin{table}[tbp]
 \centering
 \caption{Populations used in the main experiments. The local training
@@ -120,6 +128,14 @@ baseline.
 
 \section{Resumability and data integrity}
 \subsection{From smoke tests to a frozen benchmark}
+The repository history begins in February with Weaviate ingestion,
+JSON exports, and sample retrieval. It then adds filtering of questions
+without usable highlighted evidence, parallel paper processing, and
+the move to Qdrant with per-stage checkpoints. These steps established
+the data pipeline; they did not compare alternative retrievers on a
+common benchmark. The fixed-size evaluation pipeline followed, before
+the later modelling phases.
+
 Early smoke tests were intended to validate execution, not estimate
 retrieval performance. A February smoke artifact included an empty
 output and a separate 15-record result corresponding to three questions
@@ -129,19 +145,29 @@ evaluation.
 
 Ingestion was made resumable with seven tracked stages: one for each
 chunk size, one for questions, and one for evidence. Checkpoint updates
-use locking and atomic replacement. JSONL output writing also required
-care: a bookkeeping problem in the locked writing/counting path was
-addressed so that durable records and reported completion counts agreed.
+use locking and atomic replacement. Two separate implementation problems
+were addressed: shared JSONL writes were protected by a lock, and a
+duplicate increment in the chunk-completion counter was removed.
 These measures matter when embedding requests, retrieval, or training
 are interrupted.
+
+The June evaluation work added numeric source offsets, per-chunk
+evidence metrics, versioned output schemas, and configuration-aware
+identifiers for evaluation and oracle records. Persistence and
+idempotency checks tested whether repeating a write preserved the same
+logical record. These changes made it possible to freeze comparable
+outputs without treating a partially written run as a complete experiment.
 
 A June integrity audit covered 1,585 papers and identified four papers
 with incomplete checkpoint state, six missing questions, sixteen missing
 evidence records, and 1,345 evidence records without resolved offsets
 out of 9,522. It also recorded 46 papers without highlighted evidence.
+Of the 46 papers without highlighted evidence, 45 had a valid empty
+evidence stage and one lacked the corresponding completion markers;
+absence of evidence is not automatically an ingestion error.
 These are dated observations of the pipeline at that point. Subsequent
-complete experiment artifacts, rather than a stale report of pending
-work, determine the populations reported here.
+complete experiment artifacts determine the populations reported here,
+but do not prove that every issue in the wider collection was repaired.
 
 The expected-regret phase provides a concrete example. Its utility
 table initially covered 2,223 training questions. Recovering the missing
@@ -213,9 +239,14 @@ metric or a semantic entailment measure.
 The baseline reports also store query-to-chunk and evidence-to-chunk
 similarity summaries. Query similarity is available during retrieval.
 Evidence similarity uses the reference evidence and is an offline
-diagnostic. For a chunk, the latter can be summarised by its maximum
-similarity to an evidence item and then aggregated across retrieved
-chunks.
+diagnostic. The stored summaries distinguish maximum and mean
+query-to-chunk similarity; maximum and mean over all chunk--evidence
+pairs; and the mean of each retrieved chunk's maximum similarity to an
+evidence item. This last quantity is the \enquote{mean evidence
+similarity} used in the early comparison report and the similarity
+tie-breaker in the legacy oracle. These aggregates are not interchangeable.
+The later per-chunk lexical diagnostics also retain each chunk's best
+F1 against an individual evidence item; their average is not joined F1.
 
 These measurements should not be substituted for joined F1. A passage
 can have a high query similarity and omit much of the annotated evidence.
@@ -241,12 +272,16 @@ It is not an upper bound over every possible mixture of chunks or every
 future retrieval architecture.
 
 The early router uses a legacy label rule: maximise joined F1 within
-$10^{-6}$, then use evidence similarity to break ties, and finally prefer
+$10^{-6}$, then use mean maximum chunk-to-evidence similarity to break
+ties, and finally prefer
 the smaller size. A later exact utility argmax with smaller-size
 tie-breaking is close but not identical. On validation, their size
 counts are respectively $(137,235,283,187,82)$ and
 $(138,235,282,187,82)$. The thesis preserves that distinction rather
-than silently reassigning the earlier model's targets.
+than silently reassigning the earlier model's targets. The corresponding
+legacy training counts are $(460,675,686,343,81)$; forty tokens is the
+training-majority class. This label distribution must not be substituted
+for the evidence-length distribution below.
 
 \subsection{Whole-question evidence length}
 The Qwen and global similarity-tree classification sequence uses a

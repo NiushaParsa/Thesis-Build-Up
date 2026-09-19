@@ -10,19 +10,17 @@ generator or measuring generated-answer quality.
 
 The experimental environment was built around QASPER, a dataset of
 questions about scientific papers. Each paper was represented at five
-granularities: 10, 20, 40, 80, and 160 GPT-2 tokens. Chunks and questions
-were embedded with \texttt{text-embedding-3-small}, and vectors were stored
-in Qdrant. Retrieval was restricted to the paper associated with each
-question. This deliberately removes document discovery from the problem
-and makes the experiments about finding evidence within a known paper.
+granularities: 10, 20, 40, 80, and 160 GPT-2 tokens, using fixed
+\texttt{text-embedding-3-small} embeddings stored in Qdrant. Retrieval
+was restricted to the associated paper, isolating evidence selection
+from document discovery.
 The frozen supervised population contains 2,245 training questions and
 924 validation questions.
 
-The work first established resumable ingestion, stable identifiers,
-evidence normalisation, source offsets, and collection audits. These
-checks prevent missing records or partially resumed runs from being
-mistaken for modelling effects. Complete fixed-size outputs then provided
-a common retrieval benchmark.
+The work began with a Weaviate prototype before moving to Qdrant.
+Resumable ingestion, stable identifiers, source offsets, and collection
+audits helped distinguish data problems from modelling effects. The
+storage migration was an engineering step, not a database benchmark.
 
 Fixed-size retrieval provided the main reference. Among the five sizes,
 40 tokens achieved the highest mean joined retrieval F1, 0.3159. The
@@ -39,17 +37,16 @@ retrieval reached 0.2562, and overlap-aware deduplication raised this to
 rankings were dominated by short chunks, and removing redundant spans did
 not remove that imbalance.
 
+\newpage
 The next experiments asked whether a small Qwen model could make a better
 decision from the question wording. They covered zero-shot prompting,
 numeric-output fine-tuning, restricted alias classification, class-balanced
 loss, a dedicated classification head, explicit token-count instructions,
-and a learning-rate and training-duration search. Several variants improved
-classification against an evidence-length target without improving
-retrieval. In particular, numeric supervised fine-tuning increased label
-accuracy while concentrating predictions on large chunks and reducing
-retrieval F1. This exposed a central weakness of the target: the total
-length of the annotated evidence is not necessarily the best size for
-each of five retrieved chunks.
+and a learning-rate and training-duration search. Numeric supervised
+fine-tuning increased label accuracy while concentrating predictions on
+large chunks and reducing retrieval F1. This exposed a central weakness
+of the target: total annotated evidence length is not necessarily the
+best size for each of five retrieved chunks.
 
 The study then added information from the document. Similarity trees
 describe how question-to-chunk scores change between aligned coarse and
@@ -57,8 +54,9 @@ fine spans. Linear classifiers and boosted trees were evaluated on
 level-wise and hierarchical features, followed by fusion with Qwen
 features. An initial fusion experiment was subsequently repeated with
 paper-grouped out-of-fold Qwen predictions. The corrected procedure gave
-less optimistic results, demonstrating why a stacking model must be
-trained on base-model predictions that were not produced in sample.
+lower scores while removing the known in-sample feature contamination.
+The correction makes the training interface more credible, even though
+it does not improve the reported result.
 
 The clearest improvement among the learned question-level methods came
 from changing the learning objective. Expected-regret regression used the
@@ -76,8 +74,8 @@ This reached 0.3053 F1, against 0.3075 for a fixed-40 method using the same
 trees. A frozen Qwen feature describing the anticipated context need as
 short, medium, or long was also tested. Its first free-generation version
 failed the valid-output gate. Constrained token scoring fixed the interface,
-but the resulting feature was almost always \enquote{medium} and did not
-provide a demonstrated gain over the local router alone.
+but the resulting feature was almost always \enquote{medium}. Retrieval
+F1 was 0.3045, with no demonstrated gain over the local router alone.
 
 Taken together, the experiments do not establish adaptive retrieval as
 superior to a well-chosen fixed size. They show where the difficulty lies:

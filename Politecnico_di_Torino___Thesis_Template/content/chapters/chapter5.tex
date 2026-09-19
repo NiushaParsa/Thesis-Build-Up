@@ -1,6 +1,12 @@
 \chapter{Evaluation, Results, and Discussion}
 \label{ch:results}
 
+The results follow the methodological sequence, beginning with the
+fixed benchmark and early adaptive baselines. Classification and
+retrieval outcomes are kept separate throughout. The final sections
+return to the central comparison: whether the extra decisions improve
+evidence retrieval under the stated protocol.
+
 \section{Evaluation protocol}
 \subsection{Primary and secondary outcomes}
 The main question-level comparison uses 924 validation questions and
@@ -51,6 +57,12 @@ An interval that includes zero does not prove equivalence, and an
 interval that excludes zero does not remove selection bias from
 repeated validation use.
 
+The early baseline report used a different uncertainty calculation:
+500 question-level bootstrap replicates with seed 13. This thesis uses
+the later paper-cluster intervals for the fixed-size table and the
+Phase 4 comparisons. The point scores come from the same frozen
+outputs, but the two interval procedures must not be conflated.
+
 \section{Fixed granularity and oracle headroom}
 \input{content/generated/fixed_results}
 
@@ -86,7 +98,7 @@ best action can be difficult to predict.
 
 The score diagnostics reveal a related tension. Mean query similarity
 decreases from approximately 0.5490 at 10 tokens to 0.4271 at 160
-tokens. Mean evidence similarity moves in the opposite direction,
+tokens. The mean of per-chunk maximum evidence similarities moves in the opposite direction,
 from approximately 0.4538 to 0.5733. Joined retrieval F1 peaks between
 the extremes. A router that simply maximises one similarity summary
 therefore has no guarantee of optimising the primary metric.
@@ -98,6 +110,8 @@ accuracy and 0.2149 macro F1 against the legacy retrieval-derived
 target. The MLP raises these to 0.2749 and 0.2187. Its macro-F1 gain
 is only 0.0038, below the recorded 0.01 threshold for adopting the
 more complex model.
+All four logistic candidates and the MLP candidate are retained in
+Table~\ref{tab:earlycandidates}, including their different random seeds.
 
 The selected logistic router predicts counts
 $(171,260,298,164,31)$ across the five sizes and reaches 0.2853
@@ -165,6 +179,9 @@ Phase 2 checkpoint predicts 80 tokens 149 times and 160 tokens 775
 times, never choosing the three smaller sizes. Accuracy rises to
 0.4318 and macro F1 to 0.1650, while retrieval F1 falls to 0.2266.
 Earlier checkpoints are even more concentrated on 160.
+Table~\ref{tab:qwencheckpoints} reports the intermediate checkpoints
+for this run and the subsequent three-epoch variants, so that the
+selected endpoints do not hide the training history.
 
 This is one of the clearest results in the thesis. The model has
 become better at a proxy label while becoming worse at the evidence
@@ -250,11 +267,15 @@ the leaf-breadth rule reaches 0.1242. The latter's accuracy is
 can coexist with weak class-balanced performance.
 
 XGBoost improves the primary full-tree result in Phase 3B to
-macro F1 0.2247 and retrieval F1 0.2717. The retrieval increase
-over the linear tree model is about 0.0040. The level-only
-XGBoost model has validation macro F1 0.1822. Nonlinear use of
-the full representation is more promising than the particular
-linear model, but the retrieval outcome is still below fixed
+macro F1 0.2247 and mean retrieval F1 0.2717. The mean increase
+over the linear tree model is about 0.0040, although median retrieval
+F1 falls from 0.2523 to 0.2487. Training-fold macro F1 selects the
+full-tree representation, 0.2198 versus 0.2164 for level-only features;
+this is not selection on the external validation result.
+The level-only XGBoost model has validation macro F1 0.1822.
+The weighted nonlinear setup improves some outcomes over the
+uniformly weighted linear model, but does not isolate the effect of
+nonlinearity alone. Its mean retrieval outcome is still below fixed
 20, fixed 40, and the strongest question-only alias variant.
 
 Score features therefore contain some usable information without
@@ -263,6 +284,8 @@ The results should not be read as proving that a literal hierarchy
 is intrinsically superior to all flat representations; the models,
 feature definitions, and small hyperparameter grids define the
 scope of that comparison.
+Table~\ref{tab:secondaryvariants} collects the secondary representation
+and heuristic results; none is assigned an unmeasured retrieval score.
 
 \subsection{Original fusion and its corrected rerun}
 Original Phase 3C fusion reaches macro F1 0.2307 and retrieval F1
@@ -434,8 +457,9 @@ This version has no final retrieval score and is not treated as
 a completed ablation with poor performance.
 
 \subsection{Valid constrained outputs, little additional information}
-The training-only wording repair succeeds on 173 of the 175
-previous failures under its probe. Two failures remain, motivating
+The training-only wording repair produces valid outputs on 173 of the
+175 previous failures under its probe. The probe still fails the
+100\% validity gate because two failures remain, motivating
 the constrained first-token decision. The final Phase 5B-v2
 feature has no invalid outputs, but its distribution is highly
 concentrated: training has 24 short, 2,076 medium, and one long;
@@ -470,8 +494,8 @@ seconds, or two hours and eight minutes, including five fold
 fits, a full-data refit, feature extraction, meta-model fitting,
 and retrieval evaluation. The five fold fits account for about
 5,888 seconds and the refit for about 1,434 seconds. Maximum
-recorded allocated GPU memory is approximately 9.03 GB, with
-9.60 GB reserved.
+recorded allocated GPU memory is approximately 9.03 GiB, with
+9.60 GiB reserved.
 
 These figures describe that recorded execution, not a general
 latency benchmark. Earlier zero-shot generation, GPU fine-tuning,
@@ -546,7 +570,7 @@ strong fixed-size reference.
 
 \section{Synthesis}
 Three lessons recur across the experimental history. First,
-the target is decisive. Evidence length is interpretable but
+the target deserves careful attention. Evidence length is interpretable but
 does not directly describe the utility of five retrieved chunks.
 Second, more information is useful only when it is both validly
 constructed and informative: corrected OOF fusion reduces

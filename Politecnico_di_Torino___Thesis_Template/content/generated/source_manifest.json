@@ -31,7 +31,17 @@
     "outputs/oracle_frozen/validation/RouterDataset_20260623_171712.jsonl": "92fffae69b6e33f37ea55f2d05593eccd7045797603bd3131ca47c7cd5de7bed",
     "outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr5e-6/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr5e-6-5epochs-full-parameter-20260808-seed42-v1/validation_history.jsonl": "2bed258fe99040d0e78e143c0dfcbbc59c96db004ba158f3b39c41f56fe67418",
     "outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr1e-5/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr1e-5-5epochs-full-parameter-20260808-seed42-v1/validation_history.jsonl": "e45dfbdcb92bd58e490d0a4bfff055829ab83cd243771bd5e1dab97e093db393",
-    "outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr2e-5/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr2e-5-5epochs-full-parameter-20260808-seed42-v1/validation_history.jsonl": "019537779e74c625c7f75ebe42cdbc62814c3474c3a232f480d10d28c0a0e33e"
+    "outputs/qwen_phase2e_lr_grid_token_count_prompt_5epochs_evidence_length_oracle/trials/lr2e-5/runs/qwen-phase2e-base-sequence-classifier-token-count-prompt-lr2e-5-5epochs-full-parameter-20260808-seed42-v1/validation_history.jsonl": "019537779e74c625c7f75ebe42cdbc62814c3474c3a232f480d10d28c0a0e33e",
+    "models/granularity_router/frozen_topk5/training_report.json": "bbb5639f82363091104fca0752a150f5ceab84ca6cf783c01c0abd8d1c6f2276",
+    "outputs/qwen_finetuned_router_evidence_length_oracle/runs/qwen-phase2-full-parameter-20260802-seed42-v2/validation_history.jsonl": "e185ae7f3ff08b17bdfb6c7fd9ea54ed9f80eb9e778d75819ae50cb7fd9cce88",
+    "outputs/qwen_phase2b_alias_unweighted_evidence_length_oracle/runs/qwen-phase2b-alias-unweighted-full-parameter-20260803-seed42-v1/validation_history.jsonl": "8871ace2bedf98b8984961e8bed8c28392ebc900ba1d090366510343eeb00383",
+    "outputs/qwen_phase2b_alias_classbalanced_evidence_length_oracle/runs/qwen-phase2b-alias-classbalanced-full-parameter-20260803-seed42-v1/validation_history.jsonl": "4d195bc0dcea14d3baaf69d1a04461a9e7578c4fc9b6c05cc2072ebe8dfee891",
+    "outputs/qwen_phase2c_sequence_classifier_evidence_length_oracle/runs/qwen-phase2c-base-sequence-classifier-full-parameter-20260804-seed42-v1/validation_history.jsonl": "a58294b1f5ba840336726611219d183cb8f1eabc057ef1591666f1d5ae350a50",
+    "outputs/qwen_phase2d_sequence_classifier_token_count_prompt_evidence_length_oracle/runs/qwen-phase2d-base-sequence-classifier-token-count-prompt-full-parameter-20260808-seed42-v1/validation_history.jsonl": "b7cb945325de2264ef7dc7f4d59a52bcb6d59ba6883eb73c6c2657b2d29126f3",
+    "outputs/similarity_tree_phase3a_evidence_length_oracle/heuristics/metrics.json": "f20e2781d951c517e2d8ee448fc6a16da264a5670adc741fc2e12ba898ccf928",
+    "outputs/similarity_tree_phase3a_evidence_length_oracle/classification_summary.json": "a52119679f6ec2e40d021a66ed8e714768c2f20e6916ffc6703235926a838947",
+    "outputs/similarity_tree_phase3b_xgboost_evidence_length_oracle/classification_summary.json": "9d78e4df4550df26774e81792e8b6c1043393ecd16f1e34f11f564c137ee86cf",
+    "outputs/qwen_phase3c_fusion_evidence_length_oracle/classification_summary.json": "0c894a9e9edb899ddfc6500410289417ca788cc6daf115e3f92a59997ec37e44"
   },
   "question_level_results": [
     {
@@ -132,7 +142,8 @@
           "160": 1
         }
       },
-      "retrieval_f1": 0.23910868506493507
+      "retrieval_f1": 0.23910868506493507,
+      "retrieval_median": 0.2210845
     },
     {
       "phase": "2",
@@ -231,7 +242,8 @@
           "160": 775
         }
       },
-      "retrieval_f1": 0.22658488852813854
+      "retrieval_f1": 0.22658488852813854,
+      "retrieval_median": 0.19615549999999998
     },
     {
       "phase": "2B-A",
@@ -330,7 +342,8 @@
           "160": 308
         }
       },
-      "retrieval_f1": 0.28646775432900434
+      "retrieval_f1": 0.28646775432900434,
+      "retrieval_median": 0.2748425
     },
     {
       "phase": "2B-B",
@@ -429,7 +442,8 @@
           "160": 490
         }
       },
-      "retrieval_f1": 0.24962774025974027
+      "retrieval_f1": 0.24962774025974027,
+      "retrieval_median": 0.223194
     },
     {
       "phase": "2C",
@@ -528,7 +542,8 @@
           "160": 306
         }
       },
-      "retrieval_f1": 0.27914719588744585
+      "retrieval_f1": 0.27914719588744585,
+      "retrieval_median": 0.2607245
     },
     {
       "phase": "2D",
@@ -627,7 +642,8 @@
           "160": 357
         }
       },
-      "retrieval_f1": 0.2767166677489178
+      "retrieval_f1": 0.2767166677489178,
+      "retrieval_median": 0.2558975
     },
     {
       "phase": "2E",
@@ -726,7 +742,8 @@
           "160": 268
         }
       },
-      "retrieval_f1": 0.2793735097402597
+      "retrieval_f1": 0.2793735097402597,
+      "retrieval_median": 0.267412
     },
     {
       "phase": "3A",
@@ -828,7 +845,8 @@
           "160": 320
         }
       },
-      "retrieval_f1": 0.26773840692640694
+      "retrieval_f1": 0.26773840692640694,
+      "retrieval_median": 0.25228
     },
     {
       "phase": "3B",
@@ -930,7 +948,8 @@
         "correct_count": 304,
         "example_count": 924
       },
-      "retrieval_f1": 0.27172125974025974
+      "retrieval_f1": 0.27172125974025974,
+      "retrieval_median": 0.2487165
     },
     {
       "phase": "3C",
@@ -1032,7 +1051,8 @@
         "correct_count": 295,
         "example_count": 924
       },
-      "retrieval_f1": 0.2872016341991342
+      "retrieval_f1": 0.2872016341991342,
+      "retrieval_median": 0.271346
     },
     {
       "phase": "3C-OOF",
@@ -1134,7 +1154,8 @@
         "correct_count": 298,
         "example_count": 924
       },
-      "retrieval_f1": 0.27830322619047615
+      "retrieval_f1": 0.27830322619047615,
+      "retrieval_median": 0.255051
     }
   ],
   "diagnostic_cases": [
@@ -1161,12 +1182,15 @@
   "verified_papers": 277,
   "generated_tables": [
     "cases.tex",
+    "early_candidates.tex",
     "fixed_results.tex",
     "local_results.tex",
     "lr_grid.tex",
     "paired_regret.tex",
     "prediction_counts.tex",
+    "qwen_checkpoints.tex",
     "qwen_results.tex",
+    "secondary_variants.tex",
     "tree_results.tex"
   ],
   "generated_figures": [

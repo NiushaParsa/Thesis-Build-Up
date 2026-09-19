@@ -8,7 +8,7 @@ Session: September 2026 — academic year 2025–2026
 
 ## Structure
 
-The main document contains the abstract, extended summary, notation, six
+The main document contains the abstract, extended summary, acknowledgements, notation, six
 chapters, three appendices, and an experiment-specific bibliography.
 The six chapters are Introduction; Background and Literature Review;
 Dataset and Preprocessing; Methodology; Evaluation, Results, and Discussion;
@@ -41,32 +41,43 @@ without rerunning any experiments.
 - The original fusion's in-sample feature problem and the first Phase 5B
   version's invalid-output failure are retained explicitly.
 - Top-five comparisons do not enforce an equal total token budget.
-- Personal acknowledgements are omitted, not invented. The old template
-  acknowledgement, glossary, and bibliography examples are not compiled.
+- Personal acknowledgements supplied by the author are included. The old
+  template glossary and bibliography examples are not compiled.
 
 ## Evidence and editing
 
 The file content/generated/source_manifest.json records hashes of the structured
 inputs used for generated results. The script scripts/generate_results.py checks
-question counts, paper counts, and fixed-action averages. Hand-written
-chapter prose should be reviewed alongside the phase reports in ../docs/.
+question counts, paper counts, and fixed-action averages. The separate
+scripts/audit_results.py recomputes saved prediction metrics, retrieval
+aggregates, and bootstrap intervals. Its output is build/qa/results_audit.json.
+REVIEW_REPORT.md records the full experimental-coverage review and corrections.
+Hand-written prose should still be read alongside the phase reports in ../docs/.
 No model training, retrieval run, remote write, or database mutation was
 performed for this draft.
 
 Before submission, review wording and interpretation with the supervisors,
-check institutional formatting requirements, and add any personal
-acknowledgements. This is a complete draft for review, not a claim of formal
+check institutional formatting requirements, and confirm all personal
+details. This is a complete draft for review, not a claim of formal
 approval or a substitute for the author's scientific responsibility.
 
-## Verification on 12 September 2026
+## Verification on 19 September 2026
 
-- The final PDF contains 70 A4 pages, six main chapters, three appendices,
-  thirteen numbered tables, four figures, and eighteen cited references.
+- The rebuilt PDF contains 74 A4 pages, six main chapters, three appendices,
+  sixteen numbered tables, four figures, and eighteen cited references.
 - The pdfLaTeX/Biber build completed successfully.
 - Automated checks found no missing citations, missing cross-references,
-  duplicate labels, unresolved markers, overfull boxes, or LaTeX warnings.
+  duplicate labels, unresolved markers, overfull boxes, ignored errors,
+  or LaTeX/package warnings.
+- The result audit passes 12,398 record/aggregate checks across 70 source
+  files; these are consistency assertions, not independent statistical tests.
+- All 11 main evidence-length global phases reproduce their reported
+  classification and retrieval metrics on the same 924 validation questions.
+- Phase 4 and local Phase 5A/5B-v2 paper-cluster intervals reproduce from
+  the saved per-question scores. No experimental models were rerun.
 - All pages were rendered for visual review. Pagination, table placement,
-  bibliography overflow, and split diagnostic examples were corrected.
+  the chronology table, summary spillover, and isolated closing lines were
+  checked and corrected where needed.
 - Build products and QA renders remain ignored by Git.
 - MiKTeX still prints its separate update-check reminder; it does not prevent
   compilation and is not an error in the thesis source.

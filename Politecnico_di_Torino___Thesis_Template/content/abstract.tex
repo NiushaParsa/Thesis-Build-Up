@@ -23,11 +23,13 @@ learned question-level router instead reaches 0.3075: learning expected
 retrieval regret improves on the preceding learned alternatives but does
 not surpass the fixed baseline. Local tree-level routing reaches 0.3053,
 compared with 0.3075 for a matched fixed-40 tree baseline. Adding a frozen
-Qwen context-length feature produces no demonstrated improvement.
+Qwen context-need feature gives 0.3045 and no demonstrated improvement.
 
 The main finding is that predicting an evidence-length category and
-maximising retrieval usefulness are not equivalent. Objective alignment,
-leakage control, and matched retrieval budgets matter more than model
-complexity alone. These results concern lexical evidence retrieval, not
+maximising retrieval usefulness are not equivalent. Retrieval-utility
+supervision improves the tested learned global routers, but added model
+complexity does not by itself establish a gain over fixed retrieval.
+The study also highlights the need for leakage-controlled training and
+matched comparison protocols. These results concern lexical evidence retrieval, not
 generated-answer quality, and repeated use of the validation split limits
 claims about unseen-data generalisation.
