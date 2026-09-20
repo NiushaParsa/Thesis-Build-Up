@@ -379,6 +379,11 @@ small target cost even if it loses the argmax tie. Choosing a size
 with much lower F1 should incur a larger cost. The regressors can
 therefore learn useful distinctions between mistakes.
 
+MoG's soft labels favour the two granularities whose retrieved snippets
+rank highest by similarity to the training reference
+\cite{zhong-etal-2025-mix}; the present objective instead uses the
+observed retrieval-F1 regret of all five actions directly.
+
 All 2,245 training utility vectors are complete in the final artifact.
 Validation predictions are saved and hashed before the validation
 utilities are read for scoring. Evaluation selects the corresponding

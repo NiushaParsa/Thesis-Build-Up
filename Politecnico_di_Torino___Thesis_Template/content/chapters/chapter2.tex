@@ -161,6 +161,21 @@ A successful router here would therefore be a possible retrieval
 component, not a replacement for a system that verifies its generated
 claims.
 
+Mix-of-Granularity (MoG) is a particularly close reference point for
+the present study. It uses a learned router to select retrieval
+granularity from the input query instead of applying one fixed
+granularity to every query, and trains that router with soft-label
+supervision \cite{zhong-etal-2025-mix}. Its graph extension,
+MoG-Graph (MoGG), reorganises documents as graphs so that relevant
+pieces that are non-adjacent in the original text can be retrieved
+through graph neighbourhoods. The present thesis does not reproduce
+MoG or MoGG. It instead studies evidence retrieval within a known
+QASPER source paper, using aligned fixed GPT-2 token spans at sizes
+$\{10,20,40,80,160\}$. Its primary outcome is joined evidence-token
+retrieval F1 rather than generated-answer accuracy, and it compares
+evidence-length classification, question-only Qwen routing,
+similarity-tree features, and direct retrieval-regret supervision.
+
 The amount of supplied context also cannot be separated entirely from
 how a generator uses it. Lost in the Middle reports sensitivity to the
 position of relevant information in long contexts
@@ -183,6 +198,7 @@ RAPTOR & Hierarchy with recursively generated summaries & Trees here contain lit
 Late Chunking & Contextualise before forming chunk embeddings & Stored chunks here are embedded independently\\
 Adaptive-RAG & Adapt the answering/retrieval strategy & The primary action here is chunk size\\
 Self-RAG & Retrieve, generate, and critique jointly & Only evidence retrieval is evaluated here\\
+Mix-of-Granularity (MoG) & Query-dependent routing across retrieval granularities & Medical QA; here, compare routing targets, including retrieval utility, over aligned token spans within a known QASPER paper\\
 This work & Select global or local token granularity & Compare decisions under fixed embeddings and explicit evidence scoring\\
 \bottomrule
 \end{tabularx}
